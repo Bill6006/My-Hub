@@ -1,8 +1,8 @@
 (() => {
   'use strict';
 
-  const APP_VERSION = '1.0.0';
-  const SCHEMA_VERSION = 1;
+  const APP_VERSION = '1.1.0';
+  const SCHEMA_VERSION = 2;
   const STORAGE_KEY = 'tyreeHub.state.v1';
   const ROLLBACK_KEY = 'tyreeHub.rollback.v1';
   const CORRUPT_KEY_PREFIX = 'tyreeHub.corrupt.';
@@ -16,6 +16,7 @@
       id: 'default-speech-coach',
       name: 'Speech Coach',
       url: 'https://chatgpt.com/share/6a5da21a-959c-83ea-94cc-076d41ea8854',
+      githubUploadUrl: '',
       description: 'Practice communication, speaking, and social confidence.',
       category: 'Coaching',
       iconType: 'library',
@@ -33,6 +34,7 @@
       id: 'default-life-command-center',
       name: 'Life Command Center',
       url: 'https://bill6006.github.io/Command-center/',
+      githubUploadUrl: '',
       description: 'Manage goals, routines, priorities, planning, and daily life.',
       category: 'Personal',
       iconType: 'library',
@@ -50,6 +52,7 @@
       id: 'default-tailored-training',
       name: 'Tailored Training',
       url: 'https://bill6006.github.io/Tailored-Training/index.html',
+      githubUploadUrl: '',
       description: 'Open personalized workouts and track training.',
       category: 'Fitness',
       iconType: 'library',
@@ -180,6 +183,7 @@
       id: createId(),
       name: `Imported App ${index + 1}`,
       url: 'https://example.com',
+      githubUploadUrl: '',
       description: '',
       category: 'Other',
       iconType: 'library',
@@ -198,6 +202,7 @@
     app.id = typeof app.id === 'string' && app.id.trim() ? app.id.trim() : createId();
     app.name = typeof app.name === 'string' && app.name.trim() ? app.name.trim().slice(0, 48) : fallback.name;
     app.url = normalizeUrl(typeof app.url === 'string' ? app.url : fallback.url) || fallback.url;
+    app.githubUploadUrl = sanitizeGithubUploadUrl(app.githubUploadUrl);
     app.description = typeof app.description === 'string' ? app.description.trim().slice(0, 140) : '';
     app.category = typeof app.category === 'string' && app.category.trim() ? app.category.trim().slice(0, 32) : 'Other';
     app.iconType = app.iconType === 'emoji' ? 'emoji' : 'library';
@@ -262,6 +267,13 @@
       const parsed = JSON.parse(raw);
       const validated = validateStoredState(parsed);
       if (!validated) throw new Error('Stored data failed validation.');
+      if (Number(parsed.schemaVersion || 1) !== SCHEMA_VERSION) {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(validated));
+        } catch (_) {
+          // The migrated state still works for this session if persistence is unavailable.
+        }
+      }
       return validated;
     } catch (error) {
       try {
@@ -291,7 +303,8 @@
       'filterStrip', 'editModeButton', 'editModeLabel', 'updateBanner', 'updateNowButton', 'viewKicker', 'appsHeading',
       'appCountBadge', 'editNotice', 'exitEditButton', 'appGrid', 'emptyState', 'emptyAddButton', 'homeNavButton',
       'addNavButton', 'manageNavButton', 'settingsNavButton', 'appEditorDialog', 'appEditorForm', 'appEditorKicker',
-      'appEditorTitle', 'editingAppId', 'appNameInput', 'appUrlInput', 'appDescriptionInput', 'descriptionCount',
+      'appEditorTitle', 'editingAppId', 'appNameInput', 'appUrlInput', 'developerShortcutsDetails', 'githubUploadUrlInput',
+      'githubUploadUrlError', 'openGithubUploadButton', 'appDescriptionInput', 'descriptionCount',
       'appCategoryInput', 'categorySuggestions', 'appOpenModeInput', 'libraryIconModeButton', 'emojiIconModeButton',
       'iconPicker', 'emojiPickerPanel', 'emojiInput', 'emojiSuggestions', 'colorPicker', 'customColorInput',
       'appFavoriteInput', 'appNameError', 'appUrlError', 'settingsDialog', 'installCard', 'installStatusText',
@@ -347,6 +360,47 @@
     } catch (_) {
       return null;
     }
+  }
+
+  function isValidGithubUploadUrl(value) {
+    const input = String(value || '').trim();
+    if (!input) return false;
+    try {
+      const url = new URL(input);
+      const segments = url.pathname.split('/').filter(Boolean);
+      return url.protocol === 'https:'
+        && url.hostname.toLowerCase() === 'github.com'
+        && segments.length >= 4
+        && segments[2].toLowerCase() === 'upload'
+        && Boolean(segments[0] && segments[1] && segments[3]);
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function sanitizeGithubUploadUrl(value) {
+    const input = typeof value === 'string' ? value.trim() : '';
+    return isValidGithubUploadUrl(input) ? input : '';
+  }
+
+  function openExternalUrl(url) {
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.target = '_blank';
+    anchor.rel = 'noopener noreferrer';
+    anchor.style.display = 'none';
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+  }
+
+  function openGithubUploadUrl(value) {
+    const url = sanitizeGithubUploadUrl(value);
+    if (!url) {
+      showToast('This app does not have a valid GitHub upload shortcut.', 'error');
+      return;
+    }
+    openExternalUrl(url);
   }
 
   function getCategories() {
@@ -450,6 +504,7 @@
     const moreMenu = fragment.querySelector('.card-more-menu');
     const hideLabel = fragment.querySelector('.hide-action-label');
     const hideIcon = fragment.querySelector('[data-action="hide"] [data-icon]');
+    const githubUploadAction = fragment.querySelector('[data-action="github-upload"]');
 
     card.dataset.appId = app.id;
     card.style.setProperty('--accent', app.accent);
@@ -463,6 +518,7 @@
     description.textContent = app.description || app.url;
     hideLabel.textContent = app.hidden ? 'Show' : 'Hide';
     hideIcon.dataset.icon = app.hidden ? 'eye' : 'eye-off';
+    githubUploadAction.hidden = !isValidGithubUploadUrl(app.githubUploadUrl);
     hydrateIcons(card);
 
     main.addEventListener('click', () => {
@@ -552,14 +608,7 @@
       window.location.assign(app.url);
       return;
     }
-    const anchor = document.createElement('a');
-    anchor.href = app.url;
-    anchor.target = '_blank';
-    anchor.rel = 'noopener noreferrer';
-    anchor.style.display = 'none';
-    document.body.appendChild(anchor);
-    anchor.click();
-    anchor.remove();
+    openExternalUrl(app.url);
   }
 
   function handleCardAction(appId, action, menu) {
@@ -585,6 +634,8 @@
         moveApp(app.id, 1);
       } else if (action === 'edit') {
         openAppEditor(app);
+      } else if (action === 'github-upload') {
+        openGithubUploadUrl(app.githubUploadUrl);
       } else if (action === 'duplicate') {
         duplicateApp(app);
       } else if (action === 'hide') {
@@ -738,6 +789,8 @@
     dom.editingAppId.value = app?.id || '';
     dom.appNameInput.value = app?.name || '';
     dom.appUrlInput.value = app?.url || '';
+    dom.githubUploadUrlInput.value = app?.githubUploadUrl || '';
+    dom.developerShortcutsDetails.open = Boolean(app?.githubUploadUrl);
     dom.appDescriptionInput.value = app?.description || '';
     dom.descriptionCount.textContent = String((app?.description || '').length);
     dom.appCategoryInput.value = app?.category || 'Personal';
@@ -750,6 +803,8 @@
     dom.emojiInput.value = selectedIconType === 'emoji' ? selectedIcon : '';
     dom.appNameError.textContent = '';
     dom.appUrlError.textContent = '';
+    dom.githubUploadUrlError.textContent = '';
+    syncGithubUploadTestButton();
     setIconMode(selectedIconType);
     renderCategorySuggestions();
     renderEditorPickers();
@@ -757,14 +812,29 @@
     setTimeout(() => dom.appNameInput.focus(), 150);
   }
 
+  function syncGithubUploadTestButton() {
+    dom.openGithubUploadButton.hidden = !isValidGithubUploadUrl(dom.githubUploadUrlInput.value);
+  }
+
   function validateAppEditor() {
     const name = dom.appNameInput.value.trim();
     const normalizedUrl = normalizeUrl(dom.appUrlInput.value);
+    const githubUploadUrl = String(dom.githubUploadUrlInput.value || '').trim();
+    const githubUploadValid = !githubUploadUrl || isValidGithubUploadUrl(githubUploadUrl);
     dom.appNameError.textContent = name ? '' : 'Enter an app name.';
     dom.appUrlError.textContent = normalizedUrl ? '' : 'Enter a valid http or https website address.';
+    dom.githubUploadUrlError.textContent = githubUploadValid
+      ? ''
+      : 'Enter a valid secure GitHub upload URL, or leave this field blank.';
     if (!name) dom.appNameInput.focus();
     else if (!normalizedUrl) dom.appUrlInput.focus();
-    return name && normalizedUrl ? { name, normalizedUrl } : null;
+    else if (!githubUploadValid) {
+      dom.developerShortcutsDetails.open = true;
+      dom.githubUploadUrlInput.focus();
+    }
+    return name && normalizedUrl && githubUploadValid
+      ? { name, normalizedUrl, githubUploadUrl }
+      : null;
   }
 
   function saveAppFromEditor() {
@@ -784,6 +854,7 @@
     const appData = {
       name: validation.name.slice(0, 48),
       url: validation.normalizedUrl,
+      githubUploadUrl: validation.githubUploadUrl,
       description: dom.appDescriptionInput.value.trim().slice(0, 140),
       category,
       iconType: selectedIconType,
@@ -1022,10 +1093,15 @@
     if (Number(candidate.schemaVersion) > SCHEMA_VERSION) {
       throw new Error('This backup was created by a newer, unsupported data schema.');
     }
+    const rawApps = Array.isArray(candidate.data?.apps) ? candidate.data.apps : [];
+    const invalidGithubUploadUrls = rawApps.filter(app => {
+      const value = isPlainObject(app) && typeof app.githubUploadUrl === 'string' ? app.githubUploadUrl.trim() : '';
+      return Boolean(value) && !isValidGithubUploadUrl(value);
+    }).length;
     const validated = validateStoredState(candidate.data);
     if (!validated) throw new Error('The backup data is incomplete or damaged.');
     validated.settings.managementLock = { enabled: false, salt: '', hash: '' };
-    return validated;
+    return { validated, warnings: { invalidGithubUploadUrls } };
   }
 
   async function readImportFile(file) {
@@ -1037,9 +1113,9 @@
     try {
       const text = await file.text();
       const parsed = JSON.parse(text);
-      const validated = validateBackupObject(parsed);
+      const { validated, warnings } = validateBackupObject(parsed);
       importCandidate = validated;
-      showImportPreview(validated, parsed.createdAt);
+      showImportPreview(validated, parsed.createdAt, warnings);
     } catch (error) {
       showToast(error.message || 'The backup could not be read.', 'error', 7000);
     } finally {
@@ -1047,7 +1123,7 @@
     }
   }
 
-  function showImportPreview(candidate, createdAt) {
+  function showImportPreview(candidate, createdAt, validationWarnings = {}) {
     const duplicateUrls = candidate.apps.filter(imported => state.apps.some(existing => existing.url === imported.url)).length;
     const customCount = candidate.apps.filter(app => !app.isDefault).length;
     const categories = new Set(candidate.apps.map(app => app.category)).size;
@@ -1058,10 +1134,16 @@
       <div class="import-stat"><strong>${candidate.apps.length}</strong><span>Total apps</span></div>
       <div class="import-stat"><strong>${customCount}</strong><span>Custom apps</span></div>
       <div class="import-stat"><strong>${categories}</strong><span>Categories</span></div>`;
-    dom.importWarnings.hidden = duplicateUrls === 0;
-    dom.importWarnings.textContent = duplicateUrls
-      ? `${duplicateUrls} link${duplicateUrls === 1 ? '' : 's'} already exist in your current hub. Merge mode will skip duplicate URLs.`
-      : '';
+    const warnings = [];
+    if (duplicateUrls) {
+      warnings.push(`${duplicateUrls} link${duplicateUrls === 1 ? '' : 's'} already exist in your current hub. Merge mode will skip duplicate URLs.`);
+    }
+    if (validationWarnings.invalidGithubUploadUrls) {
+      const count = validationWarnings.invalidGithubUploadUrls;
+      warnings.push(`${count} invalid GitHub upload shortcut${count === 1 ? '' : 's'} will be ignored while the related app data is preserved.`);
+    }
+    dom.importWarnings.hidden = warnings.length === 0;
+    dom.importWarnings.textContent = warnings.join(' ');
     openDialog(dom.importPreviewDialog);
   }
 
@@ -1312,6 +1394,18 @@
     dom.appDescriptionInput.addEventListener('input', () => {
       dom.descriptionCount.textContent = String(dom.appDescriptionInput.value.length);
     });
+    dom.githubUploadUrlInput.addEventListener('input', () => {
+      const value = dom.githubUploadUrlInput.value.trim();
+      if (!value || isValidGithubUploadUrl(value)) dom.githubUploadUrlError.textContent = '';
+      syncGithubUploadTestButton();
+    });
+    dom.githubUploadUrlInput.addEventListener('blur', () => {
+      const value = dom.githubUploadUrlInput.value.trim();
+      dom.githubUploadUrlError.textContent = !value || isValidGithubUploadUrl(value)
+        ? ''
+        : 'Enter a valid secure GitHub upload URL, or leave this field blank.';
+    });
+    dom.openGithubUploadButton.addEventListener('click', () => openGithubUploadUrl(dom.githubUploadUrlInput.value));
     dom.libraryIconModeButton.addEventListener('click', () => setIconMode('library'));
     dom.emojiIconModeButton.addEventListener('click', () => setIconMode('emoji'));
     dom.emojiInput.addEventListener('input', () => {
