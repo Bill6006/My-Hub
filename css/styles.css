@@ -838,13 +838,17 @@ svg[data-filled="true"],
   z-index: 20;
   right: 12px;
   bottom: 58px;
-  width: 170px;
+  width: 184px;
   overflow: hidden;
   padding: 6px;
   border: 1px solid var(--line);
   border-radius: 14px;
   background: var(--surface);
   box-shadow: var(--shadow-md);
+}
+
+.card-more-menu [hidden] {
+  display: none !important;
 }
 
 .card-more-menu button {
@@ -1180,6 +1184,86 @@ dialog::backdrop {
 
 .field-error:empty {
   display: none;
+}
+
+.developer-shortcuts {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--surface-soft) 72%, transparent);
+}
+
+.developer-shortcuts summary {
+  display: flex;
+  min-height: 52px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  color: var(--text);
+  cursor: pointer;
+  list-style: none;
+}
+
+.developer-shortcuts summary::-webkit-details-marker {
+  display: none;
+}
+
+.developer-shortcuts summary::after {
+  width: 8px;
+  height: 8px;
+  flex: 0 0 auto;
+  border-right: 2px solid var(--text-faint);
+  border-bottom: 2px solid var(--text-faint);
+  content: "";
+  transform: rotate(45deg) translateY(-2px);
+  transition: transform var(--transition);
+}
+
+.developer-shortcuts[open] summary::after {
+  transform: rotate(225deg) translate(-2px, -2px);
+}
+
+.developer-shortcuts summary:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--brand) 28%, transparent);
+  outline-offset: -3px;
+}
+
+.developer-shortcuts-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 0.82rem;
+  font-weight: 760;
+}
+
+.developer-shortcuts-title svg {
+  width: 17px;
+  height: 17px;
+  color: var(--text-soft);
+}
+
+.developer-shortcuts summary small {
+  margin-left: auto;
+  color: var(--text-soft);
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.developer-shortcuts-content {
+  display: grid;
+  gap: 10px;
+  padding: 0 14px 14px;
+  border-top: 1px solid var(--line);
+}
+
+.developer-shortcuts-content .field {
+  padding-top: 13px;
+}
+
+.github-test-button {
+  width: max-content;
+  max-width: 100%;
 }
 
 .icon-fieldset,
@@ -1783,6 +1867,16 @@ html[data-theme="dark"] .onboarding-visual {
 
   .form-grid {
     grid-template-columns: 1fr;
+  }
+
+  .developer-shortcuts summary {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .developer-shortcuts summary small {
+    width: calc(100% - 26px);
+    margin: -4px 0 0 26px;
   }
 
   .full-width {
