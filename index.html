@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f4f7fb" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#111827" media="(prefers-color-scheme: dark)">
+  <meta name="description" content="Tyree Hub is a private, local-first launcher for your personal web apps and tools.">
+  <meta name="application-name" content="Tyree Hub">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Tyree Hub">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./icons/icon-192.png" sizes="192x192">
+  <link rel="apple-touch-icon" href="./icons/icon-192.png">
+  <link rel="stylesheet" href="./css/styles.css">
+  <title>Tyree Hub</title>
+</head>
+<body>
+  <a class="skip-link" href="#appGrid">Skip to apps</a>
+
+  <div class="app-shell" id="appShell">
+    <header class="topbar">
+      <div class="brand-block">
+        <div class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" role="img"><path d="M12 2.75 20 7.2v9.6l-8 4.45-8-4.45V7.2l8-4.45Zm0 2.2L6 8.28v7.44l6 3.33 6-3.33V8.28l-6-3.33Zm0 2.22 3.95 2.2v4.52L12 16.1l-3.95-2.2V9.37L12 7.17Zm0 2.18-2 1.11v2.34l2 1.11 2-1.11v-2.34l-2-1.11Z"/></svg>
+        </div>
+        <div>
+          <p class="eyebrow" id="todayLabel">Today</p>
+          <h1>Tyree Hub</h1>
+          <p class="subtitle">Your apps. One place.</p>
+        </div>
+      </div>
+      <div class="top-actions">
+        <button class="icon-button" id="themeQuickButton" type="button" aria-label="Change theme" title="Change theme">
+          <span data-icon="sun-moon" aria-hidden="true"></span>
+        </button>
+        <button class="icon-button" id="settingsButton" type="button" aria-label="Open settings" title="Settings">
+          <span data-icon="settings" aria-hidden="true"></span>
+        </button>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <section class="hero-panel" aria-labelledby="heroTitle">
+        <div>
+          <p class="section-kicker">Central launcher</p>
+          <h2 id="heroTitle">Everything important, one tap away.</h2>
+          <p>Open your coaching, life, and training tools without hunting through tabs or bookmarks.</p>
+        </div>
+        <button class="primary-button" id="heroAddButton" type="button">
+          <span data-icon="plus" aria-hidden="true"></span>
+          Add app
+        </button>
+      </section>
+
+      <section class="controls-panel" aria-label="App controls">
+        <label class="search-box" for="searchInput">
+          <span data-icon="search" aria-hidden="true"></span>
+          <input id="searchInput" type="search" autocomplete="off" placeholder="Search apps, categories, or descriptions">
+          <button class="clear-search" id="clearSearchButton" type="button" aria-label="Clear search" hidden>
+            <span data-icon="x" aria-hidden="true"></span>
+          </button>
+        </label>
+
+        <div class="toolbar-row">
+          <div class="filter-strip" id="filterStrip" role="group" aria-label="Filter apps"></div>
+          <button class="secondary-button compact" id="editModeButton" type="button" aria-pressed="false">
+            <span data-icon="edit" aria-hidden="true"></span>
+            <span id="editModeLabel">Edit apps</span>
+          </button>
+        </div>
+      </section>
+
+      <section class="update-banner" id="updateBanner" hidden aria-live="polite">
+        <div>
+          <strong>A fresh version is ready.</strong>
+          <span>Reload to use the latest Tyree Hub.</span>
+        </div>
+        <button class="secondary-button compact" id="updateNowButton" type="button">Update now</button>
+      </section>
+
+      <section class="dashboard-section" aria-labelledby="appsHeading">
+        <div class="section-heading-row">
+          <div>
+            <p class="section-kicker" id="viewKicker">Dashboard</p>
+            <h2 id="appsHeading">Your apps</h2>
+          </div>
+          <span class="count-badge" id="appCountBadge">0 apps</span>
+        </div>
+
+        <div class="edit-notice" id="editNotice" hidden role="status">
+          <span data-icon="edit" aria-hidden="true"></span>
+          <span>Edit Mode is active. Use the card controls to organize your hub.</span>
+          <button id="exitEditButton" type="button">Done</button>
+        </div>
+
+        <div class="app-grid" id="appGrid" aria-live="polite"></div>
+
+        <div class="empty-state" id="emptyState" hidden>
+          <div class="empty-icon" aria-hidden="true"><span data-icon="search"></span></div>
+          <h3>No apps found</h3>
+          <p>Try another search or filter, or add a new app to your hub.</p>
+          <button class="primary-button" id="emptyAddButton" type="button">
+            <span data-icon="plus" aria-hidden="true"></span>
+            Add an app
+          </button>
+        </div>
+      </section>
+    </main>
+
+    <nav class="bottom-nav" aria-label="Primary navigation">
+      <button class="nav-button active" id="homeNavButton" type="button" aria-current="page">
+        <span data-icon="home" aria-hidden="true"></span>
+        <span>Home</span>
+      </button>
+      <button class="nav-button nav-add" id="addNavButton" type="button">
+        <span class="nav-add-circle"><span data-icon="plus" aria-hidden="true"></span></span>
+        <span>Add</span>
+      </button>
+      <button class="nav-button" id="manageNavButton" type="button">
+        <span data-icon="grid" aria-hidden="true"></span>
+        <span>Manage</span>
+      </button>
+      <button class="nav-button" id="settingsNavButton" type="button">
+        <span data-icon="settings" aria-hidden="true"></span>
+        <span>Settings</span>
+      </button>
+    </nav>
+  </div>
+
+  <dialog class="sheet-dialog" id="appEditorDialog" aria-labelledby="appEditorTitle">
+    <form method="dialog" class="dialog-surface" id="appEditorForm" novalidate>
+      <div class="dialog-handle" aria-hidden="true"></div>
+      <div class="dialog-header">
+        <div>
+          <p class="section-kicker" id="appEditorKicker">Launcher</p>
+          <h2 id="appEditorTitle">Add app</h2>
+        </div>
+        <button class="icon-button" type="button" data-close-dialog="appEditorDialog" aria-label="Close app editor">
+          <span data-icon="x" aria-hidden="true"></span>
+        </button>
+      </div>
+
+      <input type="hidden" id="editingAppId">
+
+      <div class="form-grid">
+        <label class="field full-width">
+          <span>App name <b aria-hidden="true">*</b></span>
+          <input id="appNameInput" type="text" maxlength="48" autocomplete="off" required placeholder="Example: Budget Planner">
+          <small class="field-error" id="appNameError"></small>
+        </label>
+
+        <label class="field full-width">
+          <span>Website URL <b aria-hidden="true">*</b></span>
+          <input id="appUrlInput" type="url" inputmode="url" autocomplete="url" required placeholder="https://example.com">
+          <small class="field-help">You can paste a full link or type a domain such as example.com.</small>
+          <small class="field-error" id="appUrlError"></small>
+        </label>
+
+        <label class="field full-width">
+          <span>Short description</span>
+          <textarea id="appDescriptionInput" maxlength="140" rows="3" placeholder="What do you use this app for?"></textarea>
+          <small class="character-count"><span id="descriptionCount">0</span>/140</small>
+        </label>
+
+        <label class="field">
+          <span>Category</span>
+          <input id="appCategoryInput" type="text" maxlength="32" list="categorySuggestions" placeholder="Personal">
+          <datalist id="categorySuggestions"></datalist>
+        </label>
+
+        <label class="field">
+          <span>Open link</span>
+          <select id="appOpenModeInput">
+            <option value="new">In a new tab or app</option>
+            <option value="same">In this window</option>
+          </select>
+        </label>
+
+        <fieldset class="field full-width icon-fieldset">
+          <legend>Choose an icon</legend>
+          <div class="icon-mode-row" role="tablist" aria-label="Icon type">
+            <button class="segmented-button active" id="libraryIconModeButton" type="button" role="tab" aria-selected="true">Icon library</button>
+            <button class="segmented-button" id="emojiIconModeButton" type="button" role="tab" aria-selected="false">Emoji</button>
+          </div>
+          <div class="icon-picker" id="iconPicker" role="radiogroup" aria-label="Choose an app icon"></div>
+          <div class="emoji-picker-panel" id="emojiPickerPanel" hidden>
+            <label class="emoji-input-label" for="emojiInput">
+              <span>Emoji</span>
+              <input id="emojiInput" type="text" inputmode="text" maxlength="8" placeholder="✨">
+            </label>
+            <div class="emoji-suggestions" id="emojiSuggestions" aria-label="Suggested emoji"></div>
+          </div>
+        </fieldset>
+
+        <fieldset class="field full-width color-fieldset">
+          <legend>Accent color</legend>
+          <div class="color-picker" id="colorPicker" role="radiogroup" aria-label="Choose an accent color"></div>
+          <label class="custom-color-label" for="customColorInput">
+            <span>Custom</span>
+            <input id="customColorInput" type="color" value="#4f46e5">
+          </label>
+        </fieldset>
+
+        <label class="toggle-row full-width" for="appFavoriteInput">
+          <span>
+            <strong>Favorite</strong>
+            <small>Keep this app near the front.</small>
+          </span>
+          <input id="appFavoriteInput" type="checkbox" role="switch">
+        </label>
+      </div>
+
+      <div class="dialog-actions">
+        <button class="secondary-button" type="button" data-close-dialog="appEditorDialog">Cancel</button>
+        <button class="primary-button" id="saveAppButton" type="submit">
+          <span data-icon="check" aria-hidden="true"></span>
+          Save app
+        </button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="sheet-dialog settings-dialog" id="settingsDialog" aria-labelledby="settingsTitle">
+    <div class="dialog-surface settings-surface">
+      <div class="dialog-handle" aria-hidden="true"></div>
+      <div class="dialog-header">
+        <div>
+          <p class="section-kicker">Control center</p>
+          <h2 id="settingsTitle">Settings</h2>
+        </div>
+        <button class="icon-button" type="button" data-close-dialog="settingsDialog" aria-label="Close settings">
+          <span data-icon="x" aria-hidden="true"></span>
+        </button>
+      </div>
+
+      <div class="settings-list">
+        <section class="settings-card" aria-labelledby="appearanceHeading">
+          <div class="settings-card-heading">
+            <span class="settings-icon"><span data-icon="palette" aria-hidden="true"></span></span>
+            <div>
+              <h3 id="appearanceHeading">Appearance</h3>
+              <p>Choose how Tyree Hub looks.</p>
+            </div>
+          </div>
+          <div class="theme-options" role="radiogroup" aria-label="Theme">
+            <label><input type="radio" name="theme" value="system"><span data-icon="monitor"></span><b>System</b></label>
+            <label><input type="radio" name="theme" value="light"><span data-icon="sun"></span><b>Light</b></label>
+            <label><input type="radio" name="theme" value="dark"><span data-icon="moon"></span><b>Dark</b></label>
+          </div>
+        </section>
+
+        <section class="settings-card" id="installCard" aria-labelledby="installHeading">
+          <div class="settings-card-heading">
+            <span class="settings-icon"><span data-icon="download" aria-hidden="true"></span></span>
+            <div>
+              <h3 id="installHeading">Install Tyree Hub</h3>
+              <p id="installStatusText">Install it for an app-like Android experience.</p>
+            </div>
+          </div>
+          <button class="secondary-button full-button" id="installAppButton" type="button" hidden>
+            <span data-icon="download" aria-hidden="true"></span>
+            Install Tyree Hub
+          </button>
+          <details class="settings-details">
+            <summary>Android installation steps</summary>
+            <ol>
+              <li>Open Tyree Hub in Chrome.</li>
+              <li>Open Chrome’s menu.</li>
+              <li>Select <strong>Install app</strong> or <strong>Add to Home screen</strong>.</li>
+              <li>Confirm the installation.</li>
+            </ol>
+          </details>
+        </section>
+
+        <section class="settings-card" aria-labelledby="backupHeading">
+          <div class="settings-card-heading">
+            <span class="settings-icon"><span data-icon="database" aria-hidden="true"></span></span>
+            <div>
+              <h3 id="backupHeading">Backup and restore</h3>
+              <p>Keep a portable copy of your apps and settings.</p>
+            </div>
+          </div>
+          <div class="button-stack">
+            <button class="secondary-button full-button" id="exportBackupButton" type="button"><span data-icon="download"></span>Export backup</button>
+            <button class="secondary-button full-button" id="importBackupButton" type="button"><span data-icon="upload"></span>Import backup</button>
+            <input id="importFileInput" type="file" accept="application/json,.json" hidden>
+          </div>
+        </section>
+
+        <section class="settings-card" aria-labelledby="lockHeading">
+          <div class="settings-card-heading">
+            <span class="settings-icon"><span data-icon="lock" aria-hidden="true"></span></span>
+            <div>
+              <h3 id="lockHeading">Management Lock</h3>
+              <p>Prevent accidental editing with a four-digit PIN.</p>
+            </div>
+          </div>
+          <label class="toggle-row" for="managementLockToggle">
+            <span>
+              <strong>Require PIN for changes</strong>
+              <small>This is convenience protection, not high-security encryption.</small>
+            </span>
+            <input id="managementLockToggle" type="checkbox" role="switch">
+          </label>
+          <button class="text-button danger-text" id="resetPinButton" type="button" hidden>Forgot PIN? Reset Management Lock</button>
+        </section>
+
+        <section class="settings-card" aria-labelledby="defaultsHeading">
+          <div class="settings-card-heading">
+            <span class="settings-icon"><span data-icon="refresh" aria-hidden="true"></span></span>
+            <div>
+              <h3 id="defaultsHeading">Defaults and recovery</h3>
+              <p>Restore the original launchers or start fresh.</p>
+            </div>
+          </div>
+          <div class="button-stack">
+            <button class="secondary-button full-button" id="restoreDefaultsButton" type="button"><span data-icon="refresh"></span>Restore default apps</button>
+            <button class="danger-button full-button" id="resetAllButton" type="button"><span data-icon="trash"></span>Reset all app data</button>
+          </div>
+        </section>
+
+        <section class="settings-card" aria-labelledby="privacyHeading">
+          <div class="settings-card-heading">
+            <span class="settings-icon"><span data-icon="shield" aria-hidden="true"></span></span>
+            <div>
+              <h3 id="privacyHeading">Privacy</h3>
+              <p>Your launcher data stays on this device.</p>
+            </div>
+          </div>
+          <p class="settings-copy">Tyree Hub does not use analytics, advertisements, trackers, accounts, or a remote database. Your custom app names, links, usage timestamps, settings, and PIN hash remain in your browser unless you export a backup.</p>
+        </section>
+
+        <section class="settings-card app-info-card" aria-labelledby="aboutHeading">
+          <div class="settings-card-heading">
+            <span class="settings-icon"><span data-icon="info" aria-hidden="true"></span></span>
+            <div>
+              <h3 id="aboutHeading">About Tyree Hub</h3>
+              <p>Version <span id="appVersionLabel">1.0.0</span> · Data schema <span id="schemaVersionLabel">1</span></p>
+            </div>
+          </div>
+          <button class="text-button" id="reopenIntroButton" type="button">View first-launch guide</button>
+        </section>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog class="modal-dialog" id="confirmDialog" aria-labelledby="confirmTitle">
+    <form method="dialog" class="modal-surface" id="confirmForm">
+      <div class="confirm-icon" id="confirmIcon"><span data-icon="alert"></span></div>
+      <h2 id="confirmTitle">Confirm action</h2>
+      <p id="confirmMessage"></p>
+      <label class="field" id="confirmPhraseField" hidden>
+        <span id="confirmPhraseLabel">Type RESET to continue</span>
+        <input id="confirmPhraseInput" type="text" autocomplete="off">
+        <small class="field-error" id="confirmPhraseError"></small>
+      </label>
+      <div class="dialog-actions centered">
+        <button class="secondary-button" type="button" id="confirmCancelButton">Cancel</button>
+        <button class="danger-button" type="submit" id="confirmActionButton">Confirm</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="modal-dialog" id="pinDialog" aria-labelledby="pinTitle">
+    <form method="dialog" class="modal-surface" id="pinForm" novalidate>
+      <div class="confirm-icon neutral"><span data-icon="lock"></span></div>
+      <h2 id="pinTitle">Unlock management</h2>
+      <p id="pinMessage">Enter your four-digit PIN to continue.</p>
+      <label class="field pin-field">
+        <span>PIN</span>
+        <input id="pinInput" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" aria-describedby="pinError">
+        <small class="field-error" id="pinError"></small>
+      </label>
+      <label class="field pin-field" id="pinConfirmField" hidden>
+        <span>Confirm PIN</span>
+        <input id="pinConfirmInput" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off">
+      </label>
+      <div class="dialog-actions centered">
+        <button class="secondary-button" type="button" id="pinCancelButton">Cancel</button>
+        <button class="primary-button" type="submit" id="pinSubmitButton">Unlock</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="modal-dialog onboarding-dialog" id="onboardingDialog" aria-labelledby="onboardingTitle">
+    <div class="modal-surface onboarding-surface">
+      <div class="onboarding-visual" aria-hidden="true">
+        <div class="mini-app purple"><span data-icon="mic"></span></div>
+        <div class="mini-app blue"><span data-icon="compass"></span></div>
+        <div class="mini-app green"><span data-icon="dumbbell"></span></div>
+      </div>
+      <p class="section-kicker">Welcome to your hub</p>
+      <h2 id="onboardingTitle">Your essentials now share one front door.</h2>
+      <p>Open any tile with one tap. Add more apps whenever you need them, then organize everything from Edit Mode.</p>
+      <div class="dialog-actions stacked-mobile">
+        <button class="secondary-button" id="introAddButton" type="button"><span data-icon="plus"></span>Add another app</button>
+        <button class="primary-button" id="introDoneButton" type="button">Get started</button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog class="modal-dialog import-dialog" id="importPreviewDialog" aria-labelledby="importPreviewTitle">
+    <div class="modal-surface import-surface">
+      <div class="confirm-icon neutral"><span data-icon="upload"></span></div>
+      <h2 id="importPreviewTitle">Import backup</h2>
+      <p id="importPreviewSummary">Review the backup before applying it.</p>
+      <div class="import-stats" id="importStats"></div>
+      <div class="import-warnings" id="importWarnings" hidden></div>
+      <div class="dialog-actions import-actions">
+        <button class="secondary-button" id="importCancelButton" type="button">Cancel</button>
+        <button class="secondary-button" id="mergeImportButton" type="button">Merge</button>
+        <button class="primary-button" id="replaceImportButton" type="button">Replace</button>
+      </div>
+    </div>
+  </dialog>
+
+  <div class="toast-region" id="toastRegion" aria-live="polite" aria-atomic="true"></div>
+
+  <template id="appCardTemplate">
+    <article class="app-card" draggable="false">
+      <button class="app-card-main" type="button">
+        <span class="app-card-icon" aria-hidden="true"></span>
+        <span class="app-card-content">
+          <span class="app-card-meta">
+            <span class="app-card-category"></span>
+            <span class="favorite-indicator" title="Favorite"><span data-icon="star-filled"></span></span>
+          </span>
+          <strong class="app-card-name"></strong>
+          <span class="app-card-description"></span>
+        </span>
+        <span class="app-open-indicator" aria-hidden="true"><span data-icon="arrow-up-right"></span></span>
+      </button>
+      <div class="app-card-actions" aria-label="App management controls">
+        <button type="button" data-action="favorite" title="Toggle favorite"><span data-icon="star"></span><span class="sr-only">Toggle favorite</span></button>
+        <button type="button" data-action="move-up" title="Move up"><span data-icon="arrow-up"></span><span class="sr-only">Move up</span></button>
+        <button type="button" data-action="move-down" title="Move down"><span data-icon="arrow-down"></span><span class="sr-only">Move down</span></button>
+        <button type="button" data-action="edit" title="Edit app"><span data-icon="edit"></span><span class="sr-only">Edit app</span></button>
+        <button type="button" data-action="more" title="More actions"><span data-icon="more"></span><span class="sr-only">More actions</span></button>
+      </div>
+      <div class="card-more-menu" hidden>
+        <button type="button" data-action="duplicate"><span data-icon="copy"></span>Duplicate</button>
+        <button type="button" data-action="hide"><span data-icon="eye-off"></span><span class="hide-action-label">Hide</span></button>
+        <button type="button" data-action="delete" class="danger-text"><span data-icon="trash"></span>Delete</button>
+      </div>
+    </article>
+  </template>
+
+  <script src="./js/app.js" defer></script>
+</body>
+</html>
