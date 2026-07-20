@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const APP_VERSION = '1.1.0';
+  const APP_VERSION = '1.1.1';
   const SCHEMA_VERSION = 2;
   const STORAGE_KEY = 'tyreeHub.state.v1';
   const ROLLBACK_KEY = 'tyreeHub.rollback.v1';
@@ -492,6 +492,25 @@
     }
   }
 
+  function syncGithubUploadMenuAction(menu, app) {
+    const action = menu?.querySelector('[data-action="github-upload"]');
+    if (!action) return false;
+
+    const uploadUrl = sanitizeGithubUploadUrl(app?.githubUploadUrl);
+    const available = Boolean(uploadUrl);
+    action.hidden = !available;
+    action.disabled = !available;
+    action.dataset.uploadUrl = uploadUrl;
+    if (available) {
+      action.setAttribute('aria-label', `Upload update for ${app.name}`);
+      action.title = `Open the saved GitHub upload page for ${app.name}`;
+    } else {
+      action.removeAttribute('aria-label');
+      action.removeAttribute('title');
+    }
+    return available;
+  }
+
   function buildAppCard(app) {
     const fragment = dom.appCardTemplate.content.cloneNode(true);
     const card = fragment.querySelector('.app-card');
@@ -504,8 +523,6 @@
     const moreMenu = fragment.querySelector('.card-more-menu');
     const hideLabel = fragment.querySelector('.hide-action-label');
     const hideIcon = fragment.querySelector('[data-action="hide"] [data-icon]');
-    const githubUploadAction = fragment.querySelector('[data-action="github-upload"]');
-
     card.dataset.appId = app.id;
     card.style.setProperty('--accent', app.accent);
     card.classList.toggle('hidden-app', app.hidden);
@@ -518,7 +535,7 @@
     description.textContent = app.description || app.url;
     hideLabel.textContent = app.hidden ? 'Show' : 'Hide';
     hideIcon.dataset.icon = app.hidden ? 'eye' : 'eye-off';
-    githubUploadAction.hidden = !isValidGithubUploadUrl(app.githubUploadUrl);
+    syncGithubUploadMenuAction(moreMenu, app);
     hydrateIcons(card);
 
     main.addEventListener('click', () => {
@@ -616,6 +633,9 @@
     if (!app) return;
 
     if (action === 'more') {
+      // Re-check the saved shortcut every time the menu opens. This prevents a
+      // stale hidden state after adding or editing a GitHub upload URL.
+      syncGithubUploadMenuAction(menu, app);
       closeAllCardMenus(menu);
       menu.hidden = !menu.hidden;
       return;
@@ -635,6 +655,7 @@
       } else if (action === 'edit') {
         openAppEditor(app);
       } else if (action === 'github-upload') {
+        if (menu) menu.hidden = true;
         openGithubUploadUrl(app.githubUploadUrl);
       } else if (action === 'duplicate') {
         duplicateApp(app);
@@ -854,7 +875,7 @@
     const appData = {
       name: validation.name.slice(0, 48),
       url: validation.normalizedUrl,
-      githubUploadUrl: validation.githubUploadUrl,
+      githubUploadUrl: sanitizeGithubUploadUrl(validation.githubUploadUrl),
       description: dom.appDescriptionInput.value.trim().slice(0, 140),
       category,
       iconType: selectedIconType,
