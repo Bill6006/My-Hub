@@ -16,12 +16,34 @@ The URLs are stored in `js/app.js` inside the `DEFAULT_APPS` array.
 - Edit, duplicate, hide, delete, favorite, and reorder apps
 - Search and category filtering
 - Recently opened tracking
+- Optional GitHub upload shortcuts for individual apps
 - Light, dark, and system themes
 - JSON backup with merge and replace restore modes
 - Optional four-digit Management Lock for accidental-change protection
 - Installable Progressive Web App support
 - Offline loading of the Tyree Hub interface after the first successful visit
 - No accounts, analytics, advertisements, trackers, databases, or external APIs
+
+## GitHub upload shortcuts
+
+Each app can optionally store a separate GitHub upload-page URL. This is useful when you receive a replacement `index.html` or another updated project file.
+
+To add one:
+
+1. Open **Add app** or edit an existing app.
+2. Open the subtle **Developer shortcut** section.
+3. Paste the repository upload page, for example:
+
+```text
+https://github.com/bill6006/My-Hub/upload/main
+```
+
+4. Save the app.
+5. Enter **Manage** mode, open the app card's three-dot menu, and tap **Upload update**.
+
+The upload shortcut never appears on the normal Home dashboard. Apps without a valid shortcut show no upload action or empty placeholder.
+
+Tyree Hub only opens the saved GitHub page. It does not upload files automatically, store GitHub credentials, or use the GitHub API.
 
 ## Project structure
 
@@ -38,6 +60,7 @@ tyree-hub/
 │   ├── icon-192.png
 │   ├── icon-512.png
 │   └── maskable-icon-512.png
+├── ACCEPTANCE_REPORT.md
 └── README.md
 ```
 
@@ -64,23 +87,18 @@ npx serve .
 
 Open the local address shown in the terminal.
 
-## Upload to GitHub
+## Upload to the existing My-Hub repository
 
-1. Sign in to GitHub.
-2. Create a new public repository named `Tyree-Hub`.
-3. Open the repository.
-4. Choose **Add file**, then **Upload files**.
-5. Upload the contents of the `tyree-hub` folder. Upload the files and folders themselves, not a second outer folder.
-6. Commit the files.
-7. Open **Settings** in the repository.
-8. Open **Pages**.
-9. Under **Build and deployment**, choose **Deploy from a branch**.
-10. Select the `main` branch and the `/ (root)` folder.
-11. Save.
-12. After GitHub finishes publishing, open:
+1. Sign in to GitHub and open the `bill6006/My-Hub` repository.
+2. Upload project files into their matching repository locations.
+3. Keep `index.html`, `manifest.webmanifest`, and `sw.js` at the repository root.
+4. Keep `styles.css` inside `css/` and `app.js` inside `js/`.
+5. Commit the changes.
+6. Confirm GitHub Pages still publishes from `main` and `/ (root)`.
+7. Open:
 
 ```text
-https://bill6006.github.io/Tyree-Hub/
+https://bill6006.github.io/My-Hub/
 ```
 
 The app uses relative asset paths, so it works from a GitHub Pages project subfolder.
@@ -97,15 +115,17 @@ Chrome may also show an install option inside Tyree Hub Settings when the browse
 
 ## Backups
 
-Open **Settings**, then choose **Export backup**. Tyree Hub downloads a readable JSON file containing apps, order, favorites, hidden state, categories, recent-opened timestamps, and visual preferences.
+Open **Settings**, then choose **Export backup**. Tyree Hub downloads a readable JSON file containing apps, order, favorites, hidden state, categories, recent-opened timestamps, visual preferences, and valid GitHub upload shortcuts.
 
 Management Lock PIN data is intentionally not exported. Restored backups begin with Management Lock disabled so a backup cannot lock the user out with an unknown PIN.
 
 During import:
 
-- **Merge** adds apps whose URLs do not already exist.
+- **Merge** adds apps whose normal website URLs do not already exist.
 - **Replace** replaces the current hub with the backup.
 - Tyree Hub stores an automatic rollback copy before applying an import.
+- Older schema-1 backups remain valid and receive an empty GitHub shortcut field.
+- A malformed optional GitHub shortcut is ignored while the rest of that app is preserved.
 
 Keep exported backups somewhere safe when moving to a new phone or clearing browser storage.
 
@@ -116,6 +136,7 @@ Open `js/app.js` and locate `DEFAULT_APPS` near the top. Each default app includ
 - `id`
 - `name`
 - `url`
+- `githubUploadUrl`
 - `description`
 - `category`
 - `iconType`
@@ -152,12 +173,26 @@ Replace the PNG files in `icons/` while keeping the same dimensions and filename
 
 - The first visit must be online so the browser can download and cache Tyree Hub.
 - The hub interface can reopen offline after it has been cached.
-- Linked external websites still require their own network access unless those sites independently support offline use.
+- Linked external websites and GitHub upload pages still require network access.
 - Install wording varies by Android phone, Chrome version, and browser.
 - Data is local to the browser profile. Clearing site data or uninstalling without a backup can remove custom apps.
 - Management Lock is designed to prevent accidental changes. It is not encryption and includes a local reset option.
 
 ## Troubleshooting
+
+### The new GitHub shortcut feature does not appear
+
+1. Confirm the four updated app files were uploaded to their exact repository paths.
+2. Open Tyree Hub while online.
+3. Wait briefly for the update notice.
+4. Tap **Update now**, or fully close and reopen the installed app.
+5. Confirm `sw.js` contains cache version `tyree-hub-shell-v1.1.0`.
+
+### The Upload update action is missing
+
+- Confirm you are in **Manage** mode.
+- Edit the app and verify its Developer shortcut is a secure URL matching `https://github.com/OWNER/REPOSITORY/upload/BRANCH`.
+- Apps with a blank or invalid shortcut intentionally show no action.
 
 ### The install option does not appear
 

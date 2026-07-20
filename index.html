@@ -158,6 +158,25 @@
           <small class="field-error" id="appUrlError"></small>
         </label>
 
+        <details class="developer-shortcuts full-width" id="developerShortcutsDetails">
+          <summary>
+            <span class="developer-shortcuts-title"><span data-icon="upload" aria-hidden="true"></span>Developer shortcut</span>
+            <small>Optional GitHub upload page</small>
+          </summary>
+          <div class="developer-shortcuts-content">
+            <label class="field full-width">
+              <span>GitHub upload shortcut</span>
+              <input id="githubUploadUrlInput" type="url" inputmode="url" autocomplete="off" aria-describedby="githubUploadHelp githubUploadUrlError" placeholder="https://github.com/username/repository/upload/main">
+              <small class="field-help" id="githubUploadHelp">Optional. Add the GitHub page you use to upload replacement files for this app.</small>
+              <small class="field-error" id="githubUploadUrlError"></small>
+            </label>
+            <button class="secondary-button compact github-test-button" id="openGithubUploadButton" type="button" hidden>
+              <span data-icon="arrow-up-right" aria-hidden="true"></span>
+              Open upload page
+            </button>
+          </div>
+        </details>
+
         <label class="field full-width">
           <span>Short description</span>
           <textarea id="appDescriptionInput" maxlength="140" rows="3" placeholder="What do you use this app for?"></textarea>
@@ -440,6 +459,7 @@
         <button type="button" data-action="more" title="More actions"><span data-icon="more"></span><span class="sr-only">More actions</span></button>
       </div>
       <div class="card-more-menu" hidden>
+        <button type="button" data-action="github-upload" class="github-upload-action" hidden><span data-icon="upload"></span>Upload update</button>
         <button type="button" data-action="duplicate"><span data-icon="copy"></span>Duplicate</button>
         <button type="button" data-action="hide"><span data-icon="eye-off"></span><span class="hide-action-label">Hide</span></button>
         <button type="button" data-action="delete" class="danger-text"><span data-icon="trash"></span>Delete</button>

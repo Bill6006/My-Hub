@@ -1,149 +1,147 @@
-# Tyree Hub v1.0.0 Implementation and Acceptance Report
+# Tyree Hub v1.1.0 Implementation and Acceptance Report
 
 **Completion date:** July 20, 2026  
-**Data schema:** 1  
+**Data schema:** 2  
+**Service-worker cache:** `tyree-hub-shell-v1.1.0`  
 **Primary target:** Android mobile browser and installable PWA  
-**Hosting target:** GitHub Pages project site at `https://bill6006.github.io/Tyree-Hub/`
+**Hosting target:** `https://bill6006.github.io/My-Hub/`
 
-## Implementation summary
+## Update scope
 
-Tyree Hub is complete as a production-ready static web application using plain HTML, CSS, and JavaScript. It does not require a database, login, framework, CDN, paid service, analytics platform, or remote API.
+Version 1.1.0 adds optional per-app GitHub upload shortcuts without redesigning the existing dashboard or exposing development controls on the Home screen.
 
-The delivered project includes:
+Implemented behavior:
 
-- Modern mobile-first dashboard
-- Three exact default launcher URLs
-- Add and edit app form
-- Built-in library of 24 SVG icons
-- Emoji icons
-- Ten preset accent colors plus a custom color picker
-- Favorites
-- Categories and custom category names
-- Search across names, descriptions, and categories
-- Recently opened tracking
-- Hide and show controls
-- Duplicate and delete controls
-- Desktop drag-and-drop ordering
-- Touch-accessible Move Up and Move Down ordering
-- Light, dark, and system themes
-- Local data persistence
-- JSON export
-- JSON merge import
-- JSON replace import
-- Import validation and rollback storage
-- Restore Default Apps
-- Reset All Data confirmation phrase
-- Optional four-digit Management Lock
-- Local Management Lock recovery
-- First-launch introduction
-- Custom dialogs and toast feedback
-- PWA manifest
-- Offline app-shell service worker
-- Android installation instructions
-- Safe-area support
-- Reduced-motion support
-- Responsive layouts for phones, tablets, foldables, and desktop
+- A subtle collapsible **Developer shortcut** section appears in Add App and Edit App.
+- The optional field accepts secure GitHub repository upload pages.
+- A valid field reveals a restrained **Open upload page** test button.
+- Apps with a valid saved shortcut gain **Upload update** inside the existing Manage-mode three-dot menu.
+- Apps without a shortcut show no disabled button, icon, placeholder, or reserved space.
+- No upload shortcut appears on Home, Favorites, Recently Opened, normal search results, or bottom navigation.
+- Tyree Hub only opens the exact saved GitHub URL. It does not upload automatically or use GitHub credentials or APIs.
 
-## Exact default URL verification
+## URL validation
 
-The source includes each requested URL exactly once:
+Accepted shortcuts must:
 
-1. `https://chatgpt.com/share/6a5da21a-959c-83ea-94cc-076d41ea8854`
-2. `https://bill6006.github.io/Command-center/`
-3. `https://bill6006.github.io/Tailored-Training/index.html`
+- Use `https://`
+- Use the `github.com` hostname
+- Include an owner
+- Include a repository
+- Include `/upload/`
+- Include a branch name
+- Optionally include a folder path after the branch
 
-The Speech Coach and Life Command Center destinations responded through the external verification tool during the build. The Tailored Training URL was preserved exactly, but that external checker returned an internal fetch error, so no stronger live-availability claim is made for that destination.
+Example:
 
-## Automated browser checks
+```text
+https://github.com/bill6006/My-Hub/upload/main
+```
 
-The app was loaded in headless Chromium with mobile viewport emulation. Because the execution environment blocks direct browser navigation to local HTTP and file URLs by administrator policy, the same production HTML, CSS, and JavaScript were injected into the browser document for interface and logic testing. The PWA files were validated separately through static checks.
+Leading and trailing whitespace is removed. Repository owner, name, branch, capitalization, folder path, query string, and fragment are otherwise preserved.
 
-### Mobile interface checks
+## Data compatibility
 
-Passed at a 320-pixel viewport:
+The optional app property is:
 
-- Three default cards render
-- Default names are correct
-- First-launch dialog opens
-- No horizontal overflow
-- Add App dialog opens
-- 24 icon choices render
-- 10 preset color choices render
-- Domain-only URL `example.com` normalizes to `https://example.com/`
-- Added app persists to local storage
-- Edit Mode activates
-- Management controls render for all cards
-- Hidden app persists as hidden
-- Hidden app disappears after leaving Edit Mode
-- Search for `speech` returns only Speech Coach
-- App count changes to `1 app`
-- Dark theme applies and persists
-- No captured runtime errors
+```text
+githubUploadUrl
+```
 
-Passed at a 375-pixel viewport:
+Compatibility behavior passed:
 
-- No horizontal overflow
-- Dashboard remains touch-friendly
-- Bottom navigation remains within the viewport
-- Search, filters, hero, and cards remain usable
+- Existing schema-1 local data migrates to schema 2.
+- Existing app names, normal URLs, ordering, favorites, hidden state, categories, timestamps, theme, and lock data remain intact.
+- Missing `githubUploadUrl` values become an empty string.
+- Duplicating an app copies its valid shortcut.
+- Clearing the field removes the Manage action.
+- Restoring defaults remains functional.
+- Exported backups include valid shortcuts.
+- Schema-1 backups without the property import successfully.
+- Schema-2 backups restore valid shortcuts.
+- Malformed optional shortcuts are stripped while the related app is preserved.
+- Import preview warns about malformed optional shortcuts.
+- Rollback storage is still created before import.
 
-### Backup and data checks
+## Management Lock
+
+The GitHub action is a management function and follows the existing Management Lock behavior.
 
 Passed:
 
-- Export creates a human-readable JSON document
-- Export filename uses `tyree-hub-backup-YYYY-MM-DD.json`
-- Export identifies itself as `tyree-hub-backup`
-- Export includes all current apps
-- Management Lock PIN data is excluded
-- Import preview reports apps, custom apps, and categories
-- Merge import adds a unique URL
-- Merge import skips URL duplicates by design
-- Automatic rollback data is created before import
-- Imported data persists
-- Management Lock accepts a four-digit PIN
-- Stored lock data does not contain the raw PIN
-- Hash output is 64 hexadecimal characters
-- Management Lock recovery resets the lock without deleting apps
-- No captured runtime errors
+- A new locked session requests the PIN before Manage mode opens.
+- Management controls remain unavailable until unlocked.
+- Upload shortcuts remain unavailable while locked.
+- Normal Home launching remains unaffected.
 
-### Static checks
+## Mobile and interaction testing
+
+Automated Chromium interface tests passed at:
+
+- 320px
+- 360px
+- 375px
+- 412px
+
+Passed checks include:
+
+- No horizontal overflow
+- Developer shortcut field fits inside the sheet
+- Valid link saves successfully
+- Exact GitHub URL is preserved
+- Open upload page action targets the exact saved URL
+- Home contains no visible upload action
+- Only qualifying Manage cards show Upload update
+- App without shortcut shows no action
+- Invalid non-GitHub URL receives inline validation
+- Invalid value does not save
+- Duplicate preserves shortcut
+- Clearing shortcut removes action
+- No captured JavaScript runtime errors
+
+A total of **72 automated functional and compatibility assertions** passed across the primary and extended test runs.
+
+## Backup testing
 
 Passed:
 
-- JavaScript syntax validation
-- Service-worker syntax validation
+- Exported JSON uses schema 2.
+- Export includes `githubUploadUrl` for applicable apps.
+- Older schema-1 backup imports successfully.
+- New schema-2 backup restores the shortcut.
+- Invalid optional shortcut produces a warning.
+- Invalid optional shortcut alone is removed.
+- Remaining app data is preserved.
+- Automatic rollback data is created.
+
+## Static checks
+
+Passed:
+
+- `js/app.js` JavaScript syntax validation
+- `sw.js` JavaScript syntax validation
 - Manifest JSON validation
 - No duplicate HTML IDs
-- No root-relative project asset paths
-- All manifest icon files exist
-- All service-worker app-shell files exist
-- All three default URLs are exact
-- No TODO, FIXME, lorem ipsum, or placeholder-function markers
+- Required project assets exist
+- Relative project asset paths remain intact
+- Service-worker cache version was advanced
+- External GitHub pages are not included in the app-shell cache
+- No default app was assigned an inferred GitHub repository URL
 
-## PWA behavior
+## Files changed in v1.1.0
 
-The service worker caches only same-origin Tyree Hub shell assets. It does not intercept or cache the external launcher destinations. Navigation uses a network-first strategy with an offline `index.html` fallback. Local assets use cached responses with background network refresh. Old named caches are removed during activation.
+- `index.html`
+- `css/styles.css`
+- `js/app.js`
+- `sw.js`
+- `README.md`
+- `ACCEPTANCE_REPORT.md`
+- `SHA256SUMS.txt`
 
-A waiting service worker triggers an in-app update banner. Choosing **Update now** sends a `SKIP_WAITING` message and reloads after the new worker takes control.
-
-## Privacy and storage
-
-Tyree Hub stores app records, preferences, categories, ordering, favorite status, hidden status, recent-open timestamps, onboarding state, and optional lock hash in the browser's local storage.
-
-No application data is transmitted by Tyree Hub. Opening a launcher naturally sends the user to that destination website, which has its own privacy behavior.
-
-## Known platform limitations
-
-- The first successful online visit is required before offline shell loading can work.
-- External launcher destinations require their own internet connectivity unless they independently support offline use.
-- Android decides whether a web URL opens in a native app or browser.
-- Browser storage can be erased by clearing site data or uninstalling without a backup.
-- Management Lock is accidental-change protection, not encryption.
-- PWA install wording and prompting vary by browser and Android device.
+No icon or manifest changes were required.
 
 ## Deployment readiness
 
 **Status: PASS**
 
-The project is ready to upload to a GitHub repository named `Tyree-Hub` and publish from the repository root through GitHub Pages.
+The update is ready for the existing `bill6006/My-Hub` GitHub Pages repository.
