@@ -48,6 +48,7 @@ button{cursor:pointer}
 .filterbar{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin:7px 0 9px;flex-wrap:wrap}.filterbar label{color:var(--muted);font-size:11px;font-weight:800}.filterbar select{border:1px solid #2c4051;background:#101923;color:#e7f0f7;border-radius:9px;padding:7px 28px 7px 9px;font-weight:850;max-width:210px}
 .filterCheck{display:flex;align-items:center;gap:7px;border:1px solid #2c4051;background:#101923;color:#dfe9f2;border-radius:9px;padding:7px 9px;font-weight:850;font-size:11px}.filterCheck input{width:16px;height:16px;accent-color:var(--mint)}
 .reviewBtns{display:flex;gap:4px;align-items:center}.reviewBtn{width:31px;height:31px;border:1px solid #294151;background:#0d151e;border-radius:8px;display:grid;place-items:center;font-size:15px;line-height:1;padding:0}.reviewBtn.good.active{background:#123527;border-color:#2b8f64}.reviewBtn.bad.active{background:#3a1820;border-color:#9b4556}.reviewBtn.clear{font-size:13px;color:var(--muted)}.articleMark{color:var(--warn);font-size:9px;font-weight:900;margin-left:5px}
+.ratingRow{display:flex;gap:5px;align-items:center;margin-top:6px;min-width:0}.ratingRow select{min-width:0;max-width:145px;border:1px solid #294151;background:#0a1118;color:#dce7ef;border-radius:8px;padding:5px 24px 5px 7px;font-size:10.5px;font-weight:800}.ratingRow select[data-outcome-domain]{max-width:118px}.seedMark{color:var(--cyan);font-size:8.5px;font-weight:900;margin-left:5px}
 .existing{color:var(--mint);font-weight:800}
 .status{display:none;margin:14px 0 10px;border:1px solid var(--line);background:rgba(13,20,28,.88);border-radius:13px;padding:11px 12px}
 .status.show{display:block}.statusline{display:flex;gap:9px;align-items:center;justify-content:space-between}.status strong{font-size:13px}.meta{color:var(--muted);font-size:11px;margin-top:4px}.spinner{width:13px;height:13px;border:2px solid #334758;border-top-color:var(--mint);border-radius:50%;animation:spin .8s linear infinite;display:inline-block;vertical-align:-2px;margin-right:6px}@keyframes spin{to{transform:rotate(360deg)}}
@@ -123,6 +124,8 @@ button{cursor:pointer}
         <div class="filterbar">
           <label class="filterCheck"><input id="searchHideArticles" type="checkbox"> Hide article/blog pages</label>
           <label for="searchReviewFilter">Review</label><select id="searchReviewFilter"><option value="all">All</option><option value="green">✅ Green</option><option value="red">❌ Red</option><option value="unmarked">Unmarked</option></select>
+          <label for="searchOutcomeFilter">Outcome</label><select id="searchOutcomeFilter"><option value="all">All outcomes</option><option value="approved">✅ Approved/refunded</option><option value="rejected">❌ Rejected/denied</option><option value="unrated">Unrated</option></select>
+          <label for="searchDifficultyFilter">Rating</label><select id="searchDifficultyFilter"><option value="all">All ratings</option><option value="super_easy">Super Easy</option><option value="very_easy">Very Easy</option><option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard</option><option value="very_hard">Very Hard</option><option value="unrated">Unrated approved</option></select>
           <label for="searchCountryFilter">Country</label><select id="searchCountryFilter"><option value="all">All countries</option><option value="us">🇺🇸 US-focused</option><option value="us-tld">🇺🇸 .us only (strict)</option></select>
         </div>
         <div id="searchResults" class="results"></div>
@@ -149,6 +152,8 @@ button{cursor:pointer}
         <div class="filterbar">
           <label class="filterCheck"><input id="foundHideArticles" type="checkbox"> Hide article/blog pages</label>
           <label for="foundReviewFilter">Review</label><select id="foundReviewFilter"><option value="all">All</option><option value="green">✅ Green</option><option value="red">❌ Red</option><option value="unmarked">Unmarked</option></select>
+          <label for="foundOutcomeFilter">Outcome</label><select id="foundOutcomeFilter"><option value="all">All outcomes</option><option value="approved">✅ Approved/refunded</option><option value="rejected">❌ Rejected/denied</option><option value="unrated">Unrated</option></select>
+          <label for="foundDifficultyFilter">Rating</label><select id="foundDifficultyFilter"><option value="all">All ratings</option><option value="super_easy">Super Easy</option><option value="very_easy">Very Easy</option><option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard</option><option value="very_hard">Very Hard</option><option value="unrated">Unrated approved</option></select>
           <label for="foundCountryFilter">Country</label><select id="foundCountryFilter"><option value="all">All countries</option><option value="us">🇺🇸 US-focused</option><option value="us-tld">🇺🇸 .us only (strict)</option></select>
         </div>
         <div class="pager"><button id="foundPrev" type="button">← Prev</button><span id="foundPageInfo"></span><button id="foundNext" type="button">Next →</button></div>
@@ -189,8 +194,8 @@ const $ = id => document.getElementById(id);
 const els = {
   tabSearch:$('tabSearch'),tabFound:$('tabFound'),searchPanel:$('searchPanel'),foundPanel:$('foundPanel'),
   form:$('searchForm'),query:$('query'),anyText1:$('anyText1'),anyText2:$('anyText2'),searchBtn:$('searchBtn'),stopBtn:$('stopBtn'),status:$('status'),statusMain:$('statusMain'),statusMeta:$('statusMeta'),errorBox:$('errorBox'),existingHint:$('existingHint'),usSearchOnly:$('usSearchOnly'),
-  searchViewer:$('searchViewer'),searchTopicTitle:$('searchTopicTitle'),searchTopicMeta:$('searchTopicMeta'),searchPageInfo:$('searchPageInfo'),searchRunInfo:$('searchRunInfo'),searchResults:$('searchResults'),searchPrev:$('searchPrev'),searchNext:$('searchNext'),searchEmpty:$('searchEmpty'),searchCountryFilter:$('searchCountryFilter'),searchHideArticles:$('searchHideArticles'),searchReviewFilter:$('searchReviewFilter'),
-  topicList:$('topicList'),topicBadge:$('topicBadge'),globalCount:$('globalCount'),foundViewer:$('foundViewer'),foundTopicTitle:$('foundTopicTitle'),foundTopicMeta:$('foundTopicMeta'),foundPageInfo:$('foundPageInfo'),foundResults:$('foundResults'),foundPrev:$('foundPrev'),foundNext:$('foundNext'),continueBtn:$('continueBtn'),exportTopicBtn:$('exportTopicBtn'),deleteTopicBtn:$('deleteTopicBtn'),foundCountryFilter:$('foundCountryFilter'),foundHideArticles:$('foundHideArticles'),foundReviewFilter:$('foundReviewFilter'),
+  searchViewer:$('searchViewer'),searchTopicTitle:$('searchTopicTitle'),searchTopicMeta:$('searchTopicMeta'),searchPageInfo:$('searchPageInfo'),searchRunInfo:$('searchRunInfo'),searchResults:$('searchResults'),searchPrev:$('searchPrev'),searchNext:$('searchNext'),searchEmpty:$('searchEmpty'),searchCountryFilter:$('searchCountryFilter'),searchHideArticles:$('searchHideArticles'),searchReviewFilter:$('searchReviewFilter'),searchOutcomeFilter:$('searchOutcomeFilter'),searchDifficultyFilter:$('searchDifficultyFilter'),
+  topicList:$('topicList'),topicBadge:$('topicBadge'),globalCount:$('globalCount'),foundViewer:$('foundViewer'),foundTopicTitle:$('foundTopicTitle'),foundTopicMeta:$('foundTopicMeta'),foundPageInfo:$('foundPageInfo'),foundResults:$('foundResults'),foundPrev:$('foundPrev'),foundNext:$('foundNext'),continueBtn:$('continueBtn'),exportTopicBtn:$('exportTopicBtn'),deleteTopicBtn:$('deleteTopicBtn'),foundCountryFilter:$('foundCountryFilter'),foundHideArticles:$('foundHideArticles'),foundReviewFilter:$('foundReviewFilter'),foundOutcomeFilter:$('foundOutcomeFilter'),foundDifficultyFilter:$('foundDifficultyFilter'),
   exportLinksBtn:$('exportLinksBtn'),exportBtn:$('exportBtn'),importFile:$('importFile'),toast:$('toast'),creditCounter:$('creditCounter')
 };
 
@@ -205,8 +210,10 @@ let newDomainsThisRun = new Set();
 let countryFilter = db.settings?.countryFilter || 'all';
 let hideArticles = !!db.settings?.hideArticles;
 let reviewFilter = db.settings?.reviewFilter || 'all';
+let outcomeFilter = db.settings?.outcomeFilter || 'all';
+let difficultyFilter = db.settings?.difficultyFilter || 'all';
 
-function emptyDB(){ return {version:4, topics:{}, settings:{countryFilter:'all',usSearchOnly:false,estimatedCredits:2400,hideArticles:false,reviewFilter:'all',reviews:{}}}; }
+function emptyDB(){ return {version:4, topics:{}, settings:{countryFilter:'all',usSearchOnly:false,estimatedCredits:2400,hideArticles:false,reviewFilter:'all',reviews:{},outcomeFilter:'all',difficultyFilter:'all',domainRatings:{},notesSeedVersion:0}}; }
 function loadDB(){
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -218,6 +225,10 @@ function loadDB(){
     if(typeof parsed.settings.hideArticles!=='boolean') parsed.settings.hideArticles=false;
     if(!['all','green','red','unmarked'].includes(parsed.settings.reviewFilter)) parsed.settings.reviewFilter='all';
     if(!parsed.settings.reviews || typeof parsed.settings.reviews!=='object') parsed.settings.reviews={};
+    if(!['all','approved','rejected','unrated'].includes(parsed.settings.outcomeFilter)) parsed.settings.outcomeFilter='all';
+    if(!['all','super_easy','very_easy','easy','medium','hard','very_hard','unrated'].includes(parsed.settings.difficultyFilter)) parsed.settings.difficultyFilter='all';
+    if(!parsed.settings.domainRatings || typeof parsed.settings.domainRatings!=='object') parsed.settings.domainRatings={};
+    if(typeof parsed.settings.notesSeedVersion!=='number') parsed.settings.notesSeedVersion=0;
     if(!['all','us','us-tld'].includes(parsed.settings.countryFilter)) parsed.settings.countryFilter='all';
     for (const t of Object.values(parsed.topics)) {
       if(t && !Array.isArray(t.anyTerms)) t.anyTerms=[];
@@ -305,6 +316,96 @@ function isUSFocusedDomain(domain){
   // Keep generic/global domains (.com, .org, .net, .co, .io, etc.) and remove obvious foreign country-code domains.
   return !FOREIGN_CC.has(tld);
 }
+const DIFFICULTY_LABELS={super_easy:'Super Easy',very_easy:'Very Easy',easy:'Easy',medium:'Medium',hard:'Hard',very_hard:'Very Hard'};
+const NOTE_SEED_RULES=[
+  {a:['newbalance'],o:'rejected'},
+  {a:['nordstrom'],o:'approved'},
+  {a:['academy','academysports'],o:'rejected'},
+  {a:['vivobarefoot'],o:'approved',d:'easy'},
+  {a:['frontrunnerathletics'],o:'rejected'},
+  {a:['dickssportinggoods'],o:'approved'},
+  {a:['zappos'],o:'approved',d:'super_easy'},
+  {a:['timberland'],o:'approved',d:'super_easy'},
+  {a:['sunandski'],o:'approved',d:'easy'},
+  {a:['adidas'],o:'approved'},
+  {a:['amberjack'],o:'approved',d:'medium'},
+  {a:['shiekh'],o:'approved',d:'hard'},
+  {a:['champssports','champs'],o:'approved'},
+  {a:['jdsports'],o:'approved'},
+  {a:['nike'],o:'approved'},
+  {a:['finishline'],o:'approved'},
+  {a:['marathonsports'],o:'approved',d:'medium'},
+  {a:['highcountryoutfitters'],o:'approved',d:'hard'},
+  {x:['als.com'],o:'approved'},
+  {a:['runninglab'],o:'rejected'},
+  {a:['tylers'],o:'approved',d:'easy'},
+  {a:['desmoinesshoes'],o:'approved',d:'hard'},
+  {a:['footlocker'],o:'rejected'},
+  {a:['scheels'],o:'approved',d:'medium'},
+  {a:['shopbop'],o:'approved',d:'easy'},
+  {a:['fleetfeet'],o:'approved',d:'medium'},
+  {x:['on.com'],o:'rejected'},
+  {a:['holabirdsports'],o:'approved',d:'easy'},
+  {a:['backcountry'],o:'approved',d:'easy'},
+  {a:['bloomingdales'],o:'approved',d:'very_easy'},
+  {a:['halfmoonoutfitters','halfmoon'],o:'approved',d:'hard'},
+  {a:['wholeearthprovision'],o:'rejected'},
+  {a:['peterglenn'],o:'approved',d:'medium'},
+  {a:['roadrunnersports'],o:'approved',d:'easy'},
+  {a:['tradehome'],o:'rejected'},
+  {a:['saintbernard'],o:'rejected'},
+  {a:['englinsfinefootwear','englins'],o:'rejected'},
+  {a:['peltzshoes'],o:'approved',d:'hard'},
+  {a:['mastgeneralstore'],o:'approved',d:'easy'},
+  {a:['backpackeroutdoors'],o:'rejected'},
+  {a:['fwrd'],o:'approved',d:'very_easy'},
+  {a:['lebos'],o:'approved',d:'medium'},
+  {a:['shoptheshark'],o:'approved',d:'very_easy'},
+  {a:['lukeslocker'],o:'approved',d:'super_easy'},
+  {a:['freepeople'],o:'approved',d:'easy'}
+];
+function canonicalHost(domain){return String(domain||'').toLowerCase().replace(/^www\./,'').replace(/\.$/,'');}
+function flatHost(domain){return canonicalHost(domain).replace(/[^a-z0-9]/g,'');}
+function seedForDomain(domain){
+  const host=canonicalHost(domain),flat=flatHost(domain);
+  for(const r of NOTE_SEED_RULES){
+    if(r.x?.includes(host)) return r;
+    if(r.a?.some(a=>flat.includes(String(a).replace(/[^a-z0-9]/g,'')))) return r;
+  }
+  return null;
+}
+function domainRating(domain){
+  db.settings=db.settings||{}; db.settings.domainRatings=db.settings.domainRatings||{};
+  return db.settings.domainRatings[canonicalHost(domain)] || {outcome:'',difficulty:'',source:''};
+}
+function ensureSeedRatingForDomain(domain){
+  db.settings=db.settings||{}; db.settings.domainRatings=db.settings.domainRatings||{};
+  const key=canonicalHost(domain);
+  if(Object.prototype.hasOwnProperty.call(db.settings.domainRatings,key)) return false;
+  const seed=seedForDomain(domain); if(!seed)return false;
+  db.settings.domainRatings[key]={outcome:seed.o||'',difficulty:seed.o==='approved'?(seed.d||''):'',source:'notes'};
+  return true;
+}
+function applySeedRatings(){
+  let n=0;
+  for(const t of Object.values(db.topics||{})) for(const r of (t.results||[])) if(r?.domain&&ensureSeedRatingForDomain(r.domain))n++;
+  if(n){db.settings.notesSeedVersion=1;saveDB();}
+  return n;
+}
+function setDomainOutcome(domain,outcome){
+  db.settings=db.settings||{}; db.settings.domainRatings=db.settings.domainRatings||{};
+  const key=canonicalHost(domain),old=domainRating(domain);
+  const valid=['','approved','rejected'].includes(outcome)?outcome:'';
+  db.settings.domainRatings[key]={outcome:valid,difficulty:valid==='approved'?(old.difficulty||''):'',source:'manual'};
+  saveDB();renderSearchTopic();renderFoundViewer();
+}
+function setDomainDifficulty(domain,difficulty){
+  db.settings=db.settings||{}; db.settings.domainRatings=db.settings.domainRatings||{};
+  const valid=['','super_easy','very_easy','easy','medium','hard','very_hard'].includes(difficulty)?difficulty:'';
+  const key=canonicalHost(domain),old=domainRating(domain);
+  db.settings.domainRatings[key]={outcome:valid?'approved':(old.outcome||''),difficulty:valid,source:'manual'};
+  saveDB();renderSearchTopic();renderFoundViewer();
+}
 function isArticleLike(r){
   const url=String(r?.url||'').toLowerCase();
   const title=String(r?.title||'').toLowerCase();
@@ -338,6 +439,16 @@ function filteredResults(topic){
   if(reviewFilter==='green') rows=rows.filter(r=>reviewStatus(r.domain)==='green');
   else if(reviewFilter==='red') rows=rows.filter(r=>reviewStatus(r.domain)==='red');
   else if(reviewFilter==='unmarked') rows=rows.filter(r=>!reviewStatus(r.domain));
+  if(outcomeFilter==='approved') rows=rows.filter(r=>domainRating(r.domain).outcome==='approved');
+  else if(outcomeFilter==='rejected') rows=rows.filter(r=>domainRating(r.domain).outcome==='rejected');
+  else if(outcomeFilter==='unrated') rows=rows.filter(r=>!domainRating(r.domain).outcome);
+  if(difficultyFilter!=='all'){
+    rows=rows.filter(r=>{
+      const x=domainRating(r.domain);
+      if(x.outcome!=='approved')return false;
+      return difficultyFilter==='unrated'?!x.difficulty:x.difficulty===difficultyFilter;
+    });
+  }
   return rows;
 }
 function quoted(q){ return `"${q.replace(/"/g,'')}"`; }
@@ -434,6 +545,7 @@ function addOrganic(topic, organic, plan, usOnly=false){
     if(usOnly && !usFocused) continue;
     known.add(domain);
     topic.results.push({domain,url:item.link,title:item.title||'',snippet:item.snippet||'',foundAt:Date.now(),sourceGl:plan?.gl||'',usFocused});
+    ensureSeedRatingForDomain(domain);
     newDomainsThisRun.add(domain); added++;
   }
   if(added){ topic.updatedAt=Date.now(); }
@@ -502,15 +614,31 @@ function renderResultList(container, topic, page, pageInfoEl, prevBtn, nextBtn){
   if(!topic || !topic.results.length){ pageInfoEl.textContent='0 results'; prevBtn.disabled=true; nextBtn.disabled=true; return 1; }
   const rows=filteredResults(topic);
   if(!rows.length){
-    const label=countryFilter==='us-tld'?'.us':'US-focused';
-    pageInfoEl.textContent=`0 ${label} results • ${topic.results.length} total`; prevBtn.disabled=true; nextBtn.disabled=true;
-    container.innerHTML=`<div class="empty">No ${label} domains in this saved topic yet.</div>`; return 1;
+    pageInfoEl.textContent=`0 matching results • ${topic.results.length} total`; prevBtn.disabled=true; nextBtn.disabled=true;
+    container.innerHTML='<div class="empty">No domains match the current filters.</div>'; return 1;
   }
   const pages=Math.max(1,Math.ceil(rows.length/RESULTS_PER_VIEW)); page=Math.min(Math.max(1,page),pages);
   const start=(page-1)*RESULTS_PER_VIEW, slice=rows.slice(start,start+RESULTS_PER_VIEW);
   container.innerHTML=slice.map((r,i)=>{ const review=reviewStatus(r.domain); const article=isArticleLike(r); return `<article class="result">
     <div class="rank">${start+i+1}</div>
-    <div class="resultMain"><div class="domain">${esc(r.domain)}${newDomainsThisRun.has(r.domain)?'<span class="newmark">NEW</span>':''}${article?'<span class="articleMark">ARTICLE?</span>':''}</div><div class="rtitle">${esc(r.title||r.url)}</div></div>
+    <div class="resultMain"><div class="domain">${esc(r.domain)}${newDomainsThisRun.has(r.domain)?'<span class="newmark">NEW</span>':''}${article?'<span class="articleMark">ARTICLE?</span>':''}${domainRating(r.domain).source==='notes'?'<span class="seedMark">FROM NOTES</span>':''}</div><div class="rtitle">${esc(r.title||r.url)}</div>
+      <div class="ratingRow">
+        <select data-outcome-domain="${esc(r.domain)}" aria-label="Outcome for ${esc(r.domain)}">
+          <option value="" ${domainRating(r.domain).outcome===''?'selected':''}>— Outcome</option>
+          <option value="approved" ${domainRating(r.domain).outcome==='approved'?'selected':''}>✅ Approved</option>
+          <option value="rejected" ${domainRating(r.domain).outcome==='rejected'?'selected':''}>❌ Rejected</option>
+        </select>
+        <select data-difficulty-domain="${esc(r.domain)}" aria-label="Difficulty rating for ${esc(r.domain)}">
+          <option value="" ${domainRating(r.domain).difficulty===''?'selected':''}>— Rating</option>
+          <option value="super_easy" ${domainRating(r.domain).difficulty==='super_easy'?'selected':''}>Super Easy</option>
+          <option value="very_easy" ${domainRating(r.domain).difficulty==='very_easy'?'selected':''}>Very Easy</option>
+          <option value="easy" ${domainRating(r.domain).difficulty==='easy'?'selected':''}>Easy</option>
+          <option value="medium" ${domainRating(r.domain).difficulty==='medium'?'selected':''}>Medium</option>
+          <option value="hard" ${domainRating(r.domain).difficulty==='hard'?'selected':''}>Hard</option>
+          <option value="very_hard" ${domainRating(r.domain).difficulty==='very_hard'?'selected':''}>Very Hard</option>
+        </select>
+      </div>
+    </div>
     <div class="reviewBtns">
       <button type="button" class="reviewBtn good ${review==='green'?'active':''}" data-review="green" data-domain="${esc(r.domain)}" title="Mark good">✓</button>
       <button type="button" class="reviewBtn bad ${review==='red'?'active':''}" data-review="red" data-domain="${esc(r.domain)}" title="Mark bad">✕</button>
@@ -519,7 +647,10 @@ function renderResultList(container, topic, page, pageInfoEl, prevBtn, nextBtn){
     </div>
   </article>`;}).join('');
   container.querySelectorAll('[data-review]').forEach(btn=>btn.addEventListener('click',()=>setReviewStatus(btn.dataset.domain,btn.dataset.review)));
-  const suffix=countryFilter==='all'?'':` • ${topic.results.length} total`;
+  container.querySelectorAll('[data-outcome-domain]').forEach(sel=>sel.addEventListener('change',()=>setDomainOutcome(sel.dataset.outcomeDomain,sel.value)));
+  container.querySelectorAll('[data-difficulty-domain]').forEach(sel=>sel.addEventListener('change',()=>setDomainDifficulty(sel.dataset.difficultyDomain,sel.value)));
+  const anyFilter=countryFilter!=='all'||hideArticles||reviewFilter!=='all'||outcomeFilter!=='all'||difficultyFilter!=='all';
+  const suffix=anyFilter?` • ${topic.results.length} total`:'';
   pageInfoEl.textContent=`${start+1}–${Math.min(start+RESULTS_PER_VIEW,rows.length)} of ${rows.length}${suffix} • page ${page}/${pages}`;
   prevBtn.disabled=page<=1; nextBtn.disabled=page>=pages; return page;
 }
@@ -603,6 +734,22 @@ els.searchHideArticles.addEventListener('change',()=>setArticleFilter(els.search
 els.foundHideArticles.addEventListener('change',()=>setArticleFilter(els.foundHideArticles.checked));
 els.searchReviewFilter.addEventListener('change',()=>setReviewFilter(els.searchReviewFilter.value));
 els.foundReviewFilter.addEventListener('change',()=>setReviewFilter(els.foundReviewFilter.value));
+function setOutcomeFilter(v){
+  outcomeFilter=['all','approved','rejected','unrated'].includes(v)?v:'all';
+  db.settings=db.settings||{};db.settings.outcomeFilter=outcomeFilter;saveDB();
+  els.searchOutcomeFilter.value=outcomeFilter;els.foundOutcomeFilter.value=outcomeFilter;
+  searchPage=1;foundPage=1;renderSearchTopic();renderFoundViewer();
+}
+function setDifficultyFilter(v){
+  difficultyFilter=['all','super_easy','very_easy','easy','medium','hard','very_hard','unrated'].includes(v)?v:'all';
+  db.settings=db.settings||{};db.settings.difficultyFilter=difficultyFilter;saveDB();
+  els.searchDifficultyFilter.value=difficultyFilter;els.foundDifficultyFilter.value=difficultyFilter;
+  searchPage=1;foundPage=1;renderSearchTopic();renderFoundViewer();
+}
+els.searchOutcomeFilter.addEventListener('change',()=>setOutcomeFilter(els.searchOutcomeFilter.value));
+els.foundOutcomeFilter.addEventListener('change',()=>setOutcomeFilter(els.foundOutcomeFilter.value));
+els.searchDifficultyFilter.addEventListener('change',()=>setDifficultyFilter(els.searchDifficultyFilter.value));
+els.foundDifficultyFilter.addEventListener('change',()=>setDifficultyFilter(els.foundDifficultyFilter.value));
 els.usSearchOnly.addEventListener('change',()=>{db.settings=db.settings||{};db.settings.usSearchOnly=els.usSearchOnly.checked;saveDB();});
 els.creditCounter.addEventListener('click',()=>{
   const current=Math.max(0,Math.floor(db.settings?.estimatedCredits ?? 2400));
@@ -616,10 +763,10 @@ els.creditCounter.addEventListener('click',()=>{
 function csvCell(v){ const s=String(v??''); return /[",\n\r]/.test(s)?`"${s.replace(/"/g,'""')}"`:s; }
 function safeFilePart(v){ return String(v||'search').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,50)||'search'; }
 function exportLinksCSV(topics, filename){
-  const lines=[['Search topic','Must also contain (OR)','Domain','Review','Article-like','Direct page link'].map(csvCell).join(',')];
+  const lines=[['Search topic','Must also contain (OR)','Domain','Review','Outcome','Rating','Article-like','Direct page link'].map(csvCell).join(',')];
   for(const t of topics){
     const crit=displayAnyTerms(t).join(' OR ');
-    for(const r of (t.results||[])) lines.push([t.query,crit,r.domain,reviewStatus(r.domain)||'',isArticleLike(r)?'yes':'',r.url].map(csvCell).join(','));
+    for(const r of (t.results||[])){const dr=domainRating(r.domain);lines.push([t.query,crit,r.domain,reviewStatus(r.domain)||'',dr.outcome||'',DIFFICULTY_LABELS[dr.difficulty]||'',isArticleLike(r)?'yes':'',r.url].map(csvCell).join(','));}
   }
   const bom='\ufeff'; const blob=new Blob([bom+lines.join('\r\n')],{type:'text/csv;charset=utf-8'});
   const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1200);
@@ -647,6 +794,8 @@ els.importFile.addEventListener('change',async()=>{
 try{navigator.storage?.persist?.();}catch{}
 els.searchCountryFilter.value=countryFilter; els.foundCountryFilter.value=countryFilter; els.usSearchOnly.checked=!!db.settings?.usSearchOnly;
 els.searchHideArticles.checked=hideArticles; els.foundHideArticles.checked=hideArticles; els.searchReviewFilter.value=reviewFilter; els.foundReviewFilter.value=reviewFilter;
+els.searchOutcomeFilter.value=outcomeFilter; els.foundOutcomeFilter.value=outcomeFilter; els.searchDifficultyFilter.value=difficultyFilter; els.foundDifficultyFilter.value=difficultyFilter;
+applySeedRatings();
 renderTopics();updateGlobalCounts();updateExistingHint();updateCreditCounter();
 })();
 </script>
