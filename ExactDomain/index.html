@@ -125,7 +125,7 @@ button{cursor:pointer}
           <label class="filterCheck"><input id="searchHideArticles" type="checkbox"> Hide article/blog pages</label>
           <label for="searchReviewFilter">Review</label><select id="searchReviewFilter"><option value="all">All</option><option value="green">✅ Green</option><option value="red">❌ Red</option><option value="unmarked">Unmarked</option></select>
           <label for="searchOutcomeFilter">Outcome</label><select id="searchOutcomeFilter"><option value="all">All outcomes</option><option value="approved">✅ Approved/refunded</option><option value="rejected">❌ Rejected/denied</option><option value="unrated">Unrated</option></select>
-          <label for="searchDifficultyFilter">Rating</label><select id="searchDifficultyFilter"><option value="all">All ratings</option><option value="super_easy">Super Easy</option><option value="very_easy">Very Easy</option><option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard</option><option value="very_hard">Very Hard</option><option value="unrated">Unrated approved</option></select>
+          <label for="searchDifficultyFilter">Rating</label><select id="searchDifficultyFilter"><option value="all">All ratings</option><option value="very_easy">Very Easy</option><option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard</option><option value="very_hard">Very Hard</option><option value="unrated">Unrated approved</option></select>
           <label for="searchCountryFilter">Country</label><select id="searchCountryFilter"><option value="all">All countries</option><option value="us">🇺🇸 US-focused</option><option value="us-tld">🇺🇸 .us only (strict)</option></select>
         </div>
         <div id="searchResults" class="results"></div>
@@ -153,7 +153,7 @@ button{cursor:pointer}
           <label class="filterCheck"><input id="foundHideArticles" type="checkbox"> Hide article/blog pages</label>
           <label for="foundReviewFilter">Review</label><select id="foundReviewFilter"><option value="all">All</option><option value="green">✅ Green</option><option value="red">❌ Red</option><option value="unmarked">Unmarked</option></select>
           <label for="foundOutcomeFilter">Outcome</label><select id="foundOutcomeFilter"><option value="all">All outcomes</option><option value="approved">✅ Approved/refunded</option><option value="rejected">❌ Rejected/denied</option><option value="unrated">Unrated</option></select>
-          <label for="foundDifficultyFilter">Rating</label><select id="foundDifficultyFilter"><option value="all">All ratings</option><option value="super_easy">Super Easy</option><option value="very_easy">Very Easy</option><option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard</option><option value="very_hard">Very Hard</option><option value="unrated">Unrated approved</option></select>
+          <label for="foundDifficultyFilter">Rating</label><select id="foundDifficultyFilter"><option value="all">All ratings</option><option value="very_easy">Very Easy</option><option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard</option><option value="very_hard">Very Hard</option><option value="unrated">Unrated approved</option></select>
           <label for="foundCountryFilter">Country</label><select id="foundCountryFilter"><option value="all">All countries</option><option value="us">🇺🇸 US-focused</option><option value="us-tld">🇺🇸 .us only (strict)</option></select>
         </div>
         <div class="pager"><button id="foundPrev" type="button">← Prev</button><span id="foundPageInfo"></span><button id="foundNext" type="button">Next →</button></div>
@@ -226,8 +226,9 @@ function loadDB(){
     if(!['all','green','red','unmarked'].includes(parsed.settings.reviewFilter)) parsed.settings.reviewFilter='all';
     if(!parsed.settings.reviews || typeof parsed.settings.reviews!=='object') parsed.settings.reviews={};
     if(!['all','approved','rejected','unrated'].includes(parsed.settings.outcomeFilter)) parsed.settings.outcomeFilter='all';
-    if(!['all','super_easy','very_easy','easy','medium','hard','very_hard','unrated'].includes(parsed.settings.difficultyFilter)) parsed.settings.difficultyFilter='all';
+    if(!['all','very_easy','easy','medium','hard','very_hard','unrated'].includes(parsed.settings.difficultyFilter)) parsed.settings.difficultyFilter='all';
     if(!parsed.settings.domainRatings || typeof parsed.settings.domainRatings!=='object') parsed.settings.domainRatings={};
+    for(const v of Object.values(parsed.settings.domainRatings)){ if(v?.difficulty==='super_easy') v.difficulty='very_easy'; }
     if(typeof parsed.settings.notesSeedVersion!=='number') parsed.settings.notesSeedVersion=0;
     if(!['all','us','us-tld'].includes(parsed.settings.countryFilter)) parsed.settings.countryFilter='all';
     for (const t of Object.values(parsed.topics)) {
@@ -316,7 +317,7 @@ function isUSFocusedDomain(domain){
   // Keep generic/global domains (.com, .org, .net, .co, .io, etc.) and remove obvious foreign country-code domains.
   return !FOREIGN_CC.has(tld);
 }
-const DIFFICULTY_LABELS={super_easy:'Super Easy',very_easy:'Very Easy',easy:'Easy',medium:'Medium',hard:'Hard',very_hard:'Very Hard'};
+const DIFFICULTY_LABELS={super_easy:'Very Easy',very_easy:'Very Easy',easy:'Easy',medium:'Medium',hard:'Hard',very_hard:'Very Hard'};
 const NOTE_SEED_RULES=[
   {a:['newbalance'],o:'rejected'},
   {a:['nordstrom'],o:'approved'},
@@ -324,8 +325,8 @@ const NOTE_SEED_RULES=[
   {a:['vivobarefoot'],o:'approved',d:'easy'},
   {a:['frontrunnerathletics'],o:'rejected'},
   {a:['dickssportinggoods'],o:'approved'},
-  {a:['zappos'],o:'approved',d:'super_easy'},
-  {a:['timberland'],o:'approved',d:'super_easy'},
+  {a:['zappos'],o:'approved',d:'very_easy'},
+  {a:['timberland'],o:'approved',d:'very_easy'},
   {a:['sunandski'],o:'approved',d:'easy'},
   {a:['adidas'],o:'approved'},
   {a:['amberjack'],o:'approved',d:'medium'},
@@ -361,7 +362,7 @@ const NOTE_SEED_RULES=[
   {a:['fwrd'],o:'approved',d:'very_easy'},
   {a:['lebos'],o:'approved',d:'medium'},
   {a:['shoptheshark'],o:'approved',d:'very_easy'},
-  {a:['lukeslocker'],o:'approved',d:'super_easy'},
+  {a:['lukeslocker'],o:'approved',d:'very_easy'},
   {a:['freepeople'],o:'approved',d:'easy'}
 ];
 function canonicalHost(domain){return String(domain||'').toLowerCase().replace(/^www\./,'').replace(/\.$/,'');}
@@ -401,7 +402,8 @@ function setDomainOutcome(domain,outcome){
 }
 function setDomainDifficulty(domain,difficulty){
   db.settings=db.settings||{}; db.settings.domainRatings=db.settings.domainRatings||{};
-  const valid=['','super_easy','very_easy','easy','medium','hard','very_hard'].includes(difficulty)?difficulty:'';
+  const normalized=difficulty==='super_easy'?'very_easy':difficulty;
+  const valid=['','very_easy','easy','medium','hard','very_hard'].includes(normalized)?normalized:'';
   const key=canonicalHost(domain),old=domainRating(domain);
   db.settings.domainRatings[key]={outcome:valid?'approved':(old.outcome||''),difficulty:valid,source:'manual'};
   saveDB();renderSearchTopic();renderFoundViewer();
@@ -446,7 +448,9 @@ function filteredResults(topic){
     rows=rows.filter(r=>{
       const x=domainRating(r.domain);
       if(x.outcome!=='approved')return false;
-      return difficultyFilter==='unrated'?!x.difficulty:x.difficulty===difficultyFilter;
+      if(difficultyFilter==='unrated') return !x.difficulty;
+      if(difficultyFilter==='very_easy') return x.difficulty==='very_easy'||x.difficulty==='super_easy';
+      return x.difficulty===difficultyFilter;
     });
   }
   return rows;
@@ -630,8 +634,7 @@ function renderResultList(container, topic, page, pageInfoEl, prevBtn, nextBtn){
         </select>
         <select data-difficulty-domain="${esc(r.domain)}" aria-label="Difficulty rating for ${esc(r.domain)}">
           <option value="" ${domainRating(r.domain).difficulty===''?'selected':''}>— Rating</option>
-          <option value="super_easy" ${domainRating(r.domain).difficulty==='super_easy'?'selected':''}>Super Easy</option>
-          <option value="very_easy" ${domainRating(r.domain).difficulty==='very_easy'?'selected':''}>Very Easy</option>
+          <option value="very_easy" ${['very_easy','super_easy'].includes(domainRating(r.domain).difficulty)?'selected':''}>Very Easy</option>
           <option value="easy" ${domainRating(r.domain).difficulty==='easy'?'selected':''}>Easy</option>
           <option value="medium" ${domainRating(r.domain).difficulty==='medium'?'selected':''}>Medium</option>
           <option value="hard" ${domainRating(r.domain).difficulty==='hard'?'selected':''}>Hard</option>
@@ -741,7 +744,7 @@ function setOutcomeFilter(v){
   searchPage=1;foundPage=1;renderSearchTopic();renderFoundViewer();
 }
 function setDifficultyFilter(v){
-  difficultyFilter=['all','super_easy','very_easy','easy','medium','hard','very_hard','unrated'].includes(v)?v:'all';
+  difficultyFilter=['all','very_easy','easy','medium','hard','very_hard','unrated'].includes(v)?v:'all';
   db.settings=db.settings||{};db.settings.difficultyFilter=difficultyFilter;saveDB();
   els.searchDifficultyFilter.value=difficultyFilter;els.foundDifficultyFilter.value=difficultyFilter;
   searchPage=1;foundPage=1;renderSearchTopic();renderFoundViewer();
@@ -796,6 +799,7 @@ els.searchCountryFilter.value=countryFilter; els.foundCountryFilter.value=countr
 els.searchHideArticles.checked=hideArticles; els.foundHideArticles.checked=hideArticles; els.searchReviewFilter.value=reviewFilter; els.foundReviewFilter.value=reviewFilter;
 els.searchOutcomeFilter.value=outcomeFilter; els.foundOutcomeFilter.value=outcomeFilter; els.searchDifficultyFilter.value=difficultyFilter; els.foundDifficultyFilter.value=difficultyFilter;
 applySeedRatings();
+saveDB();
 renderTopics();updateGlobalCounts();updateExistingHint();updateCreditCounter();
 })();
 </script>
