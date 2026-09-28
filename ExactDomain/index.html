@@ -45,14 +45,16 @@ button{cursor:pointer}
 .danger{border-color:#5b3139;color:#ffb5c0}
 .searchhint{display:flex;justify-content:space-between;gap:8px;align-items:center;color:var(--muted2);font-size:11px;padding:8px 3px 0;flex-wrap:wrap}
 .countrySearch{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:10px 2px 0;padding:9px 10px;border:1px solid var(--line);background:rgba(13,20,28,.72);border-radius:11px}.countrySearch label{display:flex;align-items:center;gap:8px;font-weight:850;color:#dfe9f2}.countrySearch input{width:18px;height:18px;accent-color:var(--mint)}.countrySearch small{color:var(--muted);font-size:10.5px}
-.filterbar{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin:7px 0 9px}.filterbar label{color:var(--muted);font-size:11px;font-weight:800}.filterbar select{border:1px solid #2c4051;background:#101923;color:#e7f0f7;border-radius:9px;padding:7px 28px 7px 9px;font-weight:850;max-width:210px}
+.filterbar{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin:7px 0 9px;flex-wrap:wrap}.filterbar label{color:var(--muted);font-size:11px;font-weight:800}.filterbar select{border:1px solid #2c4051;background:#101923;color:#e7f0f7;border-radius:9px;padding:7px 28px 7px 9px;font-weight:850;max-width:210px}
+.filterCheck{display:flex;align-items:center;gap:7px;border:1px solid #2c4051;background:#101923;color:#dfe9f2;border-radius:9px;padding:7px 9px;font-weight:850;font-size:11px}.filterCheck input{width:16px;height:16px;accent-color:var(--mint)}
+.reviewBtns{display:flex;gap:4px;align-items:center}.reviewBtn{width:31px;height:31px;border:1px solid #294151;background:#0d151e;border-radius:8px;display:grid;place-items:center;font-size:15px;line-height:1;padding:0}.reviewBtn.good.active{background:#123527;border-color:#2b8f64}.reviewBtn.bad.active{background:#3a1820;border-color:#9b4556}.reviewBtn.clear{font-size:13px;color:var(--muted)}.articleMark{color:var(--warn);font-size:9px;font-weight:900;margin-left:5px}
 .existing{color:var(--mint);font-weight:800}
 .status{display:none;margin:14px 0 10px;border:1px solid var(--line);background:rgba(13,20,28,.88);border-radius:13px;padding:11px 12px}
 .status.show{display:block}.statusline{display:flex;gap:9px;align-items:center;justify-content:space-between}.status strong{font-size:13px}.meta{color:var(--muted);font-size:11px;margin-top:4px}.spinner{width:13px;height:13px;border:2px solid #334758;border-top-color:var(--mint);border-radius:50%;animation:spin .8s linear infinite;display:inline-block;vertical-align:-2px;margin-right:6px}@keyframes spin{to{transform:rotate(360deg)}}
 .toolbar{display:flex;gap:7px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin:13px 0 8px}.topicTitle{min-width:0}.topicTitle strong{display:block;font-size:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:70vw}.topicTitle span{color:var(--muted);font-size:11px}.toolbuttons{display:flex;gap:6px}
 .pager{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:8px 0}.pager span{font-size:11px;color:var(--muted)}.pager button{border:1px solid var(--line);background:#0e1620;color:var(--text);border-radius:9px;padding:7px 10px;font-weight:800}.pager button:disabled{opacity:.35}
 .results{display:grid;gap:6px}
-.result{display:grid;grid-template-columns:31px minmax(0,1fr) 34px;gap:9px;align-items:center;border:1px solid var(--line);background:linear-gradient(180deg,#101923,#0c131b);border-radius:12px;padding:8px 9px;min-height:58px}
+.result{display:grid;grid-template-columns:31px minmax(0,1fr) auto;gap:9px;align-items:center;border:1px solid var(--line);background:linear-gradient(180deg,#101923,#0c131b);border-radius:12px;padding:8px 9px;min-height:58px}
 .rank{width:29px;height:29px;border:1px solid #294151;border-radius:9px;display:grid;place-items:center;color:var(--mint);font-weight:900;font-size:11px;font-variant-numeric:tabular-nums}.resultMain{min-width:0}.domain{font-weight:900;color:#e5eef6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:13px}.rtitle{color:#94a7b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:11.5px;margin-top:2px}.open{width:34px;height:34px;display:grid;place-items:center;border:1px solid #294151;border-radius:9px;color:var(--cyan);text-decoration:none;font-size:16px;font-weight:900}.newmark{color:var(--mint);font-size:9px;font-weight:900;margin-left:5px}
 .empty{border:1px dashed var(--line);border-radius:13px;color:var(--muted);padding:25px;text-align:center;margin-top:10px}
 .err{display:none;border:1px solid #593039;background:#1a1015;color:#ffc2cb;padding:12px;border-radius:12px;margin:10px 0}.err.show{display:block}
@@ -118,7 +120,11 @@ button{cursor:pointer}
           <div class="toolbuttons"><button id="searchPrev" class="secondary" type="button">← Prev</button><button id="searchNext" class="secondary" type="button">Next →</button></div>
         </div>
         <div class="pager"><span id="searchPageInfo"></span><span id="searchRunInfo"></span></div>
-        <div class="filterbar"><label for="searchCountryFilter">Country filter</label><select id="searchCountryFilter"><option value="all">All countries</option><option value="us">🇺🇸 US-focused</option><option value="us-tld">🇺🇸 .us only (strict)</option></select></div>
+        <div class="filterbar">
+          <label class="filterCheck"><input id="searchHideArticles" type="checkbox"> Hide article/blog pages</label>
+          <label for="searchReviewFilter">Review</label><select id="searchReviewFilter"><option value="all">All</option><option value="green">✅ Green</option><option value="red">❌ Red</option><option value="unmarked">Unmarked</option></select>
+          <label for="searchCountryFilter">Country</label><select id="searchCountryFilter"><option value="all">All countries</option><option value="us">🇺🇸 US-focused</option><option value="us-tld">🇺🇸 .us only (strict)</option></select>
+        </div>
         <div id="searchResults" class="results"></div>
       </div>
       <div id="searchEmpty" class="empty" style="display:none">No domains saved for this topic yet.</div>
@@ -140,7 +146,11 @@ button{cursor:pointer}
           <div class="topicTitle"><strong id="foundTopicTitle"></strong><span id="foundTopicMeta"></span></div>
           <div class="toolbuttons"><button id="continueBtn" class="secondary" type="button">Continue search</button><button id="exportTopicBtn" class="secondary" type="button">Export CSV</button><button id="deleteTopicBtn" class="secondary danger" type="button">Delete</button></div>
         </div>
-        <div class="filterbar"><label for="foundCountryFilter">Country filter</label><select id="foundCountryFilter"><option value="all">All countries</option><option value="us">🇺🇸 US-focused</option><option value="us-tld">🇺🇸 .us only (strict)</option></select></div>
+        <div class="filterbar">
+          <label class="filterCheck"><input id="foundHideArticles" type="checkbox"> Hide article/blog pages</label>
+          <label for="foundReviewFilter">Review</label><select id="foundReviewFilter"><option value="all">All</option><option value="green">✅ Green</option><option value="red">❌ Red</option><option value="unmarked">Unmarked</option></select>
+          <label for="foundCountryFilter">Country</label><select id="foundCountryFilter"><option value="all">All countries</option><option value="us">🇺🇸 US-focused</option><option value="us-tld">🇺🇸 .us only (strict)</option></select>
+        </div>
         <div class="pager"><button id="foundPrev" type="button">← Prev</button><span id="foundPageInfo"></span><button id="foundNext" type="button">Next →</button></div>
         <div id="foundResults" class="results"></div>
       </div>
@@ -179,8 +189,8 @@ const $ = id => document.getElementById(id);
 const els = {
   tabSearch:$('tabSearch'),tabFound:$('tabFound'),searchPanel:$('searchPanel'),foundPanel:$('foundPanel'),
   form:$('searchForm'),query:$('query'),anyText1:$('anyText1'),anyText2:$('anyText2'),searchBtn:$('searchBtn'),stopBtn:$('stopBtn'),status:$('status'),statusMain:$('statusMain'),statusMeta:$('statusMeta'),errorBox:$('errorBox'),existingHint:$('existingHint'),usSearchOnly:$('usSearchOnly'),
-  searchViewer:$('searchViewer'),searchTopicTitle:$('searchTopicTitle'),searchTopicMeta:$('searchTopicMeta'),searchPageInfo:$('searchPageInfo'),searchRunInfo:$('searchRunInfo'),searchResults:$('searchResults'),searchPrev:$('searchPrev'),searchNext:$('searchNext'),searchEmpty:$('searchEmpty'),searchCountryFilter:$('searchCountryFilter'),
-  topicList:$('topicList'),topicBadge:$('topicBadge'),globalCount:$('globalCount'),foundViewer:$('foundViewer'),foundTopicTitle:$('foundTopicTitle'),foundTopicMeta:$('foundTopicMeta'),foundPageInfo:$('foundPageInfo'),foundResults:$('foundResults'),foundPrev:$('foundPrev'),foundNext:$('foundNext'),continueBtn:$('continueBtn'),exportTopicBtn:$('exportTopicBtn'),deleteTopicBtn:$('deleteTopicBtn'),foundCountryFilter:$('foundCountryFilter'),
+  searchViewer:$('searchViewer'),searchTopicTitle:$('searchTopicTitle'),searchTopicMeta:$('searchTopicMeta'),searchPageInfo:$('searchPageInfo'),searchRunInfo:$('searchRunInfo'),searchResults:$('searchResults'),searchPrev:$('searchPrev'),searchNext:$('searchNext'),searchEmpty:$('searchEmpty'),searchCountryFilter:$('searchCountryFilter'),searchHideArticles:$('searchHideArticles'),searchReviewFilter:$('searchReviewFilter'),
+  topicList:$('topicList'),topicBadge:$('topicBadge'),globalCount:$('globalCount'),foundViewer:$('foundViewer'),foundTopicTitle:$('foundTopicTitle'),foundTopicMeta:$('foundTopicMeta'),foundPageInfo:$('foundPageInfo'),foundResults:$('foundResults'),foundPrev:$('foundPrev'),foundNext:$('foundNext'),continueBtn:$('continueBtn'),exportTopicBtn:$('exportTopicBtn'),deleteTopicBtn:$('deleteTopicBtn'),foundCountryFilter:$('foundCountryFilter'),foundHideArticles:$('foundHideArticles'),foundReviewFilter:$('foundReviewFilter'),
   exportLinksBtn:$('exportLinksBtn'),exportBtn:$('exportBtn'),importFile:$('importFile'),toast:$('toast'),creditCounter:$('creditCounter')
 };
 
@@ -193,8 +203,10 @@ let searchPage = 1;
 let foundPage = 1;
 let newDomainsThisRun = new Set();
 let countryFilter = db.settings?.countryFilter || 'all';
+let hideArticles = !!db.settings?.hideArticles;
+let reviewFilter = db.settings?.reviewFilter || 'all';
 
-function emptyDB(){ return {version:4, topics:{}, settings:{countryFilter:'all',usSearchOnly:false,estimatedCredits:2400}}; }
+function emptyDB(){ return {version:4, topics:{}, settings:{countryFilter:'all',usSearchOnly:false,estimatedCredits:2400,hideArticles:false,reviewFilter:'all',reviews:{}}}; }
 function loadDB(){
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -203,6 +215,9 @@ function loadDB(){
     if (!parsed || typeof parsed !== 'object' || !parsed.topics) return emptyDB();
     parsed.settings = parsed.settings || {countryFilter:'all',usSearchOnly:false,estimatedCredits:2400};
     if(typeof parsed.settings.estimatedCredits!=='number' || !Number.isFinite(parsed.settings.estimatedCredits)) parsed.settings.estimatedCredits=2400;
+    if(typeof parsed.settings.hideArticles!=='boolean') parsed.settings.hideArticles=false;
+    if(!['all','green','red','unmarked'].includes(parsed.settings.reviewFilter)) parsed.settings.reviewFilter='all';
+    if(!parsed.settings.reviews || typeof parsed.settings.reviews!=='object') parsed.settings.reviews={};
     if(!['all','us','us-tld'].includes(parsed.settings.countryFilter)) parsed.settings.countryFilter='all';
     for (const t of Object.values(parsed.topics)) {
       if(t && !Array.isArray(t.anyTerms)) t.anyTerms=[];
@@ -290,10 +305,39 @@ function isUSFocusedDomain(domain){
   // Keep generic/global domains (.com, .org, .net, .co, .io, etc.) and remove obvious foreign country-code domains.
   return !FOREIGN_CC.has(tld);
 }
+function isArticleLike(r){
+  const url=String(r?.url||'').toLowerCase();
+  const title=String(r?.title||'').toLowerCase();
+  const snippet=String(r?.snippet||'').toLowerCase();
+  const pathSignals=[
+    '/blog/','/blogs/','/news/','/article/','/articles/','/story/','/stories/','/magazine/',
+    '/journal/','/editorial/','/press/','/features/','/feature/','/learn/','/guides/','/guide/',
+    '/reviews/','/review/','/insights/','/advice/','/tips/'
+  ];
+  if(pathSignals.some(s=>url.includes(s))) return true;
+  if(/\/20\d{2}\/(0?[1-9]|1[0-2])\//.test(url)) return true;
+  const text=title+' '+snippet;
+  const phraseSignals=[
+    'how to ','what is ','why ','guide to ','buying guide','review:',' review ','reviews of ',
+    'best ','top 10','top 5','news','article','story','editorial','we tested','our picks',
+    'everything you need to know','explained'
+  ];
+  return phraseSignals.some(s=>text.includes(s));
+}
+function reviewStatus(domain){ return db.settings?.reviews?.[domain] || ''; }
+function setReviewStatus(domain,status){
+  db.settings=db.settings||{}; db.settings.reviews=db.settings.reviews||{};
+  if(status) db.settings.reviews[domain]=status; else delete db.settings.reviews[domain];
+  saveDB(); renderSearchTopic(); renderFoundViewer();
+}
 function filteredResults(topic){
-  const rows=topic?.results||[];
-  if(countryFilter==='us-tld') return rows.filter(r=>tldOf(r.domain)==='us');
-  if(countryFilter==='us') return rows.filter(r=>r.usFocused===true || (r.usFocused!==false && isUSFocusedDomain(r.domain)));
+  let rows=[...(topic?.results||[])];
+  if(countryFilter==='us-tld') rows=rows.filter(r=>tldOf(r.domain)==='us');
+  else if(countryFilter==='us') rows=rows.filter(r=>r.usFocused===true || (r.usFocused!==false && isUSFocusedDomain(r.domain)));
+  if(hideArticles) rows=rows.filter(r=>!isArticleLike(r));
+  if(reviewFilter==='green') rows=rows.filter(r=>reviewStatus(r.domain)==='green');
+  else if(reviewFilter==='red') rows=rows.filter(r=>reviewStatus(r.domain)==='red');
+  else if(reviewFilter==='unmarked') rows=rows.filter(r=>!reviewStatus(r.domain));
   return rows;
 }
 function quoted(q){ return `"${q.replace(/"/g,'')}"`; }
@@ -464,11 +508,17 @@ function renderResultList(container, topic, page, pageInfoEl, prevBtn, nextBtn){
   }
   const pages=Math.max(1,Math.ceil(rows.length/RESULTS_PER_VIEW)); page=Math.min(Math.max(1,page),pages);
   const start=(page-1)*RESULTS_PER_VIEW, slice=rows.slice(start,start+RESULTS_PER_VIEW);
-  container.innerHTML=slice.map((r,i)=>`<article class="result">
+  container.innerHTML=slice.map((r,i)=>{ const review=reviewStatus(r.domain); const article=isArticleLike(r); return `<article class="result">
     <div class="rank">${start+i+1}</div>
-    <div class="resultMain"><div class="domain">${esc(r.domain)}${newDomainsThisRun.has(r.domain)?'<span class="newmark">NEW</span>':''}</div><div class="rtitle">${esc(r.title||r.url)}</div></div>
-    <a class="open" href="${esc(r.url)}" target="_blank" rel="noopener noreferrer" aria-label="Open ${esc(r.domain)}">↗</a>
-  </article>`).join('');
+    <div class="resultMain"><div class="domain">${esc(r.domain)}${newDomainsThisRun.has(r.domain)?'<span class="newmark">NEW</span>':''}${article?'<span class="articleMark">ARTICLE?</span>':''}</div><div class="rtitle">${esc(r.title||r.url)}</div></div>
+    <div class="reviewBtns">
+      <button type="button" class="reviewBtn good ${review==='green'?'active':''}" data-review="green" data-domain="${esc(r.domain)}" title="Mark good">✓</button>
+      <button type="button" class="reviewBtn bad ${review==='red'?'active':''}" data-review="red" data-domain="${esc(r.domain)}" title="Mark bad">✕</button>
+      <button type="button" class="reviewBtn clear" data-review="" data-domain="${esc(r.domain)}" title="Clear mark">•</button>
+      <a class="open" href="${esc(r.url)}" target="_blank" rel="noopener noreferrer" aria-label="Open ${esc(r.domain)}">↗</a>
+    </div>
+  </article>`;}).join('');
+  container.querySelectorAll('[data-review]').forEach(btn=>btn.addEventListener('click',()=>setReviewStatus(btn.dataset.domain,btn.dataset.review)));
   const suffix=countryFilter==='all'?'':` • ${topic.results.length} total`;
   pageInfoEl.textContent=`${start+1}–${Math.min(start+RESULTS_PER_VIEW,rows.length)} of ${rows.length}${suffix} • page ${page}/${pages}`;
   prevBtn.disabled=page<=1; nextBtn.disabled=page>=pages; return page;
@@ -538,6 +588,21 @@ function setCountryFilter(value){
 }
 els.searchCountryFilter.addEventListener('change',()=>setCountryFilter(els.searchCountryFilter.value));
 els.foundCountryFilter.addEventListener('change',()=>setCountryFilter(els.foundCountryFilter.value));
+function setArticleFilter(v){
+  hideArticles=!!v; db.settings=db.settings||{}; db.settings.hideArticles=hideArticles; saveDB();
+  els.searchHideArticles.checked=hideArticles; els.foundHideArticles.checked=hideArticles;
+  searchPage=1; foundPage=1; renderSearchTopic(); renderFoundViewer();
+}
+function setReviewFilter(v){
+  reviewFilter=['all','green','red','unmarked'].includes(v)?v:'all';
+  db.settings=db.settings||{}; db.settings.reviewFilter=reviewFilter; saveDB();
+  els.searchReviewFilter.value=reviewFilter; els.foundReviewFilter.value=reviewFilter;
+  searchPage=1; foundPage=1; renderSearchTopic(); renderFoundViewer();
+}
+els.searchHideArticles.addEventListener('change',()=>setArticleFilter(els.searchHideArticles.checked));
+els.foundHideArticles.addEventListener('change',()=>setArticleFilter(els.foundHideArticles.checked));
+els.searchReviewFilter.addEventListener('change',()=>setReviewFilter(els.searchReviewFilter.value));
+els.foundReviewFilter.addEventListener('change',()=>setReviewFilter(els.foundReviewFilter.value));
 els.usSearchOnly.addEventListener('change',()=>{db.settings=db.settings||{};db.settings.usSearchOnly=els.usSearchOnly.checked;saveDB();});
 els.creditCounter.addEventListener('click',()=>{
   const current=Math.max(0,Math.floor(db.settings?.estimatedCredits ?? 2400));
@@ -551,10 +616,10 @@ els.creditCounter.addEventListener('click',()=>{
 function csvCell(v){ const s=String(v??''); return /[",\n\r]/.test(s)?`"${s.replace(/"/g,'""')}"`:s; }
 function safeFilePart(v){ return String(v||'search').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,50)||'search'; }
 function exportLinksCSV(topics, filename){
-  const lines=[['Search topic','Must also contain (OR)','Domain','Direct page link'].map(csvCell).join(',')];
+  const lines=[['Search topic','Must also contain (OR)','Domain','Review','Article-like','Direct page link'].map(csvCell).join(',')];
   for(const t of topics){
     const crit=displayAnyTerms(t).join(' OR ');
-    for(const r of (t.results||[])) lines.push([t.query,crit,r.domain,r.url].map(csvCell).join(','));
+    for(const r of (t.results||[])) lines.push([t.query,crit,r.domain,reviewStatus(r.domain)||'',isArticleLike(r)?'yes':'',r.url].map(csvCell).join(','));
   }
   const bom='\ufeff'; const blob=new Blob([bom+lines.join('\r\n')],{type:'text/csv;charset=utf-8'});
   const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1200);
@@ -581,6 +646,7 @@ els.importFile.addEventListener('change',async()=>{
 
 try{navigator.storage?.persist?.();}catch{}
 els.searchCountryFilter.value=countryFilter; els.foundCountryFilter.value=countryFilter; els.usSearchOnly.checked=!!db.settings?.usSearchOnly;
+els.searchHideArticles.checked=hideArticles; els.foundHideArticles.checked=hideArticles; els.searchReviewFilter.value=reviewFilter; els.foundReviewFilter.value=reviewFilter;
 renderTopics();updateGlobalCounts();updateExistingHint();updateCreditCounter();
 })();
 </script>
