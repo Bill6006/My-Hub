@@ -48,7 +48,7 @@ button{cursor:pointer}
 .filterbar{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin:7px 0 9px;flex-wrap:wrap}.filterbar label{color:var(--muted);font-size:11px;font-weight:800}.filterbar select{border:1px solid #2c4051;background:#101923;color:#e7f0f7;border-radius:9px;padding:7px 28px 7px 9px;font-weight:850;max-width:210px}
 .filterCheck{display:flex;align-items:center;gap:7px;border:1px solid #2c4051;background:#101923;color:#dfe9f2;border-radius:9px;padding:7px 9px;font-weight:850;font-size:11px}.filterCheck input{width:16px;height:16px;accent-color:var(--mint)}
 .reviewBtns{display:flex;gap:4px;align-items:center}.reviewBtn{width:31px;height:31px;border:1px solid #294151;background:#0d151e;border-radius:8px;display:grid;place-items:center;font-size:15px;line-height:1;padding:0}.reviewBtn.good.active{background:#123527;border-color:#2b8f64}.reviewBtn.bad.active{background:#3a1820;border-color:#9b4556}.reviewBtn.clear{font-size:13px;color:var(--muted)}.articleMark{color:var(--warn);font-size:9px;font-weight:900;margin-left:5px}
-.ratingRow{display:flex;gap:5px;align-items:center;margin-top:6px;min-width:0}.ratingRow select{min-width:0;max-width:145px;border:1px solid #294151;background:#0a1118;color:#dce7ef;border-radius:8px;padding:5px 24px 5px 7px;font-size:10.5px;font-weight:800}.ratingRow select[data-outcome-domain]{max-width:118px}.seedMark{color:var(--cyan);font-size:8.5px;font-weight:900;margin-left:5px}
+.ratingRow{display:flex;gap:5px;align-items:center;margin-top:6px;min-width:0}.ratingRow select{min-width:0;max-width:145px;border:1px solid #294151;background:#0a1118;color:#dce7ef;border-radius:8px;padding:5px 24px 5px 7px;font-size:10.5px;font-weight:800}.ratingRow select[data-outcome-domain]{max-width:118px}.seedMark{color:var(--cyan);font-size:8.5px;font-weight:900;margin-left:5px}.manualMark{color:var(--warn);font-size:8.5px;font-weight:900;margin-left:5px}
 .existing{color:var(--mint);font-weight:800}
 .status{display:none;margin:14px 0 10px;border:1px solid var(--line);background:rgba(13,20,28,.88);border-radius:13px;padding:11px 12px}
 .status.show{display:block}.statusline{display:flex;gap:9px;align-items:center;justify-content:space-between}.status strong{font-size:13px}.meta{color:var(--muted);font-size:11px;margin-top:4px}.spinner{width:13px;height:13px;border:2px solid #334758;border-top-color:var(--mint);border-radius:50%;animation:spin .8s linear infinite;display:inline-block;vertical-align:-2px;margin-right:6px}@keyframes spin{to{transform:rotate(360deg)}}
@@ -213,7 +213,7 @@ let reviewFilter = db.settings?.reviewFilter || 'all';
 let outcomeFilter = db.settings?.outcomeFilter || 'all';
 let difficultyFilter = db.settings?.difficultyFilter || 'all';
 
-function emptyDB(){ return {version:4, topics:{}, settings:{countryFilter:'all',usSearchOnly:false,estimatedCredits:2400,hideArticles:false,reviewFilter:'all',reviews:{},outcomeFilter:'all',difficultyFilter:'all',domainRatings:{},notesSeedVersion:0}}; }
+function emptyDB(){ return {version:4, topics:{}, settings:{countryFilter:'all',usSearchOnly:false,estimatedCredits:2400,hideArticles:false,reviewFilter:'all',reviews:{},outcomeFilter:'all',difficultyFilter:'all',domainRatings:{},notesSeedVersion:0,manualKnownSeedVersion:0}}; }
 function loadDB(){
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -230,6 +230,7 @@ function loadDB(){
     if(!parsed.settings.domainRatings || typeof parsed.settings.domainRatings!=='object') parsed.settings.domainRatings={};
     for(const v of Object.values(parsed.settings.domainRatings)){ if(v?.difficulty==='super_easy') v.difficulty='very_easy'; }
     if(typeof parsed.settings.notesSeedVersion!=='number') parsed.settings.notesSeedVersion=0;
+    if(typeof parsed.settings.manualKnownSeedVersion!=='number') parsed.settings.manualKnownSeedVersion=0;
     if(!['all','us','us-tld'].includes(parsed.settings.countryFilter)) parsed.settings.countryFilter='all';
     for (const t of Object.values(parsed.topics)) {
       if(t && !Array.isArray(t.anyTerms)) t.anyTerms=[];
@@ -408,6 +409,51 @@ function setDomainDifficulty(domain,difficulty){
   db.settings.domainRatings[key]={outcome:valid?'approved':(old.outcome||''),difficulty:valid,source:'manual'};
   saveDB();renderSearchTopic();renderFoundViewer();
 }
+const MANUAL_KNOWN_DOMAINS=[
+  {domain:'timberland.com',url:'https://www.timberland.com/',name:'Timberland',outcome:'approved',difficulty:'very_easy'},
+  {domain:'shoptheshark.com',url:'https://shoptheshark.com/',name:'ShopTheShark',outcome:'approved',difficulty:'very_easy'},
+  {domain:'lukeslocker.com',url:'https://lukeslocker.com/',name:"Luke's Locker",outcome:'approved',difficulty:'very_easy'},
+  {domain:'vivobarefoot.com',url:'https://www.vivobarefoot.com/us/',name:'Vivobarefoot',outcome:'approved',difficulty:'easy'},
+  {domain:'sunandski.com',url:'https://www.sunandski.com/',name:'Sun & Ski Sports',outcome:'approved',difficulty:'easy'},
+  {domain:'tylerstx.com',url:'https://www.tylerstx.com/',name:"TYLER'S",outcome:'approved',difficulty:'easy'},
+  {domain:'backcountry.com',url:'https://www.backcountry.com/',name:'Backcountry',outcome:'approved',difficulty:'easy'},
+  {domain:'mastgeneralstore.com',url:'https://www.mastgeneralstore.com/',name:'Mast General Store',outcome:'approved',difficulty:'easy'},
+  {domain:'freepeople.com',url:'https://www.freepeople.com/',name:'Free People',outcome:'approved',difficulty:'easy'},
+  {domain:'amberjack.shop',url:'https://www.amberjack.shop/',name:'Amberjack',outcome:'approved',difficulty:'medium'},
+  {domain:'lebos.com',url:'https://lebos.com/',name:"Lebo's",outcome:'approved',difficulty:'medium'},
+  {domain:'shiekh.com',url:'https://www.shiekh.com/',name:'Shiekh',outcome:'approved',difficulty:'hard'},
+  {domain:'highcountryoutfitters.com',url:'https://highcountryoutfitters.com/',name:'High Country Outfitters',outcome:'approved',difficulty:'hard'},
+  {domain:'peltzshoes.com',url:'https://www.peltzshoes.com/',name:'Peltz Shoes',outcome:'approved',difficulty:'hard'},
+  {domain:'adidas.com',url:'https://www.adidas.com/us/',name:'Adidas',outcome:'approved',difficulty:''},
+  {domain:'champssports.com',url:'https://www.champssports.com/',name:'Champs Sports',outcome:'approved',difficulty:''},
+  {domain:'nike.com',url:'https://www.nike.com/',name:'Nike',outcome:'approved',difficulty:''},
+  {domain:'newbalance.com',url:'https://www.newbalance.com/',name:'New Balance',outcome:'rejected',difficulty:''},
+  {domain:'academy.com',url:'https://www.academy.com/',name:'Academy Sports + Outdoors',outcome:'rejected',difficulty:''},
+  {domain:'frontrunnerathletics.com',url:'https://frontrunnerathletics.com/',name:'Front Runner Athletics',outcome:'rejected',difficulty:''},
+  {domain:'runninglabstore.com',url:'https://runninglabstore.com/',name:'Running Lab',outcome:'rejected',difficulty:''},
+  {domain:'wholeearthprovision.com',url:'https://www.wholeearthprovision.com/',name:'Whole Earth Provision',outcome:'rejected',difficulty:''},
+  {domain:'saintbernard.com',url:'https://www.saintbernard.com/',name:'Saint Bernard',outcome:'rejected',difficulty:''},
+  {domain:'backpackeroutdoors.com',url:'https://backpackeroutdoors.com/',name:'Backpacker Outdoors',outcome:'rejected',difficulty:''}
+];
+function injectManualKnownDomains(){
+  let added=0;
+  for(const topic of Object.values(db.topics||{})){
+    if(normalizeQuery(topic?.query||'')!=='on cloud 6') continue;
+    topic.results=Array.isArray(topic.results)?topic.results:[];
+    const byDomain=new Map(topic.results.map(r=>[canonicalHost(r.domain),r]));
+    for(const item of MANUAL_KNOWN_DOMAINS){
+      const key=canonicalHost(item.domain);
+      if(!byDomain.has(key)){
+        const row={domain:key,url:item.url,title:item.name+' — manually added from notes',snippet:'Known domain from your notes. Search has not surfaced a matching page yet.',foundAt:Date.now(),sourceGl:'manual',usFocused:true,manualKnown:true};
+        topic.results.push(row);byDomain.set(key,row);added++;
+      }
+      db.settings=db.settings||{};db.settings.domainRatings=db.settings.domainRatings||{};
+      db.settings.domainRatings[key]={outcome:item.outcome||'',difficulty:item.outcome==='approved'?(item.difficulty||''):'',source:'notes'};
+    }
+    topic.updatedAt=Date.now();
+  }
+  db.settings=db.settings||{};db.settings.manualKnownSeedVersion=1;saveDB();return added;
+}
 function isArticleLike(r){
   const url=String(r?.url||'').toLowerCase();
   const title=String(r?.title||'').toLowerCase();
@@ -544,7 +590,16 @@ function addOrganic(topic, organic, plan, usOnly=false){
   let added=0;
   for(const item of organic){
     if(!item || !item.link)continue;
-    const domain=domainOf(item.link); if(!domain || known.has(domain))continue;
+    const domain=domainOf(item.link); if(!domain)continue;
+    if(known.has(domain)){
+      const existing=topic.results.find(r=>r.domain===domain);
+      if(existing?.manualKnown){
+        existing.url=item.link;existing.title=item.title||existing.title||'';existing.snippet=item.snippet||existing.snippet||'';
+        existing.sourceGl=plan?.gl||existing.sourceGl||'';existing.usFocused=isUSFocusedDomain(domain);
+        existing.manualKnown=false;existing.foundAt=Date.now();topic.updatedAt=Date.now();
+      }
+      continue;
+    }
     const usFocused=isUSFocusedDomain(domain);
     if(usOnly && !usFocused) continue;
     known.add(domain);
@@ -625,7 +680,7 @@ function renderResultList(container, topic, page, pageInfoEl, prevBtn, nextBtn){
   const start=(page-1)*RESULTS_PER_VIEW, slice=rows.slice(start,start+RESULTS_PER_VIEW);
   container.innerHTML=slice.map((r,i)=>{ const review=reviewStatus(r.domain); const article=isArticleLike(r); return `<article class="result">
     <div class="rank">${start+i+1}</div>
-    <div class="resultMain"><div class="domain">${esc(r.domain)}${newDomainsThisRun.has(r.domain)?'<span class="newmark">NEW</span>':''}${article?'<span class="articleMark">ARTICLE?</span>':''}${domainRating(r.domain).source==='notes'?'<span class="seedMark">FROM NOTES</span>':''}</div><div class="rtitle">${esc(r.title||r.url)}</div>
+    <div class="resultMain"><div class="domain">${esc(r.domain)}${newDomainsThisRun.has(r.domain)?'<span class="newmark">NEW</span>':''}${article?'<span class="articleMark">ARTICLE?</span>':''}${domainRating(r.domain).source==='notes'?'<span class="seedMark">FROM NOTES</span>':''}${r.manualKnown?'<span class="manualMark">MANUAL</span>':''}</div><div class="rtitle">${esc(r.title||r.url)}</div>
       <div class="ratingRow">
         <select data-outcome-domain="${esc(r.domain)}" aria-label="Outcome for ${esc(r.domain)}">
           <option value="" ${domainRating(r.domain).outcome===''?'selected':''}>— Outcome</option>
@@ -799,6 +854,7 @@ els.searchCountryFilter.value=countryFilter; els.foundCountryFilter.value=countr
 els.searchHideArticles.checked=hideArticles; els.foundHideArticles.checked=hideArticles; els.searchReviewFilter.value=reviewFilter; els.foundReviewFilter.value=reviewFilter;
 els.searchOutcomeFilter.value=outcomeFilter; els.foundOutcomeFilter.value=outcomeFilter; els.searchDifficultyFilter.value=difficultyFilter; els.foundDifficultyFilter.value=difficultyFilter;
 applySeedRatings();
+injectManualKnownDomains();
 saveDB();
 renderTopics();updateGlobalCounts();updateExistingHint();updateCreditCounter();
 })();
