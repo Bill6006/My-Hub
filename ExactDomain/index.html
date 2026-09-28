@@ -69,7 +69,7 @@ button{cursor:pointer}
 <body>
 <div class="app">
   <header class="topbar">
-    <div class="brandrow"><div class="brand">Exact<b>Domain</b></div><div id="globalCount" style="color:var(--muted);font-size:11px">0 saved</div></div>
+    <div class="brandrow"><div class="brand">Exact<b>Domain</b></div><div style="display:flex;align-items:center;gap:8px"><button id="creditCounter" type="button" title="Tap to adjust estimated Serper credits" style="border:1px solid var(--line);background:#0d151e;color:var(--mint);border-radius:999px;padding:5px 8px;font-size:10.5px;font-weight:900">≈ 2,400 credits</button><div id="globalCount" style="color:var(--muted);font-size:11px">0 saved</div></div></div>
     <nav class="nav">
       <button id="tabSearch" class="active" type="button">Search</button>
       <button id="tabFound" type="button">Found <span id="topicBadge" class="badge">0</span></button>
@@ -181,7 +181,7 @@ const els = {
   form:$('searchForm'),query:$('query'),anyText1:$('anyText1'),anyText2:$('anyText2'),searchBtn:$('searchBtn'),stopBtn:$('stopBtn'),status:$('status'),statusMain:$('statusMain'),statusMeta:$('statusMeta'),errorBox:$('errorBox'),existingHint:$('existingHint'),usSearchOnly:$('usSearchOnly'),
   searchViewer:$('searchViewer'),searchTopicTitle:$('searchTopicTitle'),searchTopicMeta:$('searchTopicMeta'),searchPageInfo:$('searchPageInfo'),searchRunInfo:$('searchRunInfo'),searchResults:$('searchResults'),searchPrev:$('searchPrev'),searchNext:$('searchNext'),searchEmpty:$('searchEmpty'),searchCountryFilter:$('searchCountryFilter'),
   topicList:$('topicList'),topicBadge:$('topicBadge'),globalCount:$('globalCount'),foundViewer:$('foundViewer'),foundTopicTitle:$('foundTopicTitle'),foundTopicMeta:$('foundTopicMeta'),foundPageInfo:$('foundPageInfo'),foundResults:$('foundResults'),foundPrev:$('foundPrev'),foundNext:$('foundNext'),continueBtn:$('continueBtn'),exportTopicBtn:$('exportTopicBtn'),deleteTopicBtn:$('deleteTopicBtn'),foundCountryFilter:$('foundCountryFilter'),
-  exportLinksBtn:$('exportLinksBtn'),exportBtn:$('exportBtn'),importFile:$('importFile'),toast:$('toast')
+  exportLinksBtn:$('exportLinksBtn'),exportBtn:$('exportBtn'),importFile:$('importFile'),toast:$('toast'),creditCounter:$('creditCounter')
 };
 
 let db = loadDB();
@@ -194,14 +194,15 @@ let foundPage = 1;
 let newDomainsThisRun = new Set();
 let countryFilter = db.settings?.countryFilter || 'all';
 
-function emptyDB(){ return {version:4, topics:{}, settings:{countryFilter:'all',usSearchOnly:false}}; }
+function emptyDB(){ return {version:4, topics:{}, settings:{countryFilter:'all',usSearchOnly:false,estimatedCredits:2400}}; }
 function loadDB(){
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return emptyDB();
     const parsed = JSON.parse(raw);
     if (!parsed || typeof parsed !== 'object' || !parsed.topics) return emptyDB();
-    parsed.settings = parsed.settings || {countryFilter:'all',usSearchOnly:false};
+    parsed.settings = parsed.settings || {countryFilter:'all',usSearchOnly:false,estimatedCredits:2400};
+    if(typeof parsed.settings.estimatedCredits!=='number' || !Number.isFinite(parsed.settings.estimatedCredits)) parsed.settings.estimatedCredits=2400;
     if(!['all','us','us-tld'].includes(parsed.settings.countryFilter)) parsed.settings.countryFilter='all';
     for (const t of Object.values(parsed.topics)) {
       if(t && !Array.isArray(t.anyTerms)) t.anyTerms=[];
@@ -210,6 +211,18 @@ function loadDB(){
     }
     return parsed;
   } catch { return emptyDB(); }
+}
+function updateCreditCounter(){
+  db.settings=db.settings||{};
+  if(typeof db.settings.estimatedCredits!=='number' || !Number.isFinite(db.settings.estimatedCredits)) db.settings.estimatedCredits=2400;
+  const n=Math.max(0,Math.floor(db.settings.estimatedCredits));
+  if(els.creditCounter) els.creditCounter.textContent=`≈ ${n.toLocaleString()} credits`;
+}
+function spendCredit(){
+  db.settings=db.settings||{};
+  if(typeof db.settings.estimatedCredits!=='number' || !Number.isFinite(db.settings.estimatedCredits)) db.settings.estimatedCredits=2400;
+  db.settings.estimatedCredits=Math.max(0,db.settings.estimatedCredits-1);
+  updateCreditCounter();
 }
 function saveDB(){
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(db)); }
@@ -363,6 +376,7 @@ async function searchAPI(body, signal){
   } catch(e){ if(e.name==='AbortError')throw e; throw new Error('Your browser could not reach Serper. Check internet access and try again.'); }
   const txt=await res.text(); let data={}; try{data=txt?JSON.parse(txt):{};}catch{data={raw:txt};}
   if(!res.ok) throw new Error(data.message||data.error||data.raw||`Serper HTTP ${res.status}`);
+  spendCredit();
   return data;
 }
 
@@ -525,6 +539,14 @@ function setCountryFilter(value){
 els.searchCountryFilter.addEventListener('change',()=>setCountryFilter(els.searchCountryFilter.value));
 els.foundCountryFilter.addEventListener('change',()=>setCountryFilter(els.foundCountryFilter.value));
 els.usSearchOnly.addEventListener('change',()=>{db.settings=db.settings||{};db.settings.usSearchOnly=els.usSearchOnly.checked;saveDB();});
+els.creditCounter.addEventListener('click',()=>{
+  const current=Math.max(0,Math.floor(db.settings?.estimatedCredits ?? 2400));
+  const raw=prompt('Estimated Serper credits remaining. Enter a new number if you checked your Serper dashboard:', String(current));
+  if(raw===null)return;
+  const n=Number(raw.replace(/,/g,'').trim());
+  if(!Number.isFinite(n)||n<0){alert('Enter a valid number of credits.');return;}
+  db.settings=db.settings||{};db.settings.estimatedCredits=Math.floor(n);saveDB();updateCreditCounter();toast('Credit estimate updated');
+});
 
 function csvCell(v){ const s=String(v??''); return /[",\n\r]/.test(s)?`"${s.replace(/"/g,'""')}"`:s; }
 function safeFilePart(v){ return String(v||'search').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,50)||'search'; }
@@ -559,7 +581,7 @@ els.importFile.addEventListener('change',async()=>{
 
 try{navigator.storage?.persist?.();}catch{}
 els.searchCountryFilter.value=countryFilter; els.foundCountryFilter.value=countryFilter; els.usSearchOnly.checked=!!db.settings?.usSearchOnly;
-renderTopics();updateGlobalCounts();updateExistingHint();
+renderTopics();updateGlobalCounts();updateExistingHint();updateCreditCounter();
 })();
 </script>
 </body>
