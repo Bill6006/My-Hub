@@ -48,7 +48,7 @@ button{cursor:pointer}
 .filterbar{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin:7px 0 9px;flex-wrap:wrap}.filterbar label{color:var(--muted);font-size:11px;font-weight:800}.filterbar select{border:1px solid #2c4051;background:#101923;color:#e7f0f7;border-radius:9px;padding:7px 28px 7px 9px;font-weight:850;max-width:210px}
 .filterCheck{display:flex;align-items:center;gap:7px;border:1px solid #2c4051;background:#101923;color:#dfe9f2;border-radius:9px;padding:7px 9px;font-weight:850;font-size:11px}.filterCheck input{width:16px;height:16px;accent-color:var(--mint)}
 .reviewBtns{display:flex;gap:4px;align-items:center}.reviewBtn{width:31px;height:31px;border:1px solid #294151;background:#0d151e;border-radius:8px;display:grid;place-items:center;font-size:15px;line-height:1;padding:0}.reviewBtn.good.active{background:#123527;border-color:#2b8f64}.reviewBtn.bad.active{background:#3a1820;border-color:#9b4556}.reviewBtn.clear{font-size:13px;color:var(--muted)}.articleMark{color:var(--warn);font-size:9px;font-weight:900;margin-left:5px}
-.ratingRow{display:flex;gap:5px;align-items:center;margin-top:6px;min-width:0}.ratingRow select{min-width:0;max-width:145px;border:1px solid #294151;background:#0a1118;color:#dce7ef;border-radius:8px;padding:5px 24px 5px 7px;font-size:10.5px;font-weight:800}.ratingRow select[data-outcome-domain]{max-width:118px}.seedMark{color:var(--cyan);font-size:8.5px;font-weight:900;margin-left:5px}.manualMark{color:var(--warn);font-size:8.5px;font-weight:900;margin-left:5px}
+.ratingRow{display:flex;gap:5px;align-items:center;margin-top:6px;min-width:0;flex-wrap:wrap}.ratingRow select{min-width:0;max-width:145px;border:1px solid #294151;background:#0a1118;color:#dce7ef;border-radius:8px;padding:5px 24px 5px 7px;font-size:10.5px;font-weight:800}.ratingRow select[data-outcome-domain]{max-width:118px}.ratingRow select[data-status-domain]{max-width:178px}.seedMark{color:var(--cyan);font-size:8.5px;font-weight:900;margin-left:5px}.manualMark{color:var(--warn);font-size:8.5px;font-weight:900;margin-left:5px}
 .existing{color:var(--mint);font-weight:800}
 .status{display:none;margin:14px 0 10px;border:1px solid var(--line);background:rgba(13,20,28,.88);border-radius:13px;padding:11px 12px}
 .status.show{display:block}.statusline{display:flex;gap:9px;align-items:center;justify-content:space-between}.status strong{font-size:13px}.meta{color:var(--muted);font-size:11px;margin-top:4px}.spinner{width:13px;height:13px;border:2px solid #334758;border-top-color:var(--mint);border-radius:50%;animation:spin .8s linear infinite;display:inline-block;vertical-align:-2px;margin-right:6px}@keyframes spin{to{transform:rotate(360deg)}}
@@ -126,6 +126,7 @@ button{cursor:pointer}
           <label for="searchReviewFilter">Review</label><select id="searchReviewFilter"><option value="all">All</option><option value="green">✅ Green</option><option value="red">❌ Red</option><option value="unmarked">Unmarked</option></select>
           <label for="searchOutcomeFilter">Outcome</label><select id="searchOutcomeFilter"><option value="all">All outcomes</option><option value="approved">✅ Approved/refunded</option><option value="rejected">❌ Rejected/denied</option><option value="unrated">Unrated</option></select>
           <label for="searchDifficultyFilter">Rating</label><select id="searchDifficultyFilter"><option value="all">All ratings</option><option value="very_easy">Very Easy</option><option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard</option><option value="very_hard">Very Hard</option><option value="unrated">Unrated approved</option></select>
+          <label for="searchStatusFilter">Status</label><select id="searchStatusFilter"><option value="all">All statuses</option><option value="waiting_refund">💸 Waiting for refund</option><option value="waiting_reply">💬 Waiting for reply</option><option value="waiting_delivery">📦 Waiting for delivery</option><option value="none">No status</option></select>
           <label for="searchCountryFilter">Country</label><select id="searchCountryFilter"><option value="all">All countries</option><option value="us">🇺🇸 US-focused</option><option value="us-tld">🇺🇸 .us only (strict)</option></select>
         </div>
         <div id="searchResults" class="results"></div>
@@ -154,6 +155,7 @@ button{cursor:pointer}
           <label for="foundReviewFilter">Review</label><select id="foundReviewFilter"><option value="all">All</option><option value="green">✅ Green</option><option value="red">❌ Red</option><option value="unmarked">Unmarked</option></select>
           <label for="foundOutcomeFilter">Outcome</label><select id="foundOutcomeFilter"><option value="all">All outcomes</option><option value="approved">✅ Approved/refunded</option><option value="rejected">❌ Rejected/denied</option><option value="unrated">Unrated</option></select>
           <label for="foundDifficultyFilter">Rating</label><select id="foundDifficultyFilter"><option value="all">All ratings</option><option value="very_easy">Very Easy</option><option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard</option><option value="very_hard">Very Hard</option><option value="unrated">Unrated approved</option></select>
+          <label for="foundStatusFilter">Status</label><select id="foundStatusFilter"><option value="all">All statuses</option><option value="waiting_refund">💸 Waiting for refund</option><option value="waiting_reply">💬 Waiting for reply</option><option value="waiting_delivery">📦 Waiting for delivery</option><option value="none">No status</option></select>
           <label for="foundCountryFilter">Country</label><select id="foundCountryFilter"><option value="all">All countries</option><option value="us">🇺🇸 US-focused</option><option value="us-tld">🇺🇸 .us only (strict)</option></select>
         </div>
         <div class="pager"><button id="foundPrev" type="button">← Prev</button><span id="foundPageInfo"></span><button id="foundNext" type="button">Next →</button></div>
@@ -194,8 +196,8 @@ const $ = id => document.getElementById(id);
 const els = {
   tabSearch:$('tabSearch'),tabFound:$('tabFound'),searchPanel:$('searchPanel'),foundPanel:$('foundPanel'),
   form:$('searchForm'),query:$('query'),anyText1:$('anyText1'),anyText2:$('anyText2'),searchBtn:$('searchBtn'),stopBtn:$('stopBtn'),status:$('status'),statusMain:$('statusMain'),statusMeta:$('statusMeta'),errorBox:$('errorBox'),existingHint:$('existingHint'),usSearchOnly:$('usSearchOnly'),
-  searchViewer:$('searchViewer'),searchTopicTitle:$('searchTopicTitle'),searchTopicMeta:$('searchTopicMeta'),searchPageInfo:$('searchPageInfo'),searchRunInfo:$('searchRunInfo'),searchResults:$('searchResults'),searchPrev:$('searchPrev'),searchNext:$('searchNext'),searchEmpty:$('searchEmpty'),searchCountryFilter:$('searchCountryFilter'),searchHideArticles:$('searchHideArticles'),searchReviewFilter:$('searchReviewFilter'),searchOutcomeFilter:$('searchOutcomeFilter'),searchDifficultyFilter:$('searchDifficultyFilter'),
-  topicList:$('topicList'),topicBadge:$('topicBadge'),globalCount:$('globalCount'),foundViewer:$('foundViewer'),foundTopicTitle:$('foundTopicTitle'),foundTopicMeta:$('foundTopicMeta'),foundPageInfo:$('foundPageInfo'),foundResults:$('foundResults'),foundPrev:$('foundPrev'),foundNext:$('foundNext'),continueBtn:$('continueBtn'),exportTopicBtn:$('exportTopicBtn'),deleteTopicBtn:$('deleteTopicBtn'),foundCountryFilter:$('foundCountryFilter'),foundHideArticles:$('foundHideArticles'),foundReviewFilter:$('foundReviewFilter'),foundOutcomeFilter:$('foundOutcomeFilter'),foundDifficultyFilter:$('foundDifficultyFilter'),
+  searchViewer:$('searchViewer'),searchTopicTitle:$('searchTopicTitle'),searchTopicMeta:$('searchTopicMeta'),searchPageInfo:$('searchPageInfo'),searchRunInfo:$('searchRunInfo'),searchResults:$('searchResults'),searchPrev:$('searchPrev'),searchNext:$('searchNext'),searchEmpty:$('searchEmpty'),searchCountryFilter:$('searchCountryFilter'),searchHideArticles:$('searchHideArticles'),searchReviewFilter:$('searchReviewFilter'),searchOutcomeFilter:$('searchOutcomeFilter'),searchDifficultyFilter:$('searchDifficultyFilter'),searchStatusFilter:$('searchStatusFilter'),
+  topicList:$('topicList'),topicBadge:$('topicBadge'),globalCount:$('globalCount'),foundViewer:$('foundViewer'),foundTopicTitle:$('foundTopicTitle'),foundTopicMeta:$('foundTopicMeta'),foundPageInfo:$('foundPageInfo'),foundResults:$('foundResults'),foundPrev:$('foundPrev'),foundNext:$('foundNext'),continueBtn:$('continueBtn'),exportTopicBtn:$('exportTopicBtn'),deleteTopicBtn:$('deleteTopicBtn'),foundCountryFilter:$('foundCountryFilter'),foundHideArticles:$('foundHideArticles'),foundReviewFilter:$('foundReviewFilter'),foundOutcomeFilter:$('foundOutcomeFilter'),foundDifficultyFilter:$('foundDifficultyFilter'),foundStatusFilter:$('foundStatusFilter'),
   exportLinksBtn:$('exportLinksBtn'),exportBtn:$('exportBtn'),importFile:$('importFile'),toast:$('toast'),creditCounter:$('creditCounter')
 };
 
@@ -212,8 +214,9 @@ let hideArticles = !!db.settings?.hideArticles;
 let reviewFilter = db.settings?.reviewFilter || 'all';
 let outcomeFilter = db.settings?.outcomeFilter || 'all';
 let difficultyFilter = db.settings?.difficultyFilter || 'all';
+let statusFilter = db.settings?.statusFilter || 'all';
 
-function emptyDB(){ return {version:4, topics:{}, settings:{countryFilter:'all',usSearchOnly:false,estimatedCredits:2400,hideArticles:false,reviewFilter:'all',reviews:{},outcomeFilter:'all',difficultyFilter:'all',domainRatings:{},notesSeedVersion:0,manualKnownSeedVersion:0}}; }
+function emptyDB(){ return {version:4, topics:{}, settings:{countryFilter:'all',usSearchOnly:false,estimatedCredits:2400,hideArticles:false,reviewFilter:'all',reviews:{},outcomeFilter:'all',difficultyFilter:'all',domainRatings:{},domainStatuses:{},statusFilter:'all',notesSeedVersion:0,manualKnownSeedVersion:0}}; }
 function loadDB(){
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -228,6 +231,8 @@ function loadDB(){
     if(!['all','approved','rejected','unrated'].includes(parsed.settings.outcomeFilter)) parsed.settings.outcomeFilter='all';
     if(!['all','very_easy','easy','medium','hard','very_hard','unrated'].includes(parsed.settings.difficultyFilter)) parsed.settings.difficultyFilter='all';
     if(!parsed.settings.domainRatings || typeof parsed.settings.domainRatings!=='object') parsed.settings.domainRatings={};
+    if(!parsed.settings.domainStatuses || typeof parsed.settings.domainStatuses!=='object') parsed.settings.domainStatuses={};
+    if(!['all','waiting_refund','waiting_reply','waiting_delivery','none'].includes(parsed.settings.statusFilter)) parsed.settings.statusFilter='all';
     for(const v of Object.values(parsed.settings.domainRatings)){ if(v?.difficulty==='super_easy') v.difficulty='very_easy'; }
     if(typeof parsed.settings.notesSeedVersion!=='number') parsed.settings.notesSeedVersion=0;
     if(typeof parsed.settings.manualKnownSeedVersion!=='number') parsed.settings.manualKnownSeedVersion=0;
@@ -454,6 +459,17 @@ function injectManualKnownDomains(){
   }
   db.settings=db.settings||{};db.settings.manualKnownSeedVersion=1;saveDB();return added;
 }
+function domainStatus(domain){
+  db.settings=db.settings||{};db.settings.domainStatuses=db.settings.domainStatuses||{};
+  return db.settings.domainStatuses[canonicalHost(domain)]||'';
+}
+function setDomainStatus(domain,status){
+  db.settings=db.settings||{};db.settings.domainStatuses=db.settings.domainStatuses||{};
+  const valid=['','waiting_refund','waiting_reply','waiting_delivery'].includes(status)?status:'';
+  const key=canonicalHost(domain);
+  if(valid) db.settings.domainStatuses[key]=valid; else delete db.settings.domainStatuses[key];
+  saveDB();renderSearchTopic();renderFoundViewer();
+}
 function isArticleLike(r){
   const url=String(r?.url||'').toLowerCase();
   const title=String(r?.title||'').toLowerCase();
@@ -499,6 +515,10 @@ function filteredResults(topic){
       return x.difficulty===difficultyFilter;
     });
   }
+  if(statusFilter==='waiting_refund') rows=rows.filter(r=>domainStatus(r.domain)==='waiting_refund');
+  else if(statusFilter==='waiting_reply') rows=rows.filter(r=>domainStatus(r.domain)==='waiting_reply');
+  else if(statusFilter==='waiting_delivery') rows=rows.filter(r=>domainStatus(r.domain)==='waiting_delivery');
+  else if(statusFilter==='none') rows=rows.filter(r=>!domainStatus(r.domain));
   return rows;
 }
 function quoted(q){ return `"${q.replace(/"/g,'')}"`; }
@@ -695,6 +715,12 @@ function renderResultList(container, topic, page, pageInfoEl, prevBtn, nextBtn){
           <option value="hard" ${domainRating(r.domain).difficulty==='hard'?'selected':''}>Hard</option>
           <option value="very_hard" ${domainRating(r.domain).difficulty==='very_hard'?'selected':''}>Very Hard</option>
         </select>
+        <select data-status-domain="${esc(r.domain)}" aria-label="Current status for ${esc(r.domain)}">
+          <option value="" ${domainStatus(r.domain)===''?'selected':''}>— Status</option>
+          <option value="waiting_refund" ${domainStatus(r.domain)==='waiting_refund'?'selected':''}>💸 Waiting refund</option>
+          <option value="waiting_reply" ${domainStatus(r.domain)==='waiting_reply'?'selected':''}>💬 Waiting reply</option>
+          <option value="waiting_delivery" ${domainStatus(r.domain)==='waiting_delivery'?'selected':''}>📦 Waiting delivery</option>
+        </select>
       </div>
     </div>
     <div class="reviewBtns">
@@ -707,7 +733,8 @@ function renderResultList(container, topic, page, pageInfoEl, prevBtn, nextBtn){
   container.querySelectorAll('[data-review]').forEach(btn=>btn.addEventListener('click',()=>setReviewStatus(btn.dataset.domain,btn.dataset.review)));
   container.querySelectorAll('[data-outcome-domain]').forEach(sel=>sel.addEventListener('change',()=>setDomainOutcome(sel.dataset.outcomeDomain,sel.value)));
   container.querySelectorAll('[data-difficulty-domain]').forEach(sel=>sel.addEventListener('change',()=>setDomainDifficulty(sel.dataset.difficultyDomain,sel.value)));
-  const anyFilter=countryFilter!=='all'||hideArticles||reviewFilter!=='all'||outcomeFilter!=='all'||difficultyFilter!=='all';
+  container.querySelectorAll('[data-status-domain]').forEach(sel=>sel.addEventListener('change',()=>setDomainStatus(sel.dataset.statusDomain,sel.value)));
+  const anyFilter=countryFilter!=='all'||hideArticles||reviewFilter!=='all'||outcomeFilter!=='all'||difficultyFilter!=='all'||statusFilter!=='all';
   const suffix=anyFilter?` • ${topic.results.length} total`:'';
   pageInfoEl.textContent=`${start+1}–${Math.min(start+RESULTS_PER_VIEW,rows.length)} of ${rows.length}${suffix} • page ${page}/${pages}`;
   prevBtn.disabled=page<=1; nextBtn.disabled=page>=pages; return page;
@@ -808,6 +835,14 @@ els.searchOutcomeFilter.addEventListener('change',()=>setOutcomeFilter(els.searc
 els.foundOutcomeFilter.addEventListener('change',()=>setOutcomeFilter(els.foundOutcomeFilter.value));
 els.searchDifficultyFilter.addEventListener('change',()=>setDifficultyFilter(els.searchDifficultyFilter.value));
 els.foundDifficultyFilter.addEventListener('change',()=>setDifficultyFilter(els.foundDifficultyFilter.value));
+function setStatusFilter(v){
+  statusFilter=['all','waiting_refund','waiting_reply','waiting_delivery','none'].includes(v)?v:'all';
+  db.settings=db.settings||{};db.settings.statusFilter=statusFilter;saveDB();
+  els.searchStatusFilter.value=statusFilter;els.foundStatusFilter.value=statusFilter;
+  searchPage=1;foundPage=1;renderSearchTopic();renderFoundViewer();
+}
+els.searchStatusFilter.addEventListener('change',()=>setStatusFilter(els.searchStatusFilter.value));
+els.foundStatusFilter.addEventListener('change',()=>setStatusFilter(els.foundStatusFilter.value));
 els.usSearchOnly.addEventListener('change',()=>{db.settings=db.settings||{};db.settings.usSearchOnly=els.usSearchOnly.checked;saveDB();});
 els.creditCounter.addEventListener('click',()=>{
   const current=Math.max(0,Math.floor(db.settings?.estimatedCredits ?? 2400));
@@ -821,10 +856,10 @@ els.creditCounter.addEventListener('click',()=>{
 function csvCell(v){ const s=String(v??''); return /[",\n\r]/.test(s)?`"${s.replace(/"/g,'""')}"`:s; }
 function safeFilePart(v){ return String(v||'search').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,50)||'search'; }
 function exportLinksCSV(topics, filename){
-  const lines=[['Search topic','Must also contain (OR)','Domain','Review','Outcome','Rating','Article-like','Direct page link'].map(csvCell).join(',')];
+  const lines=[['Search topic','Must also contain (OR)','Domain','Review','Outcome','Rating','Status','Article-like','Direct page link'].map(csvCell).join(',')];
   for(const t of topics){
     const crit=displayAnyTerms(t).join(' OR ');
-    for(const r of (t.results||[])){const dr=domainRating(r.domain);lines.push([t.query,crit,r.domain,reviewStatus(r.domain)||'',dr.outcome||'',DIFFICULTY_LABELS[dr.difficulty]||'',isArticleLike(r)?'yes':'',r.url].map(csvCell).join(','));}
+    for(const r of (t.results||[])){const dr=domainRating(r.domain);lines.push([t.query,crit,r.domain,reviewStatus(r.domain)||'',dr.outcome||'',DIFFICULTY_LABELS[dr.difficulty]||'',domainStatus(r.domain)||'',isArticleLike(r)?'yes':'',r.url].map(csvCell).join(','));}
   }
   const bom='\ufeff'; const blob=new Blob([bom+lines.join('\r\n')],{type:'text/csv;charset=utf-8'});
   const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1200);
@@ -852,7 +887,7 @@ els.importFile.addEventListener('change',async()=>{
 try{navigator.storage?.persist?.();}catch{}
 els.searchCountryFilter.value=countryFilter; els.foundCountryFilter.value=countryFilter; els.usSearchOnly.checked=!!db.settings?.usSearchOnly;
 els.searchHideArticles.checked=hideArticles; els.foundHideArticles.checked=hideArticles; els.searchReviewFilter.value=reviewFilter; els.foundReviewFilter.value=reviewFilter;
-els.searchOutcomeFilter.value=outcomeFilter; els.foundOutcomeFilter.value=outcomeFilter; els.searchDifficultyFilter.value=difficultyFilter; els.foundDifficultyFilter.value=difficultyFilter;
+els.searchOutcomeFilter.value=outcomeFilter; els.foundOutcomeFilter.value=outcomeFilter; els.searchDifficultyFilter.value=difficultyFilter; els.foundDifficultyFilter.value=difficultyFilter; els.searchStatusFilter.value=statusFilter; els.foundStatusFilter.value=statusFilter;
 applySeedRatings();
 injectManualKnownDomains();
 saveDB();
