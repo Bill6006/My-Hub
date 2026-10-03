@@ -1,6 +1,6 @@
 'use strict';
 
-const CACHE_VERSION = 'tyree-hub-shell-v1.1.2';
+const CACHE_VERSION = 'tyree-hub-shell-v1.1.3';
 const APP_SHELL = [
   './',
   './index.html',
@@ -14,7 +14,9 @@ const APP_SHELL = [
 
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_VERSION).then(cache => cache.addAll(APP_SHELL))
+    caches.open(CACHE_VERSION)
+      .then(cache => cache.addAll(APP_SHELL))
+      .then(() => self.skipWaiting())
   );
 });
 
