@@ -1,6 +1,6 @@
 'use strict';
 
-const CACHE_VERSION = 'tyree-hub-shell-v1.1.9';
+const CACHE_VERSION = 'tyree-hub-shell-v1.1.10';
 const APP_SHELL = [
   './',
   './index.html',
@@ -10,7 +10,8 @@ const APP_SHELL = [
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/maskable-icon-512.png',
-  './icons/exactdomain.webp'
+  './icons/exactdomain.webp',
+  './icons/net-in-mind.svg'
 ];
 
 self.addEventListener('install', event => {
