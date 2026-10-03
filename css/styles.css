@@ -2060,3 +2060,272 @@ html[data-theme="dark"] .onboarding-visual {
     min-height: 100dvh;
   }
 }
+
+
+/* Mobile compact dashboard v1.1.2 */
+@media (max-width: 640px) {
+  .topbar {
+    padding-bottom: 10px;
+  }
+
+  .main-content {
+    padding-bottom: 24px;
+  }
+
+  .hero-panel {
+    align-items: center;
+    flex-direction: row;
+    gap: 12px;
+    padding: 14px 16px;
+    border-radius: 20px;
+  }
+
+  .hero-panel > div {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  .hero-panel .section-kicker,
+  .hero-panel p:not(.section-kicker) {
+    display: none;
+  }
+
+  .hero-panel h2 {
+    margin: 0;
+    font-size: 1.08rem;
+    line-height: 1.2;
+    letter-spacing: -0.025em;
+  }
+
+  .hero-panel .primary-button {
+    width: auto;
+    min-height: 40px;
+    flex: 0 0 auto;
+    padding: 8px 12px;
+    border-radius: 12px;
+    white-space: nowrap;
+  }
+
+  .controls-panel {
+    margin: 12px 0 10px;
+  }
+
+  .search-box {
+    min-height: 44px;
+    border-radius: 14px;
+  }
+
+  .toolbar-row {
+    align-items: center;
+    flex-direction: row;
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  .filter-strip {
+    gap: 6px;
+    padding: 1px 1px 2px;
+  }
+
+  .filter-chip {
+    min-height: 36px;
+    padding: 7px 11px;
+    font-size: 0.77rem;
+  }
+
+  .toolbar-row .secondary-button {
+    width: auto;
+    min-height: 36px;
+    flex: 0 0 auto;
+    padding: 7px 10px;
+    border-radius: 11px;
+    white-space: nowrap;
+  }
+
+  .dashboard-section {
+    padding-top: 0;
+  }
+
+  .section-heading-row {
+    align-items: center;
+    margin-bottom: 9px;
+  }
+
+  .section-heading-row h2 {
+    margin-top: 2px;
+    font-size: 1.24rem;
+  }
+
+  .count-badge {
+    min-height: 28px;
+    padding: 4px 9px;
+    font-size: 0.72rem;
+  }
+
+  .app-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .app-card {
+    border-radius: 17px;
+  }
+
+  .app-card::before {
+    left: 15px;
+    width: 36px;
+  }
+
+  .app-card-main,
+  .edit-mode .app-card-main {
+    min-height: 88px;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 11px;
+    padding: 11px 12px;
+  }
+
+  .app-card-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 13px;
+    font-size: 1.22rem;
+  }
+
+  .app-card-icon svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .app-card-content {
+    justify-content: center;
+    padding-top: 0;
+  }
+
+  .app-card-meta {
+    gap: 5px;
+    margin-bottom: 3px;
+  }
+
+  .app-card-category {
+    font-size: 0.61rem;
+    letter-spacing: 0.065em;
+  }
+
+  .favorite-indicator svg {
+    width: 12px;
+    height: 12px;
+  }
+
+  .app-card-name {
+    font-size: 0.98rem;
+    -webkit-line-clamp: 1;
+  }
+
+  .app-card-description {
+    margin-top: 3px;
+    font-size: 0.73rem;
+    line-height: 1.3;
+    -webkit-line-clamp: 1;
+  }
+
+  .app-open-indicator {
+    position: static;
+    width: 30px;
+    height: 30px;
+    border-radius: 10px;
+  }
+
+  .app-open-indicator svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .app-card-actions {
+    gap: 5px;
+    padding: 0 9px 9px;
+  }
+
+  .app-card-actions button {
+    min-height: 36px;
+  }
+
+  .add-app-card {
+    min-height: 78px;
+    border-radius: 17px;
+  }
+
+  .add-app-card-inner {
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    place-items: start;
+    align-content: center;
+    column-gap: 11px;
+    row-gap: 1px;
+    padding: 10px 13px;
+    text-align: left;
+  }
+
+  .add-app-card .plus-orb {
+    width: 40px;
+    height: 40px;
+    grid-row: 1 / 3;
+    border-radius: 12px;
+  }
+
+  .add-app-card strong {
+    align-self: end;
+    font-size: 0.9rem;
+  }
+
+  .add-app-card small {
+    align-self: start;
+    max-width: none;
+    font-size: 0.7rem;
+  }
+}
+
+@media (max-width: 470px) {
+  .topbar,
+  .main-content {
+    padding-right: 12px;
+    padding-left: 12px;
+  }
+
+  .topbar {
+    padding-top: calc(12px + var(--safe-top));
+  }
+
+  .brand-mark {
+    width: 40px;
+    height: 40px;
+    border-radius: 13px;
+  }
+
+  .brand-block h1 {
+    font-size: 1.28rem;
+  }
+
+  .eyebrow {
+    font-size: 0.64rem;
+  }
+
+  .icon-button {
+    width: 40px;
+    height: 40px;
+  }
+
+  .hero-panel {
+    padding: 12px 14px;
+  }
+
+  .hero-panel h2 {
+    font-size: 1rem;
+  }
+
+  .hero-panel .primary-button {
+    min-height: 38px;
+    padding: 7px 10px;
+    font-size: 0.8rem;
+  }
+}
