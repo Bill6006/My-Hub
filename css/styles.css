@@ -2738,14 +2738,6 @@ html[data-theme="dark"] .onboarding-visual {
 /* Bigger launcher icons v1.1.7 */
 @media (max-width: 640px) {
   /* Real site icons need contrast in dark mode. */
-  .app-card-icon.has-site-icon {
-    background: rgba(255, 255, 255, 0.94);
-    border-color: rgba(255, 255, 255, 0.22);
-    box-shadow:
-      0 8px 18px rgba(0, 0, 0, 0.22),
-      0 0 0 1px rgba(255, 255, 255, 0.05);
-  }
-
   .app-site-icon {
     inset: 3%;
     width: 94%;
