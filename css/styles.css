@@ -2061,8 +2061,111 @@ html[data-theme="dark"] .onboarding-visual {
   }
 }
 
+/* Square launcher presets v1.1.4 */
+.dashboard-tools {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
 
-/* Mobile compact dashboard v1.1.2 */
+.preset-control {
+  position: relative;
+}
+
+.preset-button {
+  display: inline-flex;
+  min-height: 32px;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface-soft);
+  color: var(--text-soft);
+  font-size: 0.74rem;
+  font-weight: 760;
+  cursor: pointer;
+}
+
+.preset-button svg {
+  width: 15px;
+  height: 15px;
+}
+
+.preset-button[aria-expanded="true"] {
+  border-color: color-mix(in srgb, var(--brand) 38%, var(--line));
+  background: var(--brand-soft);
+  color: var(--brand);
+}
+
+.preset-menu {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 210px;
+  padding: 7px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: var(--shadow-lg);
+}
+
+.preset-menu > button {
+  display: grid;
+  width: 100%;
+  grid-template-columns: 54px 1fr;
+  align-items: center;
+  gap: 10px;
+  padding: 9px;
+  border: 0;
+  border-radius: 11px;
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.preset-menu > button:hover,
+.preset-menu > button:focus-visible,
+.preset-menu > button.active {
+  background: var(--brand-soft);
+}
+
+.preset-menu > button > span:last-child {
+  display: grid;
+  gap: 1px;
+}
+
+.preset-menu strong {
+  font-size: 0.82rem;
+}
+
+.preset-menu small {
+  color: var(--text-soft);
+  font-size: 0.68rem;
+}
+
+.preset-preview {
+  display: grid;
+  width: 46px;
+  aspect-ratio: 1;
+  gap: 3px;
+  padding: 3px;
+  border-radius: 9px;
+  background: var(--surface-soft);
+}
+
+.preset-preview i {
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--brand) 58%, var(--surface-strong));
+}
+
+.preview-2 { grid-template-columns: repeat(2, 1fr); }
+.preview-3 { grid-template-columns: repeat(3, 1fr); }
+.preview-4 { grid-template-columns: repeat(4, 1fr); }
+
 @media (max-width: 640px) {
   .topbar {
     padding-bottom: 10px;
@@ -2148,7 +2251,7 @@ html[data-theme="dark"] .onboarding-visual {
 
   .section-heading-row {
     align-items: center;
-    margin-bottom: 9px;
+    margin-bottom: 10px;
   }
 
   .section-heading-row h2 {
@@ -2156,60 +2259,92 @@ html[data-theme="dark"] .onboarding-visual {
     font-size: 1.24rem;
   }
 
+  .dashboard-tools {
+    gap: 6px;
+  }
+
   .count-badge {
-    min-height: 28px;
+    min-height: 30px;
     padding: 4px 9px;
-    font-size: 0.72rem;
+    font-size: 0.7rem;
+  }
+
+  .preset-button {
+    min-height: 30px;
+    padding: 4px 8px;
+    font-size: 0.7rem;
   }
 
   .app-grid {
-    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .app-shell[data-tile-preset="large"] .app-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 11px;
+  }
+
+  .app-shell[data-tile-preset="medium"] .app-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 8px;
   }
 
-  .app-card {
-    border-radius: 17px;
+  .app-shell[data-tile-preset="small"] .app-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 7px;
+  }
+
+  .app-card,
+  .add-app-card {
+    width: 100%;
+    min-height: 0;
+    aspect-ratio: 1;
+    border-radius: 20px;
+    overflow: hidden;
   }
 
   .app-card::before {
-    left: 15px;
-    width: 36px;
+    left: 14px;
+    width: 34px;
   }
 
   .app-card-main,
   .edit-mode .app-card-main {
-    min-height: 88px;
-    grid-template-columns: auto minmax(0, 1fr) auto;
-    align-items: center;
-    gap: 11px;
-    padding: 11px 12px;
+    height: 100%;
+    min-height: 0;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr auto;
+    align-items: start;
+    gap: 8px;
+    padding: 13px;
   }
 
   .app-card-icon {
-    width: 42px;
-    height: 42px;
-    border-radius: 13px;
-    font-size: 1.22rem;
+    width: 43px;
+    height: 43px;
+    border-radius: 14px;
+    font-size: 1.2rem;
   }
 
   .app-card-icon svg {
-    width: 20px;
-    height: 20px;
+    width: 21px;
+    height: 21px;
   }
 
   .app-card-content {
-    justify-content: center;
+    align-self: end;
+    justify-content: end;
     padding-top: 0;
   }
 
   .app-card-meta {
     gap: 5px;
-    margin-bottom: 3px;
+    margin-bottom: 4px;
   }
 
   .app-card-category {
-    font-size: 0.61rem;
-    letter-spacing: 0.065em;
+    font-size: 0.6rem;
+    letter-spacing: 0.06em;
   }
 
   .favorite-indicator svg {
@@ -2218,70 +2353,154 @@ html[data-theme="dark"] .onboarding-visual {
   }
 
   .app-card-name {
-    font-size: 0.98rem;
-    -webkit-line-clamp: 1;
+    font-size: 0.92rem;
+    line-height: 1.13;
+    -webkit-line-clamp: 2;
   }
 
   .app-card-description {
-    margin-top: 3px;
-    font-size: 0.73rem;
-    line-height: 1.3;
-    -webkit-line-clamp: 1;
+    display: none;
   }
 
   .app-open-indicator {
-    position: static;
-    width: 30px;
-    height: 30px;
-    border-radius: 10px;
+    position: absolute;
+    right: 11px;
+    bottom: 11px;
+    width: 28px;
+    height: 28px;
+    border-radius: 9px;
   }
 
   .app-open-indicator svg {
+    width: 13px;
+    height: 13px;
+  }
+
+  .edit-mode .app-card {
+    aspect-ratio: auto;
+    overflow: visible;
+  }
+
+  .edit-mode .app-card-main {
+    aspect-ratio: 1;
+  }
+
+  .app-card-actions {
+    gap: 4px;
+    padding: 6px 5px 5px;
+  }
+
+  .app-card-actions button {
+    min-height: 34px;
+  }
+
+  .add-app-card-inner {
+    display: grid;
+    min-height: 100%;
+    place-items: center;
+    align-content: center;
+    gap: 7px;
+    padding: 12px;
+    text-align: center;
+  }
+
+  .add-app-card .plus-orb {
+    width: 43px;
+    height: 43px;
+    border-radius: 14px;
+  }
+
+  .add-app-card strong {
+    font-size: 0.82rem;
+    line-height: 1.15;
+  }
+
+  .add-app-card small {
+    display: none;
+  }
+
+  /* Medium preset: 3 square launchers across. */
+  .app-shell[data-tile-preset="medium"] .app-card,
+  .app-shell[data-tile-preset="medium"] .add-app-card {
+    border-radius: 16px;
+  }
+
+  .app-shell[data-tile-preset="medium"] .app-card-main,
+  .app-shell[data-tile-preset="medium"] .edit-mode .app-card-main {
+    gap: 5px;
+    padding: 9px;
+  }
+
+  .app-shell[data-tile-preset="medium"] .app-card-icon,
+  .app-shell[data-tile-preset="medium"] .add-app-card .plus-orb {
+    width: 34px;
+    height: 34px;
+    border-radius: 11px;
+  }
+
+  .app-shell[data-tile-preset="medium"] .app-card-icon svg {
+    width: 17px;
+    height: 17px;
+  }
+
+  .app-shell[data-tile-preset="medium"] .app-card-meta,
+  .app-shell[data-tile-preset="medium"] .app-open-indicator {
+    display: none;
+  }
+
+  .app-shell[data-tile-preset="medium"] .app-card-name {
+    font-size: 0.76rem;
+    line-height: 1.1;
+    -webkit-line-clamp: 2;
+  }
+
+  .app-shell[data-tile-preset="medium"] .add-app-card strong {
+    font-size: 0.72rem;
+  }
+
+  /* Small preset: 4 square launchers across. */
+  .app-shell[data-tile-preset="small"] .app-card,
+  .app-shell[data-tile-preset="small"] .add-app-card {
+    border-radius: 13px;
+  }
+
+  .app-shell[data-tile-preset="small"] .app-card::before {
+    left: 9px;
+    width: 23px;
+    height: 2px;
+  }
+
+  .app-shell[data-tile-preset="small"] .app-card-main,
+  .app-shell[data-tile-preset="small"] .edit-mode .app-card-main {
+    gap: 3px;
+    padding: 7px;
+  }
+
+  .app-shell[data-tile-preset="small"] .app-card-icon,
+  .app-shell[data-tile-preset="small"] .add-app-card .plus-orb {
+    width: 28px;
+    height: 28px;
+    border-radius: 9px;
+  }
+
+  .app-shell[data-tile-preset="small"] .app-card-icon svg {
     width: 14px;
     height: 14px;
   }
 
-  .app-card-actions {
-    gap: 5px;
-    padding: 0 9px 9px;
+  .app-shell[data-tile-preset="small"] .app-card-meta,
+  .app-shell[data-tile-preset="small"] .app-open-indicator {
+    display: none;
   }
 
-  .app-card-actions button {
-    min-height: 36px;
+  .app-shell[data-tile-preset="small"] .app-card-name {
+    font-size: 0.62rem;
+    line-height: 1.08;
+    -webkit-line-clamp: 2;
   }
 
-  .add-app-card {
-    min-height: 78px;
-    border-radius: 17px;
-  }
-
-  .add-app-card-inner {
-    grid-template-columns: auto minmax(0, 1fr);
-    grid-template-rows: auto auto;
-    place-items: start;
-    align-content: center;
-    column-gap: 11px;
-    row-gap: 1px;
-    padding: 10px 13px;
-    text-align: left;
-  }
-
-  .add-app-card .plus-orb {
-    width: 40px;
-    height: 40px;
-    grid-row: 1 / 3;
-    border-radius: 12px;
-  }
-
-  .add-app-card strong {
-    align-self: end;
-    font-size: 0.9rem;
-  }
-
-  .add-app-card small {
-    align-self: start;
-    max-width: none;
-    font-size: 0.7rem;
+  .app-shell[data-tile-preset="small"] .add-app-card strong {
+    font-size: 0.62rem;
   }
 }
 
