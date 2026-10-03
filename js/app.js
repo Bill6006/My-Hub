@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const APP_VERSION = '1.1.3';
+  const APP_VERSION = '1.1.4';
   const SCHEMA_VERSION = 2;
   const STORAGE_KEY = 'tyreeHub.state.v1';
   const ROLLBACK_KEY = 'tyreeHub.rollback.v1';
@@ -162,6 +162,7 @@
       customCategories: [],
       settings: {
         theme: 'system',
+        tilePreset: 'large',
         onboardingSeen: false,
         managementLock: {
           enabled: false,
@@ -242,6 +243,7 @@
         : [],
       settings: {
         theme: ['system', 'light', 'dark'].includes(settingsRaw.theme) ? settingsRaw.theme : 'system',
+        tilePreset: ['large', 'medium', 'small'].includes(settingsRaw.tilePreset) ? settingsRaw.tilePreset : 'large',
         onboardingSeen: Boolean(settingsRaw.onboardingSeen),
         managementLock: {
           enabled: Boolean(lockRaw.enabled && lockRaw.salt && lockRaw.hash),
@@ -301,7 +303,7 @@
     const ids = [
       'appShell', 'todayLabel', 'themeQuickButton', 'settingsButton', 'heroAddButton', 'searchInput', 'clearSearchButton',
       'filterStrip', 'editModeButton', 'editModeLabel', 'updateBanner', 'updateNowButton', 'viewKicker', 'appsHeading',
-      'appCountBadge', 'editNotice', 'exitEditButton', 'appGrid', 'emptyState', 'emptyAddButton', 'homeNavButton',
+      'presetButton', 'presetMenu', 'appCountBadge', 'editNotice', 'exitEditButton', 'appGrid', 'emptyState', 'emptyAddButton', 'homeNavButton',
       'addNavButton', 'manageNavButton', 'settingsNavButton', 'appEditorDialog', 'appEditorForm', 'appEditorKicker',
       'appEditorTitle', 'editingAppId', 'appNameInput', 'appUrlInput', 'developerShortcutsDetails', 'githubUploadUrlInput',
       'githubUploadUrlError', 'openGithubUploadButton', 'appDescriptionInput', 'descriptionCount',
@@ -577,7 +579,25 @@
     return fragment;
   }
 
+  function applyTilePreset() {
+    const preset = ['large', 'medium', 'small'].includes(state?.settings?.tilePreset)
+      ? state.settings.tilePreset
+      : 'large';
+    dom.appShell.dataset.tilePreset = preset;
+    dom.presetMenu.querySelectorAll('[data-tile-preset]').forEach(button => {
+      const selected = button.dataset.tilePreset === preset;
+      button.classList.toggle('active', selected);
+      button.setAttribute('aria-pressed', String(selected));
+    });
+  }
+
+  function closePresetMenu() {
+    dom.presetMenu.hidden = true;
+    dom.presetButton.setAttribute('aria-expanded', 'false');
+  }
+
   function renderApps() {
+    applyTilePreset();
     renderFilters();
     const apps = getVisibleApps();
     dom.appGrid.replaceChildren();
@@ -1409,6 +1429,24 @@
       renderApps();
     });
 
+    dom.presetButton.addEventListener('click', event => {
+      event.stopPropagation();
+      const willOpen = dom.presetMenu.hidden;
+      dom.presetMenu.hidden = !willOpen;
+      dom.presetButton.setAttribute('aria-expanded', String(willOpen));
+    });
+
+    dom.presetMenu.addEventListener('click', event => {
+      const button = event.target.closest('[data-tile-preset]');
+      if (!button) return;
+      const preset = button.dataset.tilePreset;
+      if (!['large', 'medium', 'small'].includes(preset)) return;
+      state.settings.tilePreset = preset;
+      saveState();
+      applyTilePreset();
+      closePresetMenu();
+    });
+
     dom.appEditorForm.addEventListener('submit', event => {
       event.preventDefault();
       saveAppFromEditor();
@@ -1489,6 +1527,7 @@
 
     document.addEventListener('click', event => {
       if (!event.target.closest('.card-more-menu') && !event.target.closest('[data-action="more"]')) closeAllCardMenus();
+      if (!event.target.closest('.preset-control')) closePresetMenu();
     });
 
     document.querySelectorAll('[data-close-dialog]').forEach(button => {
