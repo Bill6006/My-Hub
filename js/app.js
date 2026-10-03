@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const APP_VERSION = '1.1.4';
+  const APP_VERSION = '1.1.5';
   const SCHEMA_VERSION = 2;
   const STORAGE_KEY = 'tyreeHub.state.v1';
   const ROLLBACK_KEY = 'tyreeHub.rollback.v1';
@@ -140,6 +140,7 @@
   let waitingServiceWorker = null;
   let draggedAppId = null;
   const dialogHistory = [];
+  const siteIconCandidateCache = new Map();
 
   function deepClone(value) {
     return JSON.parse(JSON.stringify(value));
@@ -486,12 +487,110 @@
     return apps;
   }
 
-  function renderAppIcon(container, app) {
+  function renderFallbackIcon(container, app) {
+    container.classList.remove('has-site-icon');
     if (app.iconType === 'emoji') {
       container.textContent = app.icon || '✨';
     } else {
       container.innerHTML = svgIcon(app.icon);
     }
+  }
+
+  function commonSiteIconCandidates(rawUrl) {
+    try {
+      const pageUrl = new URL(rawUrl);
+      const directoryUrl = new URL('./', pageUrl.href);
+      const originUrl = new URL('/', pageUrl.origin);
+      const names = [
+        'favicon.svg',
+        'favicon.png',
+        'favicon.ico',
+        'apple-touch-icon.png',
+        'icon-192.png',
+        'icons/icon-192.png',
+        'icons/icon-512.png'
+      ];
+      const candidates = [];
+      names.forEach(name => candidates.push(new URL(name, directoryUrl).href));
+      names.forEach(name => candidates.push(new URL(name, originUrl).href));
+      return [...new Set(candidates)];
+    } catch (_) {
+      return [];
+    }
+  }
+
+  async function discoverSiteIconCandidates(rawUrl) {
+    if (siteIconCandidateCache.has(rawUrl)) return siteIconCandidateCache.get(rawUrl);
+
+    const promise = (async () => {
+      const candidates = commonSiteIconCandidates(rawUrl);
+      try {
+        const pageUrl = new URL(rawUrl);
+        if (pageUrl.origin === window.location.origin) {
+          const response = await fetch(pageUrl.href, {
+            credentials: 'same-origin',
+            cache: 'force-cache'
+          });
+          if (response.ok) {
+            const html = await response.text();
+            const doc = new DOMParser().parseFromString(html, 'text/html');
+            const declared = [...doc.querySelectorAll('link[rel][href]')]
+              .filter(link => {
+                const rel = String(link.getAttribute('rel') || '').toLowerCase();
+                return rel.split(/\s+/).some(value =>
+                  value === 'icon' || value === 'apple-touch-icon' || value === 'mask-icon'
+                );
+              })
+              .map(link => {
+                try {
+                  return new URL(link.getAttribute('href'), pageUrl.href).href;
+                } catch (_) {
+                  return '';
+                }
+              })
+              .filter(Boolean);
+            return [...new Set([...declared, ...candidates])];
+          }
+        }
+      } catch (_) {
+        // Cross-origin sites and offline pages simply use the common icon guesses below.
+      }
+      return candidates;
+    })();
+
+    siteIconCandidateCache.set(rawUrl, promise);
+    return promise;
+  }
+
+  function loadSiteIcon(container, app) {
+    discoverSiteIconCandidates(app.url).then(candidates => {
+      if (!candidates.length) return;
+      let index = 0;
+      const image = document.createElement('img');
+      image.className = 'app-site-icon';
+      image.alt = '';
+      image.decoding = 'async';
+      image.loading = 'eager';
+      image.referrerPolicy = 'no-referrer';
+
+      const tryNext = () => {
+        if (index >= candidates.length) return;
+        image.src = candidates[index++];
+      };
+
+      image.addEventListener('load', () => {
+        container.replaceChildren(image);
+        container.classList.add('has-site-icon');
+      }, { once: true });
+
+      image.addEventListener('error', tryNext);
+      tryNext();
+    }).catch(() => {});
+  }
+
+  function renderAppIcon(container, app) {
+    renderFallbackIcon(container, app);
+    loadSiteIcon(container, app);
   }
 
   function syncGithubUploadMenuAction(menu, app) {
