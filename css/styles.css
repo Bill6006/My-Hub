@@ -2571,3 +2571,165 @@ html[data-theme="dark"] .onboarding-visual {
     font-size: 0.8rem;
   }
 }
+
+
+/* Bigger launcher icons v1.1.6 */
+@media (max-width: 640px) {
+  /* Give the icon visual priority inside every square. */
+  .app-card-main,
+  .edit-mode .app-card-main {
+    position: relative;
+    display: block;
+    padding: 10px;
+  }
+
+  .app-card-content {
+    position: absolute;
+    z-index: 3;
+    right: 7px;
+    bottom: 7px;
+    left: 7px;
+    display: block;
+    padding: 20px 7px 6px;
+    border-radius: 0 0 12px 12px;
+    background: linear-gradient(
+      to bottom,
+      transparent,
+      color-mix(in srgb, var(--surface) 72%, transparent) 42%,
+      color-mix(in srgb, var(--surface) 96%, transparent) 78%
+    );
+    pointer-events: none;
+  }
+
+  .app-card-name {
+    display: -webkit-box;
+    overflow: hidden;
+    color: var(--text);
+    font-weight: 820;
+    text-shadow: 0 1px 8px color-mix(in srgb, var(--surface) 72%, transparent);
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .app-card-meta,
+  .app-card-description {
+    display: none;
+  }
+
+  .app-open-indicator {
+    display: none;
+  }
+
+  .app-card-icon {
+    position: absolute;
+    z-index: 2;
+    top: 12px;
+    left: 12px;
+    width: 66px;
+    height: 66px;
+    border-radius: 20px;
+  }
+
+  .app-card-icon svg {
+    width: 34px;
+    height: 34px;
+  }
+
+  .app-site-icon {
+    inset: 5%;
+    width: 90%;
+    height: 90%;
+    border-radius: 22%;
+  }
+
+  /* Large: 2 across */
+  .app-shell[data-tile-preset="large"] .app-card-icon {
+    top: 14px;
+    left: 14px;
+    width: 78px;
+    height: 78px;
+    border-radius: 22px;
+  }
+
+  .app-shell[data-tile-preset="large"] .app-card-icon svg {
+    width: 40px;
+    height: 40px;
+  }
+
+  .app-shell[data-tile-preset="large"] .app-card-name {
+    font-size: 1rem;
+    line-height: 1.08;
+  }
+
+  /* Medium: 3 across */
+  .app-shell[data-tile-preset="medium"] .app-card-icon {
+    top: 9px;
+    left: 9px;
+    width: 56px;
+    height: 56px;
+    border-radius: 17px;
+  }
+
+  .app-shell[data-tile-preset="medium"] .app-card-icon svg {
+    width: 29px;
+    height: 29px;
+  }
+
+  .app-shell[data-tile-preset="medium"] .app-card-content {
+    right: 5px;
+    bottom: 5px;
+    left: 5px;
+    padding: 16px 5px 5px;
+  }
+
+  .app-shell[data-tile-preset="medium"] .app-card-name {
+    font-size: 0.76rem;
+    line-height: 1.05;
+  }
+
+  /* Small: 4 across. Icon is intentionally dominant. */
+  .app-shell[data-tile-preset="small"] .app-card-icon {
+    top: 7px;
+    left: 7px;
+    width: 44px;
+    height: 44px;
+    border-radius: 13px;
+  }
+
+  .app-shell[data-tile-preset="small"] .app-card-icon svg {
+    width: 23px;
+    height: 23px;
+  }
+
+  .app-shell[data-tile-preset="small"] .app-card-content {
+    right: 4px;
+    bottom: 4px;
+    left: 4px;
+    padding: 13px 4px 4px;
+    border-radius: 0 0 9px 9px;
+  }
+
+  .app-shell[data-tile-preset="small"] .app-card-name {
+    font-size: 0.61rem;
+    line-height: 1.02;
+  }
+
+  /* Keep the Add tile visually consistent with real apps. */
+  .app-shell[data-tile-preset="large"] .add-app-card .plus-orb {
+    width: 72px;
+    height: 72px;
+    border-radius: 21px;
+  }
+
+  .app-shell[data-tile-preset="medium"] .add-app-card .plus-orb {
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+  }
+
+  .app-shell[data-tile-preset="small"] .add-app-card .plus-orb {
+    width: 42px;
+    height: 42px;
+    border-radius: 13px;
+  }
+}
