@@ -2733,3 +2733,99 @@ html[data-theme="dark"] .onboarding-visual {
     border-radius: 13px;
   }
 }
+
+
+/* Bigger launcher icons v1.1.7 */
+@media (max-width: 640px) {
+  /* Real site icons need contrast in dark mode. */
+  .app-card-icon.has-site-icon {
+    background: rgba(255, 255, 255, 0.94);
+    border-color: rgba(255, 255, 255, 0.22);
+    box-shadow:
+      0 8px 18px rgba(0, 0, 0, 0.22),
+      0 0 0 1px rgba(255, 255, 255, 0.05);
+  }
+
+  .app-site-icon {
+    inset: 3%;
+    width: 94%;
+    height: 94%;
+    border-radius: 20%;
+  }
+
+  .net-in-mind-icon {
+    background: linear-gradient(145deg, #5667ff, #2937b7) !important;
+    color: #fff !important;
+    border-color: rgba(132, 145, 255, 0.45) !important;
+    box-shadow: 0 9px 22px rgba(64, 82, 230, 0.34) !important;
+  }
+
+  .net-in-mind-icon svg {
+    width: 62% !important;
+    height: 62% !important;
+  }
+
+  /* Large: icon dominates the tile. */
+  .app-shell[data-tile-preset="large"] .app-card-icon {
+    width: 94px;
+    height: 94px;
+    border-radius: 25px;
+  }
+
+  .app-shell[data-tile-preset="large"] .app-card-icon svg {
+    width: 48px;
+    height: 48px;
+  }
+
+  /* Medium: noticeably larger than before. */
+  .app-shell[data-tile-preset="medium"] .app-card-icon {
+    width: 66px;
+    height: 66px;
+    border-radius: 19px;
+  }
+
+  .app-shell[data-tile-preset="medium"] .app-card-icon svg {
+    width: 34px;
+    height: 34px;
+  }
+
+  /* Small / 4-across: push the icon right up to the useful limit. */
+  .app-shell[data-tile-preset="small"] .app-card-icon {
+    top: 6px;
+    left: 6px;
+    width: 54px;
+    height: 54px;
+    border-radius: 15px;
+  }
+
+  .app-shell[data-tile-preset="small"] .app-card-icon svg {
+    width: 28px;
+    height: 28px;
+  }
+
+  .app-shell[data-tile-preset="small"] .app-card-content {
+    padding-top: 18px;
+  }
+
+  .app-shell[data-tile-preset="small"] .app-card-name {
+    font-size: 0.64rem;
+  }
+
+  .app-shell[data-tile-preset="large"] .add-app-card .plus-orb {
+    width: 88px;
+    height: 88px;
+    border-radius: 24px;
+  }
+
+  .app-shell[data-tile-preset="medium"] .add-app-card .plus-orb {
+    width: 62px;
+    height: 62px;
+    border-radius: 18px;
+  }
+
+  .app-shell[data-tile-preset="small"] .add-app-card .plus-orb {
+    width: 50px;
+    height: 50px;
+    border-radius: 14px;
+  }
+}
