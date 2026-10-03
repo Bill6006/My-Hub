@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const APP_VERSION = '1.1.6';
+  const APP_VERSION = '1.1.7';
   const SCHEMA_VERSION = 2;
   const STORAGE_KEY = 'tyreeHub.state.v1';
   const ROLLBACK_KEY = 'tyreeHub.rollback.v1';
@@ -69,6 +69,7 @@
   ]);
 
   const ICONS = {
+    'network-nodes': '<circle cx="12" cy="5" r="2.2"/><circle cx="5" cy="17" r="2.2"/><circle cx="19" cy="17" r="2.2"/><path d="M10.6 6.8 6.4 15M13.4 6.8l4.2 8.2M7.2 17h9.6"/>',
     'mic': '<path d="M12 14.5a3.5 3.5 0 0 0 3.5-3.5V6a3.5 3.5 0 1 0-7 0v5a3.5 3.5 0 0 0 3.5 3.5Z"/><path d="M5.5 10.5v.5a6.5 6.5 0 0 0 13 0v-.5M12 17.5V21M9 21h6"/>',
     'message': '<path d="M20 14a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h9a4 4 0 0 1 4 4v7Z"/><path d="M8 9h8M8 13h5"/>',
     'dumbbell': '<path d="M6 7v10M3.5 9v6M18 7v10M20.5 9v6M6 12h12M2 11v2M22 11v2"/>',
@@ -563,6 +564,20 @@
   }
 
   function loadSiteIcon(container, app) {
+    const appName = String(app.name || '').toLowerCase();
+    const appUrl = String(app.url || '').toLowerCase();
+
+    if (
+      appName.includes('net in mind') ||
+      appName.includes('net-in-mind') ||
+      appUrl.includes('/net-in-mind')
+    ) {
+      container.innerHTML = svgIcon('network-nodes');
+      container.classList.remove('has-site-icon');
+      container.classList.add('net-in-mind-icon');
+      return;
+    }
+
     discoverSiteIconCandidates(app.url).then(candidates => {
       if (!candidates.length) return;
       let index = 0;
