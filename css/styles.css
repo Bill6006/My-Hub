@@ -2745,18 +2745,6 @@ html[data-theme="dark"] .onboarding-visual {
     border-radius: 20%;
   }
 
-  .net-in-mind-icon {
-    background: linear-gradient(145deg, #5667ff, #2937b7) !important;
-    color: #fff !important;
-    border-color: rgba(132, 145, 255, 0.45) !important;
-    box-shadow: 0 9px 22px rgba(64, 82, 230, 0.34) !important;
-  }
-
-  .net-in-mind-icon svg {
-    width: 62% !important;
-    height: 62% !important;
-  }
-
   /* Large: icon dominates the tile. */
   .app-shell[data-tile-preset="large"] .app-card-icon {
     width: 94px;
