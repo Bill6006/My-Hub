@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const APP_VERSION = '1.1.9';
+  const APP_VERSION = '1.1.10';
   const SCHEMA_VERSION = 2;
   const STORAGE_KEY = 'tyreeHub.state.v1';
   const ROLLBACK_KEY = 'tyreeHub.rollback.v1';
@@ -583,9 +583,13 @@
       appName.includes('net-in-mind') ||
       appUrl.includes('/net-in-mind')
     ) {
-      container.innerHTML = svgIcon('network-nodes');
-      container.classList.remove('has-site-icon');
-      container.classList.add('net-in-mind-icon');
+      const image = document.createElement('img');
+      image.className = 'app-site-icon net-in-mind-custom-icon';
+      image.alt = '';
+      image.decoding = 'async';
+      image.src = './icons/net-in-mind.svg';
+      container.replaceChildren(image);
+      container.classList.add('has-site-icon');
       return;
     }
 
