@@ -1,6 +1,6 @@
 'use strict';
 
-const CACHE_VERSION = 'tyree-hub-shell-v1.1.7';
+const CACHE_VERSION = 'tyree-hub-shell-v1.1.8';
 const APP_SHELL = [
   './',
   './index.html',
