@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const APP_VERSION = '1.1.2';
+  const APP_VERSION = '1.1.3';
   const SCHEMA_VERSION = 2;
   const STORAGE_KEY = 'tyreeHub.state.v1';
   const ROLLBACK_KEY = 'tyreeHub.rollback.v1';
@@ -1337,13 +1337,14 @@
     if (!('serviceWorker' in navigator)) return;
     window.addEventListener('load', async () => {
       try {
-        const registration = await navigator.serviceWorker.register('./sw.js', { scope: './' });
-        if (registration.waiting) showUpdateAvailable(registration.waiting);
+        const registration = await navigator.serviceWorker.register('./sw.js', { scope: './', updateViaCache: 'none' });
+        await registration.update().catch(() => {});
+        if (registration.waiting) registration.waiting.postMessage({ type: 'SKIP_WAITING' });
         registration.addEventListener('updatefound', () => {
           const worker = registration.installing;
           if (!worker) return;
           worker.addEventListener('statechange', () => {
-            if (worker.state === 'installed' && navigator.serviceWorker.controller) showUpdateAvailable(worker);
+            if (worker.state === 'installed' && navigator.serviceWorker.controller) worker.postMessage({ type: 'SKIP_WAITING' });
           });
         });
         setInterval(() => registration.update().catch(() => {}), 60 * 60 * 1000);
