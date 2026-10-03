@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const APP_VERSION = '1.1.8';
+  const APP_VERSION = '1.1.9';
   const SCHEMA_VERSION = 2;
   const STORAGE_KEY = 'tyreeHub.state.v1';
   const ROLLBACK_KEY = 'tyreeHub.rollback.v1';
@@ -566,6 +566,17 @@
   function loadSiteIcon(container, app) {
     const appName = String(app.name || '').toLowerCase();
     const appUrl = String(app.url || '').toLowerCase();
+
+    if (appName.includes('exactdomain') || appName.includes('exact domain')) {
+      const image = document.createElement('img');
+      image.className = 'app-site-icon exactdomain-custom-icon';
+      image.alt = '';
+      image.decoding = 'async';
+      image.src = './icons/exactdomain.webp';
+      container.replaceChildren(image);
+      container.classList.add('has-site-icon');
+      return;
+    }
 
     if (
       appName.includes('net in mind') ||
