@@ -1,8 +1,8 @@
 (() => {
   'use strict';
 
-  const APP_VERSION = '1.1.10';
-  const SCHEMA_VERSION = 2;
+  const APP_VERSION = '1.1.11';
+  const SCHEMA_VERSION = 3;
   const STORAGE_KEY = 'tyreeHub.state.v1';
   const ROLLBACK_KEY = 'tyreeHub.rollback.v1';
   const CORRUPT_KEY_PREFIX = 'tyreeHub.corrupt.';
@@ -13,59 +13,137 @@
 
   const DEFAULT_APPS = Object.freeze([
     {
-      id: 'default-speech-coach',
-      name: 'Speech Coach',
-      url: 'https://chatgpt.com/share/6a5da21a-959c-83ea-94cc-076d41ea8854',
+      id: 'default-pimsleur-french',
+      name: 'Pimsleur French',
+      url: 'https://bill6006.github.io/Pim_Fre/',
       githubUploadUrl: '',
       description: 'Practice communication, speaking, and social confidence.',
       category: 'Coaching',
       iconType: 'library',
-      icon: 'mic',
-      accent: '#7c3aed',
+      icon: 'message',
+      accent: '#64748b',
       openMode: 'new',
       favorite: true,
       hidden: false,
-      createdAt: '2026-07-20T00:00:00.000Z',
-      updatedAt: '2026-07-20T00:00:00.000Z',
+      createdAt: '2026-10-03T00:00:00.000Z',
+      updatedAt: '2026-10-03T00:00:00.000Z',
       lastOpenedAt: null,
       isDefault: true
     },
     {
-      id: 'default-life-command-center',
-      name: 'Life Command Center',
-      url: 'https://bill6006.github.io/Command-center/',
+      id: 'default-exact-domain',
+      name: 'ExactDomain',
+      url: 'https://bill6006.github.io/My-Hub/ExactDomain/',
       githubUploadUrl: '',
-      description: 'Manage goals, routines, priorities, planning, and daily life.',
+      description: '',
       category: 'Personal',
       iconType: 'library',
-      icon: 'compass',
-      accent: '#2563eb',
+      icon: 'globe',
+      accent: '#0891b2',
       openMode: 'new',
       favorite: true,
       hidden: false,
-      createdAt: '2026-07-20T00:00:00.000Z',
-      updatedAt: '2026-07-20T00:00:00.000Z',
+      createdAt: '2026-10-03T00:00:00.000Z',
+      updatedAt: '2026-10-03T00:00:00.000Z',
       lastOpenedAt: null,
       isDefault: true
     },
     {
-      id: 'default-tailored-training',
-      name: 'Tailored Training',
-      url: 'https://bill6006.github.io/Tailored-Training/index.html',
+      id: 'default-tallis',
+      name: 'Tallis',
+      url: 'https://claude.ai/artifact/TaNz3gHg6XVgjd53t',
       githubUploadUrl: '',
-      description: 'Open personalized workouts and track training.',
-      category: 'Fitness',
+      description: '',
+      category: 'Personal',
+      iconType: 'library',
+      icon: 'briefcase',
+      accent: '#4f46e5',
+      openMode: 'new',
+      favorite: true,
+      hidden: false,
+      createdAt: '2026-10-03T00:00:00.000Z',
+      updatedAt: '2026-10-03T00:00:00.000Z',
+      lastOpenedAt: null,
+      isDefault: true
+    },
+    {
+      id: 'default-life-mirror',
+      name: 'Life Mirror',
+      url: 'https://bill6006.github.io/life-mirror/',
+      githubUploadUrl: '',
+      description: '',
+      category: 'Personal',
+      iconType: 'library',
+      icon: 'sparkles',
+      accent: '#0891b2',
+      openMode: 'new',
+      favorite: true,
+      hidden: false,
+      createdAt: '2026-10-03T00:00:00.000Z',
+      updatedAt: '2026-10-03T00:00:00.000Z',
+      lastOpenedAt: null,
+      isDefault: true
+    },
+    {
+      id: 'default-chef',
+      name: 'Chef',
+      url: 'https://chef.life-mirror.workers.dev/',
+      githubUploadUrl: '',
+      description: '',
+      category: 'Personal',
+      iconType: 'library',
+      icon: 'checklist',
+      accent: '#d97706',
+      openMode: 'new',
+      favorite: true,
+      hidden: false,
+      createdAt: '2026-10-03T00:00:00.000Z',
+      updatedAt: '2026-10-03T00:00:00.000Z',
+      lastOpenedAt: null,
+      isDefault: true
+    },
+    {
+      id: 'default-work-out-app',
+      name: 'Work Out App',
+      url: 'https://bill6006.github.io/Workout-Conductor-Rebuild-v4/',
+      githubUploadUrl: '',
+      description: '',
+      category: 'Personal',
       iconType: 'library',
       icon: 'dumbbell',
       accent: '#16845e',
       openMode: 'new',
       favorite: true,
       hidden: false,
-      createdAt: '2026-07-20T00:00:00.000Z',
-      updatedAt: '2026-07-20T00:00:00.000Z',
+      createdAt: '2026-10-03T00:00:00.000Z',
+      updatedAt: '2026-10-03T00:00:00.000Z',
+      lastOpenedAt: null,
+      isDefault: true
+    },
+    {
+      id: 'default-net-in-mind',
+      name: 'Net In Mind',
+      url: 'https://bill6006.github.io/net-in-mind/',
+      githubUploadUrl: '',
+      description: '',
+      category: 'Personal',
+      iconType: 'library',
+      icon: 'link',
+      accent: '#4f46e5',
+      openMode: 'new',
+      favorite: true,
+      hidden: false,
+      createdAt: '2026-10-03T00:00:00.000Z',
+      updatedAt: '2026-10-03T00:00:00.000Z',
       lastOpenedAt: null,
       isDefault: true
     }
+  ]);
+
+  const LEGACY_DEFAULT_IDS = new Set([
+    'default-speech-coach',
+    'default-life-command-center',
+    'default-tailored-training'
   ]);
 
   const ICONS = {
@@ -222,17 +300,51 @@
     return app;
   }
 
+  function migrateAppsToCurrentDefaults(apps, schemaVersion) {
+    if (schemaVersion >= 3) return apps;
+
+    const retained = apps.filter(app => !LEGACY_DEFAULT_IDS.has(app.id));
+    const consumedIds = new Set();
+    const restoredDefaults = DEFAULT_APPS.map(defaultApp => {
+      const match = retained.find(app =>
+        !consumedIds.has(app.id) &&
+        (
+          app.url === defaultApp.url ||
+          app.name.toLocaleLowerCase() === defaultApp.name.toLocaleLowerCase()
+        )
+      );
+
+      if (!match) return deepClone(defaultApp);
+      consumedIds.add(match.id);
+      return {
+        ...match,
+        id: defaultApp.id,
+        name: defaultApp.name,
+        url: defaultApp.url,
+        category: defaultApp.category,
+        accent: defaultApp.accent,
+        favorite: true,
+        hidden: false,
+        isDefault: true
+      };
+    });
+
+    const extras = retained.filter(app => !consumedIds.has(app.id));
+    return [...restoredDefaults, ...extras];
+  }
+
   function validateStoredState(candidate) {
     if (!isPlainObject(candidate) || !Array.isArray(candidate.apps)) return null;
     const schemaVersion = Number(candidate.schemaVersion || 1);
     if (schemaVersion > SCHEMA_VERSION || schemaVersion < 1) return null;
 
     const uniqueIds = new Set();
-    const apps = candidate.apps.map(sanitizeApp).map(app => {
+    const sanitizedApps = candidate.apps.map(sanitizeApp).map(app => {
       if (uniqueIds.has(app.id)) app.id = createId();
       uniqueIds.add(app.id);
       return app;
     });
+    const apps = migrateAppsToCurrentDefaults(sanitizedApps, schemaVersion);
 
     const settingsRaw = isPlainObject(candidate.settings) ? candidate.settings : {};
     const lockRaw = isPlainObject(settingsRaw.managementLock) ? settingsRaw.managementLock : {};
