@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const APP_VERSION = '1.1.11';
+  const APP_VERSION = '1.1.12';
   const SCHEMA_VERSION = 3;
   const STORAGE_KEY = 'tyreeHub.state.v1';
   const ROLLBACK_KEY = 'tyreeHub.rollback.v1';
