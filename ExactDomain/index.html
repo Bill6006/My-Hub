@@ -172,7 +172,7 @@ const KEY_API = 'exactDomainSearch.serperKey';
 const KEY_SNAP = 'exactDomainSearch.v4.snapshot';
 const KEY_SNAP_AT = 'exactDomainSearch.v4.snapshotAt';
 const KEY_PRE = 'exactDomainSearch.v4.premigrate';
-const SCHEMA = 2, SEED_VERSION = 1;
+const SCHEMA = 2, SEED_VERSION = 2;
 const ENDPOINT = 'https://google.serper.dev/search';
 const MAX_CALLS = 100, MAX_EMPTY = 25, CHUNK = 60, SNAP_EVERY = 10 * 60 * 1000, DEFAULT_CREDITS = 2400;
 
@@ -185,7 +185,8 @@ const STATUS_SHORT = { refund: '💸 Refund', reply: '💬 Reply', delivery: '�
 /* ================= historical recovery seed =================
    Fill-only: applied once per browser (meta.seedVersion), never overwrites existing values.
    Anything hard-coded here is publicly visible once the page is hosted. */
-const SEED_TOPIC = { query: 'On Cloud 6', anyTerms: ['Woman', 'Women'] };
+const SEED_TOPIC = { query: 'On Cloud 5', anyTerms: ['Woman', 'Women'] };
+const OLD_SEED_TOPIC = { query: 'On Cloud 6', anyTerms: ['Woman', 'Women'] };
 // [domain, retailer, order number(s), price(s), outcome, difficulty, historical notes]
 const SEED = [
   ['newbalance.com', 'New Balance', 'U10556132', '$153.64', 'rejected', '', 'DECLINED, need to return'],
@@ -546,15 +547,36 @@ function applySeed(db) {
     if (!x.price && price) x.price = price;
     if (!x.notes && note) x.notes = note;
   });
+
+  // Recovery/history belongs to On Cloud 5, not On Cloud 6.
   let t = findTopicByKey(db, topicKey(SEED_TOPIC.query, SEED_TOPIC.anyTerms));
   if (!t) { t = newTopic(SEED_TOPIC.query, SEED_TOPIC.anyTerms); db.topics[t.id] = t; }
+
   const holder = (d, title) => ({ domain: d, url: 'https://' + d + '/', title, snippet: '', foundAt: now(), sourceGl: '', usFocused: false, manualKnown: true, manualSource: 'notes' });
   SEED.forEach(r => addResult(t, holder(r[0], r[1])));
   SEED_CANDIDATES.forEach(([d, title, note]) => {
     addResult(t, holder(d, title));
     if (note) { const x = det(d); if (!x.notes) x.notes = note; }
   });
+
+  // Version 1 mistakenly placed note placeholders in On Cloud 6.
+  // Remove only untouched FROM NOTES placeholders there. Real Serper hits stay in On Cloud 6.
+  let moved = 0;
+  const old = findTopicByKey(db, topicKey(OLD_SEED_TOPIC.query, OLD_SEED_TOPIC.anyTerms));
+  if (old && old.id !== t.id) {
+    const before = old.results.length;
+    old.results = old.results.filter(r => !(r.manualKnown && r.manualSource === 'notes'));
+    moved = before - old.results.length;
+    idxCache.delete(old);
+    if (moved) old.updatedAt = now();
+
+    // If the mistaken topic contained only seeded placeholders and never searched, remove the empty shell.
+    if (!old.results.length && !(old.state && old.state.totalCalls)) delete db.topics[old.id];
+  }
+
+  t.updatedAt = now();
   db.meta.seedVersion = SEED_VERSION;
+  return moved;
 }
 
 /* ================= per-domain accessors / setters (global across topics) ================= */
@@ -1062,10 +1084,12 @@ let findTimer = 0;
 function init() {
   const L = loadDB();
   DB = L.db;
-  if (DB.meta.seedVersion < SEED_VERSION) applySeed(DB); // fill-only, once
+  let seedMoved = 0;
+  if (DB.meta.seedVersion < SEED_VERSION) seedMoved = applySeed(DB); // fill-only plus one-time seed-topic correction
   saveNow();
   if (L.from === 'snapshot') toast('Main data was unreadable — restored from the last snapshot.', 7000);
   else if (L.legacy) toast('Existing data migrated. A pre-migration copy was kept.', 5000);
+  else if (seedMoved) toast('Moved ' + seedMoved + ' restored note domains from On Cloud 6 to On Cloud 5.', 6000);
   try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) { /* ignore */ }
   if (history.state) history.replaceState(null, ''); // drop a stale topic entry left over from a reload
   const f = S().lastForm;
