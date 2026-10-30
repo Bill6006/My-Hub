@@ -755,30 +755,50 @@ function scoreQuality(domain, first, second) {
 
   return { status, score, coverage, checkedAt: now(), factors: f, foundedYear: year || null, source:'serper-quality-v1' };
 }
-async function qualityCall(key, query, run) {
-  for (let attempt = 0; attempt < 2; attempt++) {
+async function qualityCall(key, query, run, fallbackQuery) {
+  let currentQuery = query;
+  let usedFallback = false;
+  for (let attempt = 0; attempt < 3; attempt++) {
     const ctl = new AbortController(); run.ctl = ctl;
     const timer = setTimeout(() => ctl.abort(), 30000);
     try {
-      const resp = await fetch(ENDPOINT, { method:'POST', headers:{'X-API-KEY':key,'Content-Type':'application/json'}, body:JSON.stringify({q:query,hl:'en',gl:'us',num:10,autocorrect:false}), signal:ctl.signal });
+      const resp = await fetch(ENDPOINT, { method:'POST', headers:{'X-API-KEY':key,'Content-Type':'application/json'}, body:JSON.stringify({q:currentQuery,hl:'en',gl:'us',num:10,autocorrect:false}), signal:ctl.signal });
       let data = null; try { data = await resp.json(); } catch(e) {}
       if (resp.ok) {
         S().estimatedCredits = Math.max(0, S().estimatedCredits - 1);
-        return { ok:true, organic:Array.isArray(data && data.organic) ? data.organic : [] };
+        return { ok:true, organic:Array.isArray(data && data.organic) ? data.organic : [], usedFallback };
       }
       const msg = String((data && (data.message || data.error)) || resp.statusText || 'HTTP ' + resp.status);
+
+      // Serper free accounts can reject certain search patterns. Fall back to a simpler query instead of stopping the scan.
+      if (/pattern not allowed/i.test(msg)) {
+        if (fallbackQuery && currentQuery !== fallbackQuery) {
+          currentQuery = fallbackQuery;
+          usedFallback = true;
+          continue;
+        }
+        const plain = currentQuery.replace(/["']/g,'').split(/\s+/).slice(0,2).join(' ');
+        if (plain && plain !== currentQuery) {
+          currentQuery = plain;
+          usedFallback = true;
+          continue;
+        }
+        return {ok:false,kind:'restricted',msg};
+      }
+
       if (resp.status === 401 || resp.status === 403) return {ok:false,kind:'auth',msg};
       if (resp.status === 402 || /credit/i.test(msg)) return {ok:false,kind:'credits',msg};
-      if ((resp.status === 429 || resp.status >= 500) && attempt === 0) { await sleep(1200); continue; }
+      if ((resp.status === 429 || resp.status >= 500) && attempt < 2) { await sleep(1200); continue; }
       return {ok:false,kind:resp.status === 429 || resp.status >= 500 ? 'rate' : 'http',msg};
     } catch(e) {
       if (run.stop) return {ok:false,kind:'abort',msg:'Stopped'};
-      if (attempt === 0) { await sleep(900); continue; }
+      if (attempt < 2) { await sleep(900); continue; }
       return {ok:false,kind:'net',msg:e && e.name === 'AbortError' ? 'Timed out' : 'Network error'};
     } finally { clearTimeout(timer); }
   }
   return {ok:false,kind:'net',msg:'Network error'};
 }
+
 function qualityTag(qa) {
   if (!qa) return '';
   const cls = qa.status === 'quality' ? 'qual' : qa.status === 'below' ? 'qrisk' : 'qunclear';
@@ -821,14 +841,17 @@ async function startQualityScan() {
   for (const d of targets) {
     if (run.stop) break;
     run.current = d; renderQualityRun();
-    const q1 = '"' + d + '" founded revenue profitable company history leadership headquarters';
-    const q2 = '"' + d + '" reviews complaints layoffs class action bankruptcy regulatory';
-    const a = await qualityCall(key, q1, run);
+    const q1 = d + ' company history founded revenue';
+    const q2 = d + ' reviews complaints';
+    const a = await qualityCall(key, q1, run, d + ' company');
     if (run.stop) break;
-    if (!a.ok) { run.msg = RUN_MSG[a.kind] || ('Quality scan stopped: ' + a.msg); break; }
+    if (!a.ok) {
+      if (a.kind === 'restricted') { run.msg = 'Serper rejected even the simplest quality lookup for ' + d + '. Try again later or assess that company manually.'; break; }
+      run.msg = RUN_MSG[a.kind] || ('Quality scan stopped: ' + a.msg); break;
+    }
     run.calls++; renderCredits();
 
-    const b = await qualityCall(key, q2, run);
+    const b = await qualityCall(key, q2, run, d + ' reviews');
     if (run.stop) break;
     if (!b.ok) { run.msg = RUN_MSG[b.kind] || ('Quality scan stopped: ' + b.msg); break; }
     run.calls++; renderCredits();
@@ -957,7 +980,8 @@ const RUN_MSG = {
   auth: 'Serper rejected the API key. Check it under ⋯ → Serper API key.',
   credits: 'Out of Serper credits.',
   rate: 'Serper is busy or rate-limiting. Progress is saved; try again shortly.',
-  net: 'Network problem. Progress is saved; try again.'
+  net: 'Network problem. Progress is saved; try again.',
+  restricted: 'Serper blocked that search pattern on this account.'
 };
 async function runSearch(f, key) {
   let topic = findTopicByKey(DB, topicKey(f.q, f.terms));
