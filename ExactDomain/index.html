@@ -86,7 +86,8 @@ details.add summary{padding:8px 2px;color:var(--cyan);font-size:13.5px;cursor:po
 .tag{font-size:10.5px;line-height:1.5;padding:0 7px;border-radius:99px;border:1px solid var(--line);color:var(--muted)}
 .tag.ok{color:var(--green);border-color:#1e5b3b}
 .tag.no{color:var(--red);border-color:#6a2b34}
-.tag.st{color:var(--amber);border-color:#5e4a1e}
+.tag.st{color:var(--amber);border-color:#5e4a1e}.tag.qual{color:var(--green);border-color:#1e5b3b}.tag.qrisk{color:var(--red);border-color:#6a2b34}.tag.qunclear{color:var(--amber);border-color:#5e4a1e}
+.qscan{margin:7px 0 9px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--panel);font-size:12.5px;color:var(--muted)}.qscan b{color:var(--text)}.qnote{font-size:11.5px;color:var(--muted);margin:3px 0 8px}
 .bdg{font-size:9.5px;line-height:1.6;font-weight:700;letter-spacing:.04em;padding:0 6px;border-radius:5px;background:#1b2a38;color:var(--cyan)}
 .bdg.art{color:var(--amber);background:#2e2512}
 .acts{display:flex;gap:4px}
@@ -181,6 +182,9 @@ const DIFF_LABEL = { veryEasy: 'Very Easy', easy: 'Easy', medium: 'Medium', hard
 const STATUS_PLAIN = { refund: 'Waiting for refund', reply: 'Waiting for reply', delivery: 'Purchased / waiting for delivery' };
 const STATUS_LABEL = { refund: '💸 ' + STATUS_PLAIN.refund, reply: '💬 ' + STATUS_PLAIN.reply, delivery: '📦 ' + STATUS_PLAIN.delivery };
 const STATUS_SHORT = { refund: '💸 Refund', reply: '💬 Reply', delivery: '📦 Delivery' };
+const QUALITY_LABEL = { quality: 'Quality', below: 'Below threshold', unclear: 'Needs review' };
+const QUALITY_WEIGHTS = { age: 15, financial: 25, reputation: 15, employee: 12, longevity: 12, legal: 12, market: 5, transparency: 4 };
+const QUALITY_QUERIES_PER_DOMAIN = 2;
 
 /* ================= historical recovery seed =================
    Fill-only: applied once per browser (meta.seedVersion), never overwrites existing values.
@@ -321,6 +325,16 @@ function normDetail(d) {
   if (!d || typeof d !== 'object') return null;
   return { ...d, orderNumber: str(d.orderNumber ?? d.order ?? d.orderNo ?? ''), price: str(d.price ?? ''), notes: str(d.notes ?? d.note ?? '') };
 }
+function normQuality(v) {
+  if (!v || typeof v !== 'object') return null;
+  const status = ['quality','below','unclear'].includes(v.status) ? v.status : 'unclear';
+  const factors = {};
+  Object.keys(QUALITY_WEIGHTS).forEach(k => {
+    const x = v.factors && v.factors[k];
+    factors[k] = ['good','bad','unknown'].includes(x) ? x : 'unknown';
+  });
+  return { status, score: Math.max(0, Math.min(100, Math.round(num(v.score)))), coverage: Math.max(0, Math.min(100, Math.round(num(v.coverage)))), checkedAt: num(v.checkedAt), factors, source: str(v.source || 'serper-quality-v1') };
+}
 const pick = (v, allowed) => allowed.find(a => a.toLowerCase() === String(v ?? '').toLowerCase()) || 'all';
 function normCountry(v) {
   v = String(v ?? '').toLowerCase();
@@ -352,7 +366,8 @@ function eachEntry(obj, fn) {
 const defSettings = () => ({
   countryFilter: 'all', usSearchOnly: false, estimatedCredits: DEFAULT_CREDITS, hideArticles: false,
   reviewFilter: 'all', reviews: {}, outcomeFilter: 'all', difficultyFilter: 'all', domainRatings: {},
-  statusFilter: 'all', domainStatuses: {}, domainDetails: {}, domainOutcomes: {}, lastForm: { q: '', e1: '', e2: '' }
+  statusFilter: 'all', domainStatuses: {}, domainDetails: {}, domainOutcomes: {},
+  qualityFilter: 'all', qualityAssessments: {}, lastForm: { q: '', e1: '', e2: '' }
 });
 const newDB = () => ({ version: 4, topics: {}, settings: defSettings(), meta: { schema: SCHEMA, rev: 0, createdAt: now(), seedVersion: 0 } });
 
@@ -447,6 +462,7 @@ function normalizeDB(raw) {
   s.outcomeFilter = pick(rs.outcomeFilter, ['all', 'approved', 'rejected', 'unrated']);
   s.difficultyFilter = normDifficultyFilter(rs.difficultyFilter);
   s.statusFilter = normStatusFilter(rs.statusFilter);
+  s.qualityFilter = pick(rs.qualityFilter, ['all', 'quality', 'below', 'unclear', 'unassessed']);
   if (rs.lastForm && typeof rs.lastForm === 'object') s.lastForm = { q: str(rs.lastForm.q), e1: str(rs.lastForm.e1), e2: str(rs.lastForm.e2) };
   eachEntry(rs.reviews, (d, v) => { const x = normReview(v); if (x) s.reviews[d] = x; });
   eachEntry(rs.domainOutcomes, (d, v) => { const x = normOutcome(v); if (x) s.domainOutcomes[d] = x; });
@@ -457,6 +473,7 @@ function normalizeDB(raw) {
   });
   eachEntry(rs.domainStatuses, (d, v) => { const x = normStatus(v); if (x) s.domainStatuses[d] = x; });
   eachEntry(rs.domainDetails, (d, v) => { const x = normDetail(v); if (x) s.domainDetails[d] = x; });
+  eachEntry(rs.qualityAssessments, (d, v) => { const x = normQuality(v); if (x) s.qualityAssessments[d] = x; });
   const m = raw.meta && typeof raw.meta === 'object' ? raw.meta : {};
   db.meta = { ...db.meta, ...m, schema: SCHEMA, rev: num(m.rev), seedVersion: num(m.seedVersion) };
   return db;
@@ -471,7 +488,7 @@ function mergeDB(dst, src) {
     dst.topics[t.id] = t; topics++; domains += t.results.length;
   });
   const a = dst.settings, b = src.settings;
-  ['reviews', 'domainOutcomes', 'domainRatings', 'domainStatuses'].forEach(k => Object.assign(a[k], b[k]));
+  ['reviews', 'domainOutcomes', 'domainRatings', 'domainStatuses', 'qualityAssessments'].forEach(k => Object.assign(a[k], b[k]));
   Object.entries(b.domainDetails).forEach(([d, v]) => {
     const x = a.domainDetails[d] ?? (a.domainDetails[d] = { orderNumber: '', price: '', notes: '' });
     Object.entries(v).forEach(([f, val]) => { if (val !== '' && val != null) x[f] = val; });
@@ -587,6 +604,7 @@ const dfOf = d => S().domainRatings[d] || '';
 const effDiff = d => ocOf(d) === 'approved' ? dfOf(d) : '';
 const stOf = d => S().domainStatuses[d] || '';
 const dtOf = d => S().domainDetails[d] || null;
+const qaOf = d => S().qualityAssessments[d] || null;
 const hasDetail = x => !!(x && (x.orderNumber || x.price || x.notes));
 function put(map, d, v) { if (v) S()[map][d] = v; else delete S()[map][d]; }
 function setReview(d, v) { put('reviews', d, v); saveNow(); }
@@ -621,7 +639,8 @@ const F_OPTS = {
   outcomeFilter: ['Outcome', [['all', 'All outcomes'], ['approved', 'Approved / refunded'], ['rejected', 'Rejected'], ['unrated', 'Unrated']]],
   difficultyFilter: ['Rating', [['all', 'All ratings'], ['veryEasy', 'Very Easy'], ['easy', 'Easy'], ['medium', 'Medium'], ['hard', 'Hard'], ['veryHard', 'Very Hard'], ['unratedApproved', 'Unrated approved']]],
   statusFilter: ['Status', [['all', 'All statuses'], ['refund', 'Waiting for refund'], ['reply', 'Waiting for reply'], ['delivery', 'Purchased / waiting for delivery'], ['none', 'No status']]],
-  countryFilter: ['Country', [['all', 'All countries'], ['us', '🇺🇸 US-focused'], ['usOnly', '🇺🇸 .us only (strict)']]]
+  countryFilter: ['Country', [['all', 'All countries'], ['us', '🇺🇸 US-focused'], ['usOnly', '🇺🇸 .us only (strict)']]],
+  qualityFilter: ['Quality Companies', [['all', 'All companies'], ['quality', 'Quality only'], ['below', 'Below threshold'], ['unclear', 'Needs review'], ['unassessed', 'Unassessed']]]
 };
 function activeFilters() { return Object.keys(F_OPTS).filter(k => S()[k] !== 'all').length + (UI.find ? 1 : 0); }
 function passes(r) {
@@ -643,18 +662,23 @@ function passes(r) {
   const st = stOf(d);
   if (s.statusFilter === 'none') { if (st) return false; }
   else if (s.statusFilter !== 'all' && st !== s.statusFilter) return false;
+  const qa = qaOf(d);
+  if (s.qualityFilter === 'unassessed') { if (qa) return false; }
+  else if (s.qualityFilter !== 'all' && (!qa || qa.status !== s.qualityFilter)) return false;
   if (UI.find && !(d + ' ' + (r.title || '')).toLowerCase().includes(UI.find)) return false;
   return true;
 }
 
 /* ================= CSV ================= */
-const CSV_COLS = ['Search topic', 'Must also contain (OR)', 'Domain', 'Review', 'Outcome', 'Rating', 'Status', 'Order number', 'Price', 'Notes', 'Article-like', 'Direct page link'];
+const CSV_COLS = ['Search topic', 'Must also contain (OR)', 'Domain', 'Review', 'Outcome', 'Rating', 'Status', 'Quality company', 'Quality score', 'Quality evidence coverage', 'Order number', 'Price', 'Notes', 'Article-like', 'Direct page link'];
 const csvCell = v => { v = String(v ?? ''); return /[",\r\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
 function csvRow(t, r) {
   const d = r.domain, oc = ocOf(d), x = dtOf(d) || {};
   const rv = rvOf(d);
+  const qa = qaOf(d);
   return [t.query, t.anyTerms.join(' OR '), d, rv ? rv[0].toUpperCase() + rv.slice(1) : '', OUT_LABEL[oc], oc === 'approved' ? (DIFF_LABEL[dfOf(d)] || 'Unrated approved') : '',
-    STATUS_PLAIN[stOf(d)] || '', x.orderNumber || '', x.price || '', x.notes || '', isArticle(r) ? 'Yes' : 'No', r.url];
+    STATUS_PLAIN[stOf(d)] || '', qa ? QUALITY_LABEL[qa.status] : 'Unassessed', qa ? qa.score : '', qa ? qa.coverage + '%' : '',
+    x.orderNumber || '', x.price || '', x.notes || '', isArticle(r) ? 'Yes' : 'No', r.url];
 }
 function csvFor(topics) {
   const rows = [CSV_COLS];
@@ -669,6 +693,158 @@ function download(name, text, mime) {
 }
 const stamp = () => new Date().toISOString().slice(0, 10);
 const slug = s => cleanTerm(s).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) || 'topic';
+
+
+/* ================= company quality assessment =================
+   Best-effort screening from Serper search evidence; not a certification. */
+function qualityText(items) {
+  return (items || []).map(o => [o && o.title, o && o.snippet, o && o.link].filter(Boolean).join(' ')).join('\n');
+}
+function qualityFoundedYear(text) {
+  const years = [], re = /\b(?:founded|established|started|formed|incorporated|since)\b[^.\n]{0,55}?\b((?:18|19|20)\d{2})\b/ig;
+  let m;
+  while ((m = re.exec(text))) years.push(+m[1]);
+  const current = new Date().getFullYear();
+  return years.filter(y => y >= 1800 && y <= current).sort((a,b) => a-b)[0] || 0;
+}
+function qualityRatings(text) {
+  const out = [], re = /\b([1-5](?:\.\d)?)\s*(?:\/\s*5|out of 5)\b/ig;
+  let m; while ((m = re.exec(text))) out.push(+m[1]);
+  return out;
+}
+function scoreQuality(domain, first, second) {
+  const a = qualityText(first), b = qualityText(second), all = a + '\n' + b;
+  const year = qualityFoundedYear(all), age = year ? new Date().getFullYear() - year : 0;
+  const f = { age:'unknown', financial:'unknown', reputation:'unknown', employee:'unknown', longevity:'unknown', legal:'unknown', market:'unknown', transparency:'unknown' };
+
+  if (year) f.age = age >= 10 ? 'good' : age < 5 ? 'bad' : 'unknown';
+  if (year) f.longevity = age >= 20 ? 'good' : age < 5 ? 'bad' : 'unknown';
+
+  const finBad = /bankrupt|chapter\s+(?:7|11)|insolvenc|liquidat|going concern|default(?:ed)? on (?:its )?debt|ceased operations|closing all stores|shut down/i.test(all);
+  const finGood = /profitable|profitability|record (?:revenue|sales|profit)|revenue (?:grew|growth|increased)|positive cash flow|operating profit|net income|ebitda/i.test(a);
+  f.financial = finBad ? 'bad' : finGood ? 'good' : 'unknown';
+
+  const ratings = qualityRatings(b);
+  const repBad = /\bscam\b|\bfraud\b|poor customer service|poor reviews|many complaints|numerous complaints|hundreds of complaints/i.test(b) || ratings.some(x => x <= 2.5);
+  const repGood = /bbb[^.\n]{0,30}\bA\+?\b|highly rated|excellent reviews/i.test(b) || ratings.some(x => x >= 4);
+  f.reputation = repBad ? 'bad' : repGood ? 'good' : 'unknown';
+
+  const empBad = /layoffs?|laid off|job cuts|workforce reduction|mass layoff|cut(?:ting)? (?:its )?workforce/i.test(b);
+  const empGood = /great place to work|top workplace|best places? to work|employee(?:s)? rate[^.\n]{0,25}[4-5](?:\.\d)?/i.test(b);
+  f.employee = empBad ? 'bad' : empGood ? 'good' : 'unknown';
+
+  const legalBad = /class action|attorney general|federal trade commission|\bftc\b|regulatory action|consent decree|civil penalty|chapter\s+(?:7|11)|bankrupt|fraud lawsuit|settlement[^.\n]{0,30}\$\d/i.test(b);
+  f.legal = legalBad ? 'bad' : ((second || []).length >= 5 ? 'good' : 'unknown');
+
+  f.market = /market leader|leading (?:retailer|brand|company|provider)|one of the largest|largest [^.\n]{0,35}(?:retailer|company|brand)|nationwide|fortune\s*500|millions of customers|over \d+[,.]?\d* stores|more than \d+[,.]?\d* stores/i.test(all) ? 'good' : 'unknown';
+  f.transparency = /\bCEO\b|\bfounder\b|headquarters|leadership team|our leadership|company history|about us/i.test(a) ? 'good' : 'unknown';
+
+  let known = 0, points = 0;
+  Object.entries(QUALITY_WEIGHTS).forEach(([k,w]) => {
+    if (f[k] === 'unknown') return;
+    known += w;
+    if (f[k] === 'good') points += w;
+  });
+  const coverage = Math.round(known);
+  const score = known ? Math.round(points / known * 100) : 0;
+  const severe = f.financial === 'bad' || f.legal === 'bad';
+  const foundation = f.financial === 'good' || (f.age === 'good' && f.longevity === 'good' && f.market === 'good');
+  let status = 'unclear';
+  if (severe || (coverage >= 50 && score < 55)) status = 'below';
+  else if (coverage >= 55 && score >= 70 && foundation) status = 'quality';
+
+  return { status, score, coverage, checkedAt: now(), factors: f, foundedYear: year || null, source:'serper-quality-v1' };
+}
+async function qualityCall(key, query, run) {
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const ctl = new AbortController(); run.ctl = ctl;
+    const timer = setTimeout(() => ctl.abort(), 30000);
+    try {
+      const resp = await fetch(ENDPOINT, { method:'POST', headers:{'X-API-KEY':key,'Content-Type':'application/json'}, body:JSON.stringify({q:query,hl:'en',gl:'us',num:10,autocorrect:false}), signal:ctl.signal });
+      let data = null; try { data = await resp.json(); } catch(e) {}
+      if (resp.ok) {
+        S().estimatedCredits = Math.max(0, S().estimatedCredits - 1);
+        return { ok:true, organic:Array.isArray(data && data.organic) ? data.organic : [] };
+      }
+      const msg = String((data && (data.message || data.error)) || resp.statusText || 'HTTP ' + resp.status);
+      if (resp.status === 401 || resp.status === 403) return {ok:false,kind:'auth',msg};
+      if (resp.status === 402 || /credit/i.test(msg)) return {ok:false,kind:'credits',msg};
+      if ((resp.status === 429 || resp.status >= 500) && attempt === 0) { await sleep(1200); continue; }
+      return {ok:false,kind:resp.status === 429 || resp.status >= 500 ? 'rate' : 'http',msg};
+    } catch(e) {
+      if (run.stop) return {ok:false,kind:'abort',msg:'Stopped'};
+      if (attempt === 0) { await sleep(900); continue; }
+      return {ok:false,kind:'net',msg:e && e.name === 'AbortError' ? 'Timed out' : 'Network error'};
+    } finally { clearTimeout(timer); }
+  }
+  return {ok:false,kind:'net',msg:'Network error'};
+}
+function qualityTag(qa) {
+  if (!qa) return '';
+  const cls = qa.status === 'quality' ? 'qual' : qa.status === 'below' ? 'qrisk' : 'qunclear';
+  const label = qa.status === 'quality' ? 'Quality ' + qa.score : qa.status === 'below' ? 'Below threshold ' + qa.score : 'Needs review ' + qa.score;
+  return '<span class="tag ' + cls + '">' + esc(label) + '</span>';
+}
+function renderQualityRun() {
+  const box = $('#qscan');
+  if (!box) return;
+  const r = UI.qrun;
+  if (!r) { box.hidden = true; return; }
+  box.hidden = false;
+  box.innerHTML = '<b>' + esc(r.active ? 'Assessing company quality…' : (r.msg || 'Quality scan complete')) + '</b>' +
+    (r.current ? '<br>' + esc(r.current) : '') +
+    (r.total ? ' · ' + r.done + '/' + r.total + ' companies' : '') +
+    ' · ' + r.calls + ' API requests';
+  const btn = document.querySelector('[data-act="qualityScan"]');
+  if (btn) btn.textContent = r.active ? 'Stop quality scan' : 'Assess quality';
+}
+async function startQualityScan() {
+  const t = DB.topics[UI.topicId];
+  if (!t) return;
+  if (UI.qrun && UI.qrun.active) {
+    UI.qrun.stop = true;
+    if (UI.qrun.ctl) UI.qrun.ctl.abort();
+    return;
+  }
+  const key = (store.get(KEY_API) || '').trim();
+  if (!key) { showKeyBox(true); toast('Save your Serper API key first'); return; }
+
+  let targets = [...new Set(t.results.map(r => r.domain))].filter(d => !qaOf(d));
+  let refreshing = false;
+  if (!targets.length) { targets = [...new Set(t.results.map(r => r.domain))]; refreshing = true; }
+  const estimate = targets.length * QUALITY_QUERIES_PER_DOMAIN;
+  if (!confirm((refreshing ? 'Recheck' : 'Assess') + ' ' + targets.length + ' companies? This can use up to about ' + estimate + ' Serper credits.')) return;
+
+  const run = {active:true,stop:false,total:targets.length,done:0,calls:0,current:'',ctl:null,msg:''};
+  UI.qrun = run; renderQualityRun();
+
+  for (const d of targets) {
+    if (run.stop) break;
+    run.current = d; renderQualityRun();
+    const q1 = '"' + d + '" founded revenue profitable company history leadership headquarters';
+    const q2 = '"' + d + '" reviews complaints layoffs class action bankruptcy regulatory';
+    const a = await qualityCall(key, q1, run);
+    if (run.stop) break;
+    if (!a.ok) { run.msg = RUN_MSG[a.kind] || ('Quality scan stopped: ' + a.msg); break; }
+    run.calls++; renderCredits();
+
+    const b = await qualityCall(key, q2, run);
+    if (run.stop) break;
+    if (!b.ok) { run.msg = RUN_MSG[b.kind] || ('Quality scan stopped: ' + b.msg); break; }
+    run.calls++; renderCredits();
+
+    S().qualityAssessments[d] = scoreQuality(d, a.organic, b.organic);
+    run.done++; saveNow(); renderQualityRun();
+    await sleep(120);
+  }
+
+  run.active = false;
+  if (run.stop) run.msg = 'Quality scan stopped. Completed assessments were saved.';
+  else if (!run.msg) run.msg = 'Quality scan complete.';
+  saveNow(); renderCredits();
+  if (UI.tab === 'found' && UI.topicId === t.id) renderTopicView();
+  toast(run.msg, 4500);
+}
 
 /* ================= Serper search engine =================
    Each topic walks a deterministic list of "lanes" (query/locale variations). Per lane the order is
@@ -836,7 +1012,7 @@ async function startSearch() {
 }
 
 /* ================= UI state & small widgets ================= */
-const UI = { tab: 'search', topicId: null, openRows: new Set(), detOpen: new Set(), showFilters: false, limit: CHUNK, find: '', run: null, last: null, pending: false, idx: new Map(), nums: new Map() };
+const UI = { tab: 'search', topicId: null, openRows: new Set(), detOpen: new Set(), showFilters: false, limit: CHUNK, find: '', run: null, last: null, qrun: null, pending: false, idx: new Map(), nums: new Map() };
 let toastTimer = 0;
 function toast(msg, ms = 2800) { const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, ms); }
 function setWarn(msg) { const w = $('#warn'); w.textContent = msg; w.hidden = !msg; }
@@ -912,14 +1088,16 @@ function renderTopicView() {
   $('#topicView').innerHTML = `<div class="thead"><button class="btn sm" data-act="back">← Topics</button>
     <div class="tt"><b>${esc(t.query)}</b>${t.anyTerms.length ? ' <span class="tor">+ ' + t.anyTerms.map(esc).join(' <i>OR</i> ') + '</span>' : ''}</div></div>
     <div class="tmeta">${fmt(t.results.length)} domains · ${fmt(t.state.totalCalls)} requests · updated ${ago(t.updatedAt)}</div>
-    <div class="tools"><button class="btn sm pri" data-act="searchMore">Search more</button><button class="btn sm" data-act="topicCsv">Export topic CSV</button></div>
+    <div class="tools"><button class="btn sm pri" data-act="searchMore">Search more</button><button class="btn sm" data-act="qualityScan">${UI.qrun && UI.qrun.active ? 'Stop quality scan' : 'Assess quality'}</button><button class="btn sm" data-act="topicCsv">Export topic CSV</button></div>
+    <div id="qscan" class="qscan" ${UI.qrun ? '' : 'hidden'}></div>
     <div class="fbar"><label class="check"><input type="checkbox" data-chg="hide" ${S().hideArticles ? 'checked' : ''}> Hide article/blog pages</label>
     <button class="btn sm" id="fbtn" data-act="filters">${filterBtnLabel()}</button></div>
     <div class="filters" id="filters"${UI.showFilters ? '' : ' hidden'}>${filtersHtml()}</div>
     <div id="count"></div>
     <details class="add"><summary>＋ Add known domain</summary><div class="line"><input id="addDom" type="text" placeholder="example.com" autocapitalize="off" spellcheck="false"><button class="btn" data-act="addDom">Add</button></div></details>
+    <div class="qnote">Quality Companies uses your criteria as a conservative, best-effort web screen. Tap “Assess quality” to evaluate unassessed domains; results are cached.</div>
     <div class="rows" id="rows"></div><div id="more-wrap"></div>`;
-  renderRows();
+  renderRows(); renderQualityRun();
 }
 function renderRows() {
   const t = DB.topics[UI.topicId];
@@ -942,6 +1120,7 @@ function rowHtml(r, n, stale) {
   if (oc === 'approved') tags.push('<span class="tag ok">Approved</span>'); else if (oc === 'rejected') tags.push('<span class="tag no">Rejected</span>');
   if (df) tags.push(`<span class="tag">${DIFF_LABEL[df]}</span>`);
   if (st) tags.push(`<span class="tag st">${STATUS_SHORT[st]}</span>`);
+  if (qaOf(d)) tags.push(qualityTag(qaOf(d)));
   return `<article class="row${open ? ' open' : ''}${stale ? ' fade' : ''}" data-d="${esc(d)}">
     <div class="main-r" data-act="toggle"><span class="num">${n}</span><div class="mid"><div class="dom">${esc(d)}</div>
     <div class="ttl">${esc(r.title)}</div>${tags.length ? `<div class="tags">${tags.join('')}</div>` : ''}</div></div>
@@ -1069,7 +1248,7 @@ const ACT = {
   exportAllCsv: () => download(`exactdomain-all-topics-${stamp()}.csv`, csvFor(Object.values(DB.topics)), 'text/csv'),
   importJson: () => $('#importFile').click(),
   apiKey: () => { toggleMenu(false); showKeyBox(true); },
-  restoreSnap: restoreSnapshot, stop: stopRun, addDom: addKnown,
+  restoreSnap: restoreSnapshot, stop: stopRun, addDom: addKnown, qualityScan: startQualityScan,
   open: el => openTopic(el.dataset.id), back: () => closeTopic(),
   filters: () => { UI.showFilters = !UI.showFilters; $('#filters').hidden = !UI.showFilters; $('#fbtn').textContent = filterBtnLabel(); },
   more: () => { UI.limit += CHUNK; renderRows(); },
