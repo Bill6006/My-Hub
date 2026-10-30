@@ -2,966 +2,1108 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ExactDomain</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="dark">
-<title>Exact Domain Search</title>
+<meta name="theme-color" content="#0b0f14">
+<meta name="description" content="Find and manage one result per domain for an exact search phrase.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b0f14'/%3E%3Cpath d='M9 9h14M9 16h10M9 23h14' stroke='%233ee6b4' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
 <style>
-:root{
-  --bg:#070a0f;--panel:#0d141c;--panel2:#101923;--line:#223140;
-  --text:#f3f7fb;--muted:#8fa0b2;--muted2:#66788b;--mint:#7ff1c0;
-  --cyan:#5edfff;--danger:#ff8797;--warn:#ffd37a;--radius:16px
-}
-*{box-sizing:border-box}
-html{background:var(--bg)}
-body{margin:0;min-height:100vh;color:var(--text);background:
-  radial-gradient(circle at 10% 0,rgba(94,223,255,.10),transparent 26%),
-  radial-gradient(circle at 90% 8%,rgba(127,241,192,.08),transparent 22%),var(--bg);
-  font:14px/1.4 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-button,input{font:inherit}
-button{cursor:pointer}
-.app{width:min(1000px,100%);margin:auto;min-height:100vh;padding-bottom:70px}
-.topbar{position:sticky;top:0;z-index:30;background:rgba(7,10,15,.88);backdrop-filter:blur(16px);border-bottom:1px solid rgba(34,49,64,.8);padding:12px 14px 10px}
-.brandrow{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
-.brand{font-weight:900;letter-spacing:-.03em;font-size:18px}.brand b{color:var(--mint)}
-.nav{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:#0b1118;border:1px solid var(--line);padding:4px;border-radius:13px}
-.nav button{border:0;background:transparent;color:var(--muted);font-weight:800;padding:9px;border-radius:9px}
-.nav button.active{background:#16212c;color:var(--text)}
-.badge{display:inline-grid;place-items:center;min-width:22px;height:22px;padding:0 6px;border-radius:999px;background:#172632;color:var(--mint);font-size:11px;margin-left:5px}
-.main{padding:16px 14px}
-.panel{display:none}.panel.active{display:block}
-.hero{margin:5px 0 14px}.hero h1{font-size:clamp(31px,8vw,52px);letter-spacing:-.055em;line-height:1;margin:0 0 8px}.hero p{color:var(--muted);margin:0;max-width:720px}
-.searchbox{padding:7px;background:var(--panel);border:1px solid var(--line);border-radius:16px}
-.mainSearchRow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px}
-.searchbox input{border:0;outline:0;background:transparent;color:var(--text);min-width:0;padding:10px 11px;font-size:17px;font-weight:750}
-.searchbox input::placeholder{color:#5c6c7e}
-.orSearch{border-top:1px solid var(--line);margin-top:5px;padding:8px 5px 2px}
-.orLabel{color:var(--muted);font-size:10.5px;font-weight:800;margin:0 5px 6px}
-.orGrid{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:6px;align-items:center}
-.orGrid input{background:#0a1017;border:1px solid #263848;border-radius:10px;padding:9px 10px;font-size:13px;font-weight:750}
-.orWord{color:var(--mint);font-size:10px;font-weight:950;text-align:center}
-.criteria{color:var(--mint);font-size:10.5px;font-weight:800;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.primary{border:0;border-radius:11px;background:linear-gradient(135deg,var(--mint),var(--cyan));color:#061016;font-weight:900;padding:0 16px;min-height:43px}
-.secondary{border:1px solid #2c4051;border-radius:10px;background:#101923;color:#dce7ef;font-weight:800;padding:9px 12px}
-.danger{border-color:#5b3139;color:#ffb5c0}
-.searchhint{display:flex;justify-content:space-between;gap:8px;align-items:center;color:var(--muted2);font-size:11px;padding:8px 3px 0;flex-wrap:wrap}
-.countrySearch{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:10px 2px 0;padding:9px 10px;border:1px solid var(--line);background:rgba(13,20,28,.72);border-radius:11px}.countrySearch label{display:flex;align-items:center;gap:8px;font-weight:850;color:#dfe9f2}.countrySearch input{width:18px;height:18px;accent-color:var(--mint)}.countrySearch small{color:var(--muted);font-size:10.5px}
-.filterbar{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin:7px 0 9px;flex-wrap:wrap}.filterbar label{color:var(--muted);font-size:11px;font-weight:800}.filterbar select{border:1px solid #2c4051;background:#101923;color:#e7f0f7;border-radius:9px;padding:7px 28px 7px 9px;font-weight:850;max-width:210px}
-.filterCheck{display:flex;align-items:center;gap:7px;border:1px solid #2c4051;background:#101923;color:#dfe9f2;border-radius:9px;padding:7px 9px;font-weight:850;font-size:11px}.filterCheck input{width:16px;height:16px;accent-color:var(--mint)}
-.reviewBtns{display:flex;gap:4px;align-items:center}.reviewBtn{width:31px;height:31px;border:1px solid #294151;background:#0d151e;border-radius:8px;display:grid;place-items:center;font-size:15px;line-height:1;padding:0}.reviewBtn.good.active{background:#123527;border-color:#2b8f64}.reviewBtn.bad.active{background:#3a1820;border-color:#9b4556}.reviewBtn.clear{font-size:13px;color:var(--muted)}.articleMark{color:var(--warn);font-size:9px;font-weight:900;margin-left:5px}
-.ratingRow{display:flex;gap:5px;align-items:center;margin-top:6px;min-width:0;flex-wrap:wrap}.ratingRow select{min-width:0;max-width:145px;border:1px solid #294151;background:#0a1118;color:#dce7ef;border-radius:8px;padding:5px 24px 5px 7px;font-size:10.5px;font-weight:800}.ratingRow select[data-outcome-domain]{max-width:118px}.ratingRow select[data-status-domain]{max-width:190px}.seedMark{color:var(--cyan);font-size:8.5px;font-weight:900;margin-left:5px}.manualMark{color:var(--warn);font-size:8.5px;font-weight:900;margin-left:5px}
-.purchaseDetails{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.8fr);gap:5px;margin-top:5px}.purchaseDetails.hidden{display:none}.purchaseDetails input,.purchaseDetails textarea{width:100%;border:1px solid #294151;background:#081018;color:#e7f0f7;border-radius:8px;padding:6px 7px;font-size:10.5px;font-weight:750;outline:none}.purchaseDetails input:focus,.purchaseDetails textarea:focus{border-color:var(--cyan)}.purchaseDetails textarea{grid-column:1/-1;min-height:54px;resize:vertical;font-family:inherit;line-height:1.35}.purchaseDetails input::placeholder,.purchaseDetails textarea::placeholder{color:#637689}
-.existing{color:var(--mint);font-weight:800}
-.status{display:none;margin:14px 0 10px;border:1px solid var(--line);background:rgba(13,20,28,.88);border-radius:13px;padding:11px 12px}
-.status.show{display:block}.statusline{display:flex;gap:9px;align-items:center;justify-content:space-between}.status strong{font-size:13px}.meta{color:var(--muted);font-size:11px;margin-top:4px}.spinner{width:13px;height:13px;border:2px solid #334758;border-top-color:var(--mint);border-radius:50%;animation:spin .8s linear infinite;display:inline-block;vertical-align:-2px;margin-right:6px}@keyframes spin{to{transform:rotate(360deg)}}
-.toolbar{display:flex;gap:7px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin:13px 0 8px}.topicTitle{min-width:0}.topicTitle strong{display:block;font-size:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:70vw}.topicTitle span{color:var(--muted);font-size:11px}.toolbuttons{display:flex;gap:6px}
-.pager{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:8px 0}.pager span{font-size:11px;color:var(--muted)}.pager button{border:1px solid var(--line);background:#0e1620;color:var(--text);border-radius:9px;padding:7px 10px;font-weight:800}.pager button:disabled{opacity:.35}
-.results{display:grid;gap:6px}
-.result{display:grid;grid-template-columns:31px minmax(0,1fr) auto;gap:9px;align-items:center;border:1px solid var(--line);background:linear-gradient(180deg,#101923,#0c131b);border-radius:12px;padding:8px 9px;min-height:58px}
-.rank{width:29px;height:29px;border:1px solid #294151;border-radius:9px;display:grid;place-items:center;color:var(--mint);font-weight:900;font-size:11px;font-variant-numeric:tabular-nums}.resultMain{min-width:0}.domain{font-weight:900;color:#e5eef6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:13px}.rtitle{color:#94a7b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:11.5px;margin-top:2px}.open{width:34px;height:34px;display:grid;place-items:center;border:1px solid #294151;border-radius:9px;color:var(--cyan);text-decoration:none;font-size:16px;font-weight:900}.newmark{color:var(--mint);font-size:9px;font-weight:900;margin-left:5px}
-.empty{border:1px dashed var(--line);border-radius:13px;color:var(--muted);padding:25px;text-align:center;margin-top:10px}
-.err{display:none;border:1px solid #593039;background:#1a1015;color:#ffc2cb;padding:12px;border-radius:12px;margin:10px 0}.err.show{display:block}
-.foundHead{display:flex;justify-content:space-between;align-items:end;gap:12px;margin:5px 0 12px}.foundHead h2{font-size:29px;letter-spacing:-.04em;margin:0}.foundHead p{color:var(--muted);margin:3px 0 0;font-size:12px}
-.topicList{display:grid;gap:7px;margin-bottom:16px}.topicRow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;border:1px solid var(--line);background:var(--panel);border-radius:12px;padding:10px 11px}.topicQuery{font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.topicMeta{font-size:10.5px;color:var(--muted);margin-top:2px}.topicActions{display:flex;gap:6px}.topicActions button{border:1px solid #294151;background:#111b25;color:#dfe9f2;border-radius:9px;padding:7px 10px;font-weight:800}.topicActions .count{color:var(--mint);font-size:12px;min-width:34px;text-align:center;padding-top:8px;font-weight:900}
-.foundViewer{border-top:1px solid var(--line);padding-top:11px}.foundViewer.hidden{display:none}
-.storageNote{color:var(--muted2);font-size:10.5px;margin:18px 2px 0}.storageActions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}.storageActions input{display:none}
-.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);opacity:0;pointer-events:none;background:#17232e;border:1px solid #2a4051;color:#eef6fb;padding:9px 13px;border-radius:999px;font-weight:800;font-size:11px;transition:.18s;z-index:99}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-@media(max-width:640px){
-  .main{padding:13px 10px}.topbar{padding:10px}.hero h1{font-size:35px}.hero p{font-size:12px}.mainSearchRow{grid-template-columns:1fr}.primary{width:100%}.orGrid{grid-template-columns:1fr auto 1fr}.orGrid input{min-width:0}.toolbar{align-items:flex-end}.toolbuttons{width:100%}.toolbuttons button{flex:1}.result{min-height:54px;padding:7px 8px}.foundHead{align-items:flex-start;flex-direction:column}.topicRow{padding:9px}.topicActions button{padding:6px 9px}.countrySearch{align-items:flex-start;flex-direction:column}.filterbar{justify-content:space-between}.filterbar select{flex:1;max-width:none}
-}
+:root{--bg:#0b0f14;--panel:#111922;--panel2:#18232f;--line:#243445;--text:#e8eff6;--muted:#8b9db2;--mint:#3ee6b4;--cyan:#4cc9f0;--green:#34d27b;--red:#ff6472;--amber:#f2b94b}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{background:var(--bg);color-scheme:dark;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.35 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+button,input,select,textarea{font:inherit;color:inherit}
+button{touch-action:manipulation;cursor:pointer}
+a{color:var(--cyan)}
+[hidden]{display:none!important}
+small,.muted{color:var(--muted)}
+b{font-weight:650}
+.bar{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:8px;padding:6px 12px;padding-top:calc(6px + env(safe-area-inset-top));background:#0b0f14f2;border-bottom:1px solid var(--line)}
+.tabs{display:flex;flex:1;max-width:220px;gap:3px;padding:3px;background:var(--panel);border:1px solid var(--line);border-radius:12px}
+.tabs button{flex:1;min-height:36px;border:0;border-radius:9px;background:none;color:var(--muted);font-weight:600}
+.tabs button.on{background:var(--panel2);color:var(--mint);box-shadow:inset 0 0 0 1px var(--line)}
+.chip{margin-left:auto;min-height:36px;padding:0 10px;border:1px solid var(--line);border-radius:99px;background:var(--panel);color:var(--cyan);font-size:12.5px;white-space:nowrap}
+.btn{min-height:44px;padding:0 14px;border:1px solid var(--line);border-radius:10px;background:var(--panel2);color:var(--text);font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:6px;text-decoration:none}
+.btn.sm{min-height:38px;padding:0 12px;font-size:14px}
+.btn.pri{background:linear-gradient(135deg,var(--mint),var(--cyan));border-color:transparent;color:#05221a}
+.btn.danger{background:#3a1d24;border-color:#6a2a35;color:#ffb3bb}
+.btn.big{flex:1;min-height:50px;font-size:16px}
+.btn.ico{width:40px;min-height:40px;padding:0;font-size:17px}
+.btn:disabled{opacity:.5}
+.lnk{background:none;border:0;padding:8px 0;color:var(--cyan);text-align:left;font-size:13.5px}
+main{max-width:760px;margin:0 auto;padding:12px 12px 90px}
+.brand{margin:2px 0 10px;font-size:20px;font-weight:750;letter-spacing:-.01em}
+.brand span{color:var(--mint)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:0 0 10px}
+label{display:block;margin:10px 0 4px;color:var(--muted);font-size:13px}
+label small{font-size:12px}
+input[type=text],input:not([type]),input[type=search],select,textarea{width:100%;min-height:44px;padding:9px 12px;background:var(--panel);border:1px solid var(--line);border-radius:10px;font-size:16px}
+select{font-size:14.5px;min-height:42px;padding:6px 8px}
+textarea{min-height:56px;resize:vertical;font-size:15px}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--mint);outline-offset:-1px}
+.or{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center}
+.or span{color:var(--muted);font-size:12px;font-weight:700}
+.check{display:flex;align-items:center;gap:10px;margin:12px 0;color:var(--text);font-size:14.5px;min-height:36px}
+.check input{width:20px;height:20px;accent-color:var(--mint);flex:none}
+.line{display:flex;gap:8px;align-items:stretch}
+#info{margin:10px 2px;font-size:13px}
+#run .rl{margin-bottom:8px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;text-align:center;font-size:11px;color:var(--muted)}
+.grid4 span{display:block;font-size:17px;font-weight:700;color:var(--text)}
+.lane{margin-top:8px;font-size:12.5px;word-break:break-word}
+.menu{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 12px;background:var(--panel);border-bottom:1px solid var(--line)}
+.menu .note{grid-column:1/-1;margin:2px 0 0;font-size:12px;color:var(--muted)}
+.warn{padding:8px 12px;background:#3a2a10;color:#ffd58a;font-size:13px}
+.topic{display:flex;align-items:center;gap:10px}
+.tmain{flex:1;min-width:0}
+.tq{font-weight:700;overflow-wrap:anywhere}
+.tor{font-size:13px;color:var(--mint)}
+.tor i{font-style:normal;color:var(--muted);font-size:11px}
+.tmeta{font-size:12.5px;color:var(--muted);margin-top:2px}
+.thead{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.tt{min-width:0;overflow-wrap:anywhere}
+.tools{display:flex;gap:8px;margin:8px 0}
+.fbar{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.fbar .check{margin:6px 0}
+.filters{display:grid;grid-template-columns:1fr 1fr;gap:0 8px;padding:0 0 8px}
+.filters label{margin:6px 0 2px;font-size:12px}
+.filters .wide{grid-column:1/-1}
+#count{margin:4px 2px 6px;font-size:13px;color:var(--muted)}
+details.add{margin:0 0 8px}
+details.add summary{padding:8px 2px;color:var(--cyan);font-size:13.5px;cursor:pointer}
+.rows{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--panel)}
+.row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:0 6px;padding:5px 6px 5px 8px;border-top:1px solid var(--line)}
+.row:first-child{border-top:0}
+.row.open{background:#14202c}
+.row.fade{opacity:.45}
+.main-r{display:flex;gap:8px;min-width:0;padding:4px 0;cursor:pointer}
+.num{flex:none;width:26px;text-align:right;color:var(--muted);font-size:11px;padding-top:3px}
+.mid{min-width:0;flex:1}
+.dom{font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ttl{color:var(--muted);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:3px}
+.tag{font-size:10.5px;line-height:1.5;padding:0 7px;border-radius:99px;border:1px solid var(--line);color:var(--muted)}
+.tag.ok{color:var(--green);border-color:#1e5b3b}
+.tag.no{color:var(--red);border-color:#6a2b34}
+.tag.st{color:var(--amber);border-color:#5e4a1e}
+.bdg{font-size:9.5px;line-height:1.6;font-weight:700;letter-spacing:.04em;padding:0 6px;border-radius:5px;background:#1b2a38;color:var(--cyan)}
+.bdg.art{color:var(--amber);background:#2e2512}
+.acts{display:flex;gap:4px}
+.gr,.rd{opacity:.5;filter:grayscale(1)}
+.gr.on{opacity:1;filter:none;background:#143826;border-color:var(--green)}
+.rd.on{opacity:1;filter:none;background:#3a1a20;border-color:var(--red)}
+.more{grid-column:1/-1;display:grid;gap:6px;padding:4px 2px 8px 0}
+.seg{display:flex;gap:4px}
+.seg button{flex:1;min-height:40px;padding:0 6px;border:1px solid var(--line);border-radius:9px;background:var(--panel);color:var(--muted);font-size:13px;font-weight:600}
+.seg button.on{color:var(--text);background:var(--panel2);border-color:var(--mint)}
+.seg button.on.approved{color:var(--green);border-color:var(--green)}
+.seg button.on.rejected{color:var(--red);border-color:var(--red)}
+.two,.det{display:grid;grid-template-columns:1fr 1fr;gap:0 8px}
+.two label,.det label{margin:2px 0;font-size:12px}
+.det .wide{grid-column:1/-1}
+.snip{margin:2px 0 0;font-size:12.5px;color:var(--muted);overflow-wrap:anywhere}
+.pad{padding:14px}
+#more-wrap{margin:10px 0}
+#more-wrap .btn{width:100%}
+#toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom));transform:translateX(-50%);max-width:92vw;padding:10px 14px;border-radius:10px;background:#223344;border:1px solid var(--line);color:var(--text);font-size:14px;z-index:50;text-align:center}
+@media (max-width:380px){.grid4{grid-template-columns:repeat(2,1fr)}.seg button{font-size:12px;padding:0 3px}}
+@media (max-width:320px){.menu{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
-<div class="app">
-  <header class="topbar">
-    <div class="brandrow"><div class="brand">Exact<b>Domain</b></div><div style="display:flex;align-items:center;gap:8px"><button id="creditCounter" type="button" title="Tap to adjust estimated Serper credits" style="border:1px solid var(--line);background:#0d151e;color:var(--mint);border-radius:999px;padding:5px 8px;font-size:10.5px;font-weight:900">≈ 2,400 credits</button><div id="globalCount" style="color:var(--muted);font-size:11px">0 saved</div></div></div>
-    <nav class="nav">
-      <button id="tabSearch" class="active" type="button">Search</button>
-      <button id="tabFound" type="button">Found <span id="topicBadge" class="badge">0</span></button>
-    </nav>
-  </header>
-
-  <main class="main">
-    <section id="searchPanel" class="panel active">
-      <div class="hero">
-        <h1>Search deeper.<br>Keep every domain.</h1>
-        <p>Exact main phrase, optional OR text filters, deep pagination, one saved result per domain, and repeat searches continue the same topic.</p>
+<header class="bar">
+  <nav class="tabs" role="tablist" aria-label="Sections">
+    <button role="tab" data-act="tab" data-tab="search" class="on">Search</button>
+    <button role="tab" data-act="tab" data-tab="found">Found</button>
+  </nav>
+  <button id="credits" class="chip" data-act="credits" aria-label="Estimated Serper credits. Tap to correct.">≈ 0 credits</button>
+  <button id="menuBtn" class="btn ico" data-act="menu" aria-label="Backup and key menu" aria-expanded="false">⋯</button>
+</header>
+<div id="warn" class="warn" role="alert" hidden></div>
+<section id="menu" class="menu" hidden>
+  <button class="btn sm" data-act="exportJson">Export backup (JSON)</button>
+  <button class="btn sm" data-act="importJson">Import backup</button>
+  <button class="btn sm" data-act="exportAllCsv">All topics CSV</button>
+  <button class="btn sm" data-act="apiKey">Serper API key…</button>
+  <button class="btn sm" id="snapBtn" data-act="restoreSnap" hidden>Restore snapshot</button>
+  <button class="btn sm" id="preBtn" data-act="exportPre" hidden>Pre-migration copy</button>
+  <p class="note" id="storageNote"></p>
+</section>
+<main>
+  <section id="tab-search">
+    <h1 class="brand"><span>Exact</span>Domain</h1>
+    <div id="keyBox" class="card" hidden>
+      <label for="keyInput" style="margin-top:0">Serper API key <small>(kept only in this browser)</small></label>
+      <div class="line">
+        <input id="keyInput" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Paste key">
+        <button class="btn pri" data-act="saveKey">Save</button>
+        <button class="btn" id="keyClear" data-act="clearKey" hidden>Clear</button>
       </div>
-
-      <form id="searchForm" class="searchbox">
-        <div class="mainSearchRow">
-          <input id="query" type="text" autocomplete="off" spellcheck="false" placeholder="On Cloud 5" aria-label="Main exact text">
-          <button id="searchBtn" class="primary" type="submit">Search deep</button>
-        </div>
-        <div class="orSearch">
-          <div class="orLabel">Page must also contain at least one of these exact texts (optional):</div>
-          <div class="orGrid">
-            <input id="anyText1" type="text" autocomplete="off" spellcheck="false" placeholder="Woman" aria-label="Additional exact text 1">
-            <span class="orWord">OR</span>
-            <input id="anyText2" type="text" autocomplete="off" spellcheck="false" placeholder="Women" aria-label="Additional exact text 2">
-          </div>
-        </div>
-      </form>
-      <div class="searchhint">
-        <span id="existingHint">New searches create a saved topic automatically.</span>
-        <span>Main text AND (extra 1 OR extra 2) • unique domains</span>
+    </div>
+    <form id="form" autocomplete="off">
+      <label for="q" style="margin-top:0">Main exact text</label>
+      <input id="q" type="text" placeholder="On Cloud 6" enterkeyhint="search" autocapitalize="off" spellcheck="false">
+      <label>Must also contain <small>(optional, exact)</small></label>
+      <div class="or"><input id="e1" type="text" placeholder="Woman" aria-label="Optional exact text 1" autocapitalize="off" spellcheck="false"><span>OR</span><input id="e2" type="text" placeholder="Women" aria-label="Optional exact text 2" autocapitalize="off" spellcheck="false"></div>
+      <label class="check"><input type="checkbox" id="usOnly"> 🇺🇸 Search US-focused sites only</label>
+      <div class="line">
+        <button type="submit" id="go" class="btn pri big">Search deep</button>
+        <button type="button" id="stop" class="btn danger big" data-act="stop" hidden>Stop</button>
       </div>
-      <div class="countrySearch">
-        <label><input id="usSearchOnly" type="checkbox"> 🇺🇸 Search US-focused sites only</label>
-        <small>Uses U.S. Google results and state-by-state searches; skips obvious foreign country domains.</small>
-      </div>
-
-      <div id="status" class="status" aria-live="polite">
-        <div class="statusline"><strong id="statusMain"><span class="spinner"></span>Searching…</strong><button id="stopBtn" class="secondary" type="button">Stop</button></div>
-        <div id="statusMeta" class="meta"></div>
-      </div>
-      <div id="errorBox" class="err"></div>
-
-      <div id="searchViewer" style="display:none">
-        <div class="toolbar">
-          <div class="topicTitle"><strong id="searchTopicTitle"></strong><span id="searchTopicMeta"></span></div>
-          <div class="toolbuttons"><button id="searchPrev" class="secondary" type="button">← Prev</button><button id="searchNext" class="secondary" type="button">Next →</button></div>
-        </div>
-        <div class="pager"><span id="searchPageInfo"></span><span id="searchRunInfo"></span></div>
-        <div class="filterbar">
-          <label class="filterCheck"><input id="searchHideArticles" type="checkbox"> Hide article/blog pages</label>
-          <label for="searchReviewFilter">Review</label><select id="searchReviewFilter"><option value="all">All</option><option value="green">✅ Green</option><option value="red">❌ Red</option><option value="unmarked">Unmarked</option></select>
-          <label for="searchOutcomeFilter">Outcome</label><select id="searchOutcomeFilter"><option value="all">All outcomes</option><option value="approved">✅ Approved/refunded</option><option value="rejected">❌ Rejected/denied</option><option value="unrated">Unrated</option></select>
-          <label for="searchDifficultyFilter">Rating</label><select id="searchDifficultyFilter"><option value="all">All ratings</option><option value="very_easy">Very Easy</option><option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard</option><option value="very_hard">Very Hard</option><option value="unrated">Unrated approved</option></select>
-          <label for="searchStatusFilter">Status</label><select id="searchStatusFilter"><option value="all">All statuses</option><option value="waiting_refund">💸 Waiting for refund</option><option value="waiting_reply">💬 Waiting for reply</option><option value="waiting_delivery">📦 Purchased / waiting delivery</option><option value="none">No status</option></select>
-          <label for="searchCountryFilter">Country</label><select id="searchCountryFilter"><option value="all">All countries</option><option value="us">🇺🇸 US-focused</option><option value="us-tld">🇺🇸 .us only (strict)</option></select>
-        </div>
-        <div id="searchResults" class="results"></div>
-      </div>
-      <div id="searchEmpty" class="empty" style="display:none">No domains saved for this topic yet.</div>
-    </section>
-
-    <section id="foundPanel" class="panel">
-      <div class="foundHead">
-        <div><h2>Found</h2><p>Saved by search topic on this phone/browser.</p></div>
-        <div class="storageActions">
-          <button id="exportLinksBtn" class="secondary" type="button">Export all links CSV</button>
-          <button id="exportBtn" class="secondary" type="button">Export backup</button>
-          <label class="secondary" for="importFile" style="cursor:pointer">Import backup</label>
-          <input id="importFile" type="file" accept="application/json,.json">
-        </div>
-      </div>
-      <div id="topicList" class="topicList"></div>
-      <div id="foundViewer" class="foundViewer hidden">
-        <div class="toolbar">
-          <div class="topicTitle"><strong id="foundTopicTitle"></strong><span id="foundTopicMeta"></span></div>
-          <div class="toolbuttons"><button id="continueBtn" class="secondary" type="button">Continue search</button><button id="exportTopicBtn" class="secondary" type="button">Export CSV</button><button id="deleteTopicBtn" class="secondary danger" type="button">Delete</button></div>
-        </div>
-        <div class="filterbar">
-          <label class="filterCheck"><input id="foundHideArticles" type="checkbox"> Hide article/blog pages</label>
-          <label for="foundReviewFilter">Review</label><select id="foundReviewFilter"><option value="all">All</option><option value="green">✅ Green</option><option value="red">❌ Red</option><option value="unmarked">Unmarked</option></select>
-          <label for="foundOutcomeFilter">Outcome</label><select id="foundOutcomeFilter"><option value="all">All outcomes</option><option value="approved">✅ Approved/refunded</option><option value="rejected">❌ Rejected/denied</option><option value="unrated">Unrated</option></select>
-          <label for="foundDifficultyFilter">Rating</label><select id="foundDifficultyFilter"><option value="all">All ratings</option><option value="very_easy">Very Easy</option><option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard</option><option value="very_hard">Very Hard</option><option value="unrated">Unrated approved</option></select>
-          <label for="foundStatusFilter">Status</label><select id="foundStatusFilter"><option value="all">All statuses</option><option value="waiting_refund">💸 Waiting for refund</option><option value="waiting_reply">💬 Waiting for reply</option><option value="waiting_delivery">📦 Purchased / waiting delivery</option><option value="none">No status</option></select>
-          <label for="foundCountryFilter">Country</label><select id="foundCountryFilter"><option value="all">All countries</option><option value="us">🇺🇸 US-focused</option><option value="us-tld">🇺🇸 .us only (strict)</option></select>
-        </div>
-        <div class="pager"><button id="foundPrev" type="button">← Prev</button><span id="foundPageInfo"></span><button id="foundNext" type="button">Next →</button></div>
-        <div id="foundResults" class="results"></div>
-      </div>
-      <div class="storageNote">Your saved topics live in browser storage. “Export all links CSV” gives you a simple spreadsheet with each domain and its direct page link. Export a backup before clearing browser data or moving devices.</div>
-    </section>
-  </main>
-</div>
-<div id="toast" class="toast"></div>
-
+    </form>
+    <div id="info"></div>
+    <div id="run" class="card" hidden></div>
+  </section>
+  <section id="tab-found" hidden>
+    <div id="topics"></div>
+    <div id="topicView" hidden></div>
+  </section>
+</main>
+<div id="toast" role="status" aria-live="polite" hidden></div>
+<input type="file" id="importFile" accept=".json,application/json" hidden>
 <script>
 (() => {
 'use strict';
 
-const API_KEY_STORAGE = 'exactDomainSearch.serperKey';
-function getApiKey(){
-  let key = (localStorage.getItem(API_KEY_STORAGE) || '').trim();
-  if(!key){
-    key = (prompt('Enter your Serper API key. It will be saved only in this browser.') || '').trim();
-    if(!key) throw new Error('A Serper API key is required to search.');
-    localStorage.setItem(API_KEY_STORAGE, key);
-  }
-  return key;
-}
-const SEARCH_URL = 'https://google.serper.dev/search';
-const STORAGE_KEY = 'exactDomainSearch.v4';
-const RESULTS_PER_VIEW = 100;
-const REQUESTS_PER_RUN = 100;
-const MAX_EMPTY_CALLS = 25;
-const MAX_QUERY_LENGTH = 1200;
-const COUNTRY_LANES = ['us','gb','ca','au','nz','ie','de','fr','nl','be','ch','at','se','no','dk','fi','es','it','pt','pl','cz','ro','gr','tr','ae','za','in','sg','my','ph','hk','tw','jp','kr','mx','br','ar','cl'];
-const TLD_LANES = ['com','net','org','co','us','ca','uk','au','de','fr','nl','ie','nz','in','jp','sg','za','mx','br','es','it','se','no','dk','ch','at','be','pl','cz','pt','tr','ae','ph','my','hk','tw','kr','shop','store','io','ai','dev','app','me','biz','info'];
-const US_STATES = ['Alabama','Alaska','Arizona','Arkansas','California','Colorado','Connecticut','Delaware','Florida','Georgia','Hawaii','Idaho','Illinois','Indiana','Iowa','Kansas','Kentucky','Louisiana','Maine','Maryland','Massachusetts','Michigan','Minnesota','Mississippi','Missouri','Montana','Nebraska','Nevada','New Hampshire','New Jersey','New Mexico','New York','North Carolina','North Dakota','Ohio','Oklahoma','Oregon','Pennsylvania','Rhode Island','South Carolina','South Dakota','Tennessee','Texas','Utah','Vermont','Virginia','Washington','West Virginia','Wisconsin','Wyoming','District of Columbia'];
-const FOREIGN_CC = new Set(['ca','uk','au','nz','de','fr','nl','be','ch','at','se','no','dk','fi','es','it','pt','pl','cz','ro','gr','tr','ae','za','in','sg','my','ph','hk','tw','jp','kr','mx','br','ar','cl','cn','ru','ua','ie','is','il','sa','pk','bd','lk','vn','th','id','ng','gh','ke','ug']);
+/* ================= constants ================= */
+const KEY_DB = 'exactDomainSearch.v4';
+const KEY_API = 'exactDomainSearch.serperKey';
+const KEY_SNAP = 'exactDomainSearch.v4.snapshot';
+const KEY_SNAP_AT = 'exactDomainSearch.v4.snapshotAt';
+const KEY_PRE = 'exactDomainSearch.v4.premigrate';
+const SCHEMA = 2, SEED_VERSION = 1;
+const ENDPOINT = 'https://google.serper.dev/search';
+const MAX_CALLS = 100, MAX_EMPTY = 25, CHUNK = 60, SNAP_EVERY = 10 * 60 * 1000, DEFAULT_CREDITS = 2400;
 
-const $ = id => document.getElementById(id);
-const els = {
-  tabSearch:$('tabSearch'),tabFound:$('tabFound'),searchPanel:$('searchPanel'),foundPanel:$('foundPanel'),
-  form:$('searchForm'),query:$('query'),anyText1:$('anyText1'),anyText2:$('anyText2'),searchBtn:$('searchBtn'),stopBtn:$('stopBtn'),status:$('status'),statusMain:$('statusMain'),statusMeta:$('statusMeta'),errorBox:$('errorBox'),existingHint:$('existingHint'),usSearchOnly:$('usSearchOnly'),
-  searchViewer:$('searchViewer'),searchTopicTitle:$('searchTopicTitle'),searchTopicMeta:$('searchTopicMeta'),searchPageInfo:$('searchPageInfo'),searchRunInfo:$('searchRunInfo'),searchResults:$('searchResults'),searchPrev:$('searchPrev'),searchNext:$('searchNext'),searchEmpty:$('searchEmpty'),searchCountryFilter:$('searchCountryFilter'),searchHideArticles:$('searchHideArticles'),searchReviewFilter:$('searchReviewFilter'),searchOutcomeFilter:$('searchOutcomeFilter'),searchDifficultyFilter:$('searchDifficultyFilter'),searchStatusFilter:$('searchStatusFilter'),
-  topicList:$('topicList'),topicBadge:$('topicBadge'),globalCount:$('globalCount'),foundViewer:$('foundViewer'),foundTopicTitle:$('foundTopicTitle'),foundTopicMeta:$('foundTopicMeta'),foundPageInfo:$('foundPageInfo'),foundResults:$('foundResults'),foundPrev:$('foundPrev'),foundNext:$('foundNext'),continueBtn:$('continueBtn'),exportTopicBtn:$('exportTopicBtn'),deleteTopicBtn:$('deleteTopicBtn'),foundCountryFilter:$('foundCountryFilter'),foundHideArticles:$('foundHideArticles'),foundReviewFilter:$('foundReviewFilter'),foundOutcomeFilter:$('foundOutcomeFilter'),foundDifficultyFilter:$('foundDifficultyFilter'),foundStatusFilter:$('foundStatusFilter'),
-  exportLinksBtn:$('exportLinksBtn'),exportBtn:$('exportBtn'),importFile:$('importFile'),toast:$('toast'),creditCounter:$('creditCounter')
-};
+const OUT_LABEL = { approved: 'Approved / refunded', rejected: 'Rejected', '': 'Unrated' };
+const DIFF_LABEL = { veryEasy: 'Very Easy', easy: 'Easy', medium: 'Medium', hard: 'Hard', veryHard: 'Very Hard' };
+const STATUS_PLAIN = { refund: 'Waiting for refund', reply: 'Waiting for reply', delivery: 'Purchased / waiting for delivery' };
+const STATUS_LABEL = { refund: '💸 ' + STATUS_PLAIN.refund, reply: '💬 ' + STATUS_PLAIN.reply, delivery: '📦 ' + STATUS_PLAIN.delivery };
+const STATUS_SHORT = { refund: '💸 Refund', reply: '💬 Reply', delivery: '📦 Delivery' };
 
-let db = loadDB();
-let controller = null;
-let stopped = false;
-let currentTopicId = null;
-let foundTopicId = null;
-let searchPage = 1;
-let foundPage = 1;
-let newDomainsThisRun = new Set();
-let countryFilter = db.settings?.countryFilter || 'all';
-let hideArticles = !!db.settings?.hideArticles;
-let reviewFilter = db.settings?.reviewFilter || 'all';
-let outcomeFilter = db.settings?.outcomeFilter || 'all';
-let difficultyFilter = db.settings?.difficultyFilter || 'all';
-let statusFilter = db.settings?.statusFilter || 'all';
-
-function emptyDB(){ return {version:4, topics:{}, settings:{countryFilter:'all',usSearchOnly:false,estimatedCredits:2400,hideArticles:false,reviewFilter:'all',reviews:{},outcomeFilter:'all',difficultyFilter:'all',domainRatings:{},domainStatuses:{},domainDetails:{},statusFilter:'all',notesSeedVersion:0,manualKnownSeedVersion:0,notesRecoveryVersion:0}}; }
-function loadDB(){
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return emptyDB();
-    const parsed = JSON.parse(raw);
-    if (!parsed || typeof parsed !== 'object' || !parsed.topics) return emptyDB();
-    parsed.settings = parsed.settings || {countryFilter:'all',usSearchOnly:false,estimatedCredits:2400};
-    if(typeof parsed.settings.estimatedCredits!=='number' || !Number.isFinite(parsed.settings.estimatedCredits)) parsed.settings.estimatedCredits=2400;
-    if(typeof parsed.settings.hideArticles!=='boolean') parsed.settings.hideArticles=false;
-    if(!['all','green','red','unmarked'].includes(parsed.settings.reviewFilter)) parsed.settings.reviewFilter='all';
-    if(!parsed.settings.reviews || typeof parsed.settings.reviews!=='object') parsed.settings.reviews={};
-    if(!['all','approved','rejected','unrated'].includes(parsed.settings.outcomeFilter)) parsed.settings.outcomeFilter='all';
-    if(!['all','very_easy','easy','medium','hard','very_hard','unrated'].includes(parsed.settings.difficultyFilter)) parsed.settings.difficultyFilter='all';
-    if(!parsed.settings.domainRatings || typeof parsed.settings.domainRatings!=='object') parsed.settings.domainRatings={};
-    if(!parsed.settings.domainStatuses || typeof parsed.settings.domainStatuses!=='object') parsed.settings.domainStatuses={};
-    if(!parsed.settings.domainDetails || typeof parsed.settings.domainDetails!=='object') parsed.settings.domainDetails={};
-    if(!['all','waiting_refund','waiting_reply','waiting_delivery','none'].includes(parsed.settings.statusFilter)) parsed.settings.statusFilter='all';
-    for(const v of Object.values(parsed.settings.domainRatings)){ if(v?.difficulty==='super_easy') v.difficulty='very_easy'; }
-    if(typeof parsed.settings.notesSeedVersion!=='number') parsed.settings.notesSeedVersion=0;
-    if(typeof parsed.settings.manualKnownSeedVersion!=='number') parsed.settings.manualKnownSeedVersion=0;
-    if(typeof parsed.settings.notesRecoveryVersion!=='number') parsed.settings.notesRecoveryVersion=0;
-    if(!['all','us','us-tld'].includes(parsed.settings.countryFilter)) parsed.settings.countryFilter='all';
-    for (const t of Object.values(parsed.topics)) {
-      if(t && !Array.isArray(t.anyTerms)) t.anyTerms=[];
-      if(t && !t.state) t.state={cursor:0,usCursor:0,totalCalls:0,totalRuns:0,lastStrategy:'',lastPage:0,operatorRestricted:false};
-      if(t?.state && typeof t.state.usCursor!=='number') t.state.usCursor=0;
-    }
-    return parsed;
-  } catch { return emptyDB(); }
-}
-function updateCreditCounter(){
-  db.settings=db.settings||{};
-  if(typeof db.settings.estimatedCredits!=='number' || !Number.isFinite(db.settings.estimatedCredits)) db.settings.estimatedCredits=2400;
-  const n=Math.max(0,Math.floor(db.settings.estimatedCredits));
-  if(els.creditCounter) els.creditCounter.textContent=`≈ ${n.toLocaleString()} credits`;
-}
-function spendCredit(){
-  db.settings=db.settings||{};
-  if(typeof db.settings.estimatedCredits!=='number' || !Number.isFinite(db.settings.estimatedCredits)) db.settings.estimatedCredits=2400;
-  db.settings.estimatedCredits=Math.max(0,db.settings.estimatedCredits-1);
-  updateCreditCounter();
-}
-function saveDB(){
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(db)); }
-  catch (e) { showError('Browser storage is full or unavailable. Export a backup, then remove old topics if needed.'); }
-  updateGlobalCounts();
-}
-function normalizeQuery(q){ return q.trim().replace(/^['"]+|['"]+$/g,'').replace(/\s+/g,' ').toLocaleLowerCase(); }
-function cleanTerm(v){ return String(v||'').trim().replace(/^['"]+|['"]+$/g,'').replace(/\s+/g,' '); }
-function normalizeAnyTerms(terms=[]){ return [...new Set(terms.map(cleanTerm).filter(Boolean).map(v=>v.toLocaleLowerCase()))].sort(); }
-function displayAnyTerms(topic){ return Array.isArray(topic?.anyTerms)?topic.anyTerms.filter(Boolean):[]; }
-function topicIdFrom(q, terms=[]){
-  const n = normalizeQuery(q);
-  const extras = normalizeAnyTerms(terms);
-  const key = extras.length ? `${n}\nOR:${extras.join('|')}` : n;
-  let h = 2166136261;
-  for (let i=0;i<key.length;i++){ h ^= key.charCodeAt(i); h = Math.imul(h,16777619); }
-  return 't'+(h>>>0).toString(36);
-}
-function ensureTopic(query, anyTerms=[]){
-  const clean = cleanTerm(query);
-  const cleanedTerms=[]; const seenTerms=new Set(); for(const raw of anyTerms){ const v=cleanTerm(raw); const k=v.toLocaleLowerCase(); if(v&&!seenTerms.has(k)){seenTerms.add(k);cleanedTerms.push(v);} }
-  const id = topicIdFrom(clean, cleanedTerms);
-  if (!db.topics[id]) {
-    db.topics[id] = {
-      id, query:clean, normalized:normalizeQuery(clean), anyTerms:cleanedTerms, createdAt:Date.now(), updatedAt:Date.now(),
-      results:[], state:{cursor:0,usCursor:0,totalCalls:0,totalRuns:0,lastStrategy:'',lastPage:0,operatorRestricted:false}
-    };
-    saveDB();
-  } else if(!Array.isArray(db.topics[id].anyTerms)) {
-    db.topics[id].anyTerms=cleanedTerms;
-  }
-  return db.topics[id];
-}
-function allTopics(){ return Object.values(db.topics).sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0)); }
-function esc(v=''){ return String(v).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
-function fmtDate(ts){ if(!ts)return ''; try{return new Date(ts).toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});}catch{return '';} }
-function toast(msg){ els.toast.textContent=msg; els.toast.classList.add('show'); clearTimeout(toast.t); toast.t=setTimeout(()=>els.toast.classList.remove('show'),1800); }
-function showError(msg){ els.errorBox.textContent=msg; els.errorBox.classList.add('show'); }
-function clearError(){ els.errorBox.classList.remove('show'); els.errorBox.textContent=''; }
-
-const secondLevel = new Set([
-  'co.uk','org.uk','me.uk','ac.uk','gov.uk','net.uk','sch.uk','ltd.uk','plc.uk',
-  'com.au','net.au','org.au','edu.au','gov.au','asn.au','id.au',
-  'co.nz','net.nz','org.nz','govt.nz','ac.nz','school.nz',
-  'co.jp','ne.jp','or.jp','ac.jp','go.jp','co.kr','or.kr','go.kr','ac.kr',
-  'com.br','net.br','org.br','com.mx','com.ar','com.tr','com.sg','com.my','com.hk','com.tw','com.cn','com.ph','com.pk',
-  'co.in','firm.in','net.in','org.in','gen.in','ind.in','co.za','org.za','net.za','web.za','com.ng','com.gh','co.ke','co.ug',
-  'com.ua','com.pl','com.de','com.fr','com.es','com.it','com.nl','co.il','com.sa','com.ae'
-]);
-function domainOf(url){
-  try {
-    let host = new URL(url).hostname.toLowerCase().replace(/^www\d*\./,'');
-    if (!host) return '';
-    if (/^\d+\.\d+\.\d+\.\d+$/.test(host) || host==='localhost') return host;
-    const p=host.split('.').filter(Boolean); if(p.length<=2)return host;
-    const l2=p.slice(-2).join('.'); if(secondLevel.has(l2)&&p.length>=3)return p.slice(-3).join('.');
-    return p.slice(-2).join('.');
-  } catch { return ''; }
-}
-function tldOf(domain){ const p=String(domain||'').toLowerCase().split('.').filter(Boolean); return p.length?p[p.length-1]:''; }
-function isUSFocusedDomain(domain){
-  const tld=tldOf(domain);
-  if(!tld) return false;
-  if(tld==='us') return true;
-  // Keep generic/global domains (.com, .org, .net, .co, .io, etc.) and remove obvious foreign country-code domains.
-  return !FOREIGN_CC.has(tld);
-}
-const DIFFICULTY_LABELS={super_easy:'Very Easy',very_easy:'Very Easy',easy:'Easy',medium:'Medium',hard:'Hard',very_hard:'Very Hard'};
-const NOTE_SEED_RULES=[
-  {a:['newbalance'],o:'rejected'},
-  {a:['nordstrom'],o:'approved'},
-  {a:['academy','academysports'],o:'rejected'},
-  {a:['vivobarefoot'],o:'approved',d:'easy'},
-  {a:['frontrunnerathletics'],o:'rejected'},
-  {a:['dickssportinggoods'],o:'approved'},
-  {a:['zappos'],o:'approved',d:'very_easy'},
-  {a:['timberland'],o:'approved',d:'very_easy'},
-  {a:['sunandski'],o:'approved',d:'easy'},
-  {a:['adidas'],o:'approved'},
-  {a:['amberjack'],o:'approved',d:'medium'},
-  {a:['shiekh'],o:'approved',d:'hard'},
-  {a:['champssports','champs'],o:'approved'},
-  {a:['jdsports'],o:'approved'},
-  {a:['nike'],o:'approved'},
-  {a:['finishline'],o:'approved'},
-  {a:['marathonsports'],o:'approved',d:'medium'},
-  {a:['highcountryoutfitters'],o:'approved',d:'hard'},
-  {x:['als.com'],o:'approved'},
-  {a:['runninglab'],o:'rejected'},
-  {a:['tylers'],o:'approved',d:'easy'},
-  {a:['desmoinesshoes'],o:'approved',d:'hard'},
-  {a:['footlocker'],o:'rejected'},
-  {a:['scheels'],o:'approved',d:'medium'},
-  {a:['shopbop'],o:'approved',d:'easy'},
-  {a:['fleetfeet'],o:'approved',d:'medium'},
-  {x:['on.com'],o:'rejected'},
-  {a:['holabirdsports'],o:'approved',d:'easy'},
-  {a:['backcountry'],o:'approved',d:'easy'},
-  {a:['bloomingdales'],o:'approved',d:'very_easy'},
-  {a:['halfmoonoutfitters','halfmoon'],o:'approved',d:'hard'},
-  {a:['wholeearthprovision'],o:'rejected'},
-  {a:['peterglenn'],o:'approved',d:'medium'},
-  {a:['roadrunnersports'],o:'approved',d:'easy'},
-  {a:['tradehome'],o:'rejected'},
-  {a:['saintbernard'],o:'rejected'},
-  {a:['englinsfinefootwear','englins'],o:'rejected'},
-  {a:['peltzshoes'],o:'approved',d:'hard'},
-  {a:['mastgeneralstore'],o:'approved',d:'easy'},
-  {a:['backpackeroutdoors'],o:'rejected'},
-  {a:['fwrd'],o:'approved',d:'very_easy'},
-  {a:['lebos'],o:'approved',d:'medium'},
-  {a:['shoptheshark'],o:'approved',d:'very_easy'},
-  {a:['lukeslocker'],o:'approved',d:'very_easy'},
-  {a:['freepeople'],o:'approved',d:'easy'}
+/* ================= historical recovery seed =================
+   Fill-only: applied once per browser (meta.seedVersion), never overwrites existing values.
+   Anything hard-coded here is publicly visible once the page is hosted. */
+const SEED_TOPIC = { query: 'On Cloud 6', anyTerms: ['Woman', 'Women'] };
+// [domain, retailer, order number(s), price(s), outcome, difficulty, historical notes]
+const SEED = [
+  ['newbalance.com', 'New Balance', 'U10556132', '$153.64', 'rejected', '', 'DECLINED, need to return'],
+  ['nordstrom.com', 'Nordstrom', '533693331; 533589642', '$186.56', 'approved', '', 'One order declined/returned; Cloud Monster order refunded'],
+  ['academy.com', 'Academy Sports + Outdoors', '465108428', '$197.54', 'rejected', '', 'Live chat, FedEx trace ref 250406-000407, declined/returned'],
+  ['vivobarefoot.com', 'Vivobarefoot', 'GE8466205591US', '$252.43', 'approved', 'easy', 'Refunded'],
+  ['frontrunnerathletics.com', 'Front Runner Athletics', 'S1907', '$196.65', 'rejected', '', 'No stock left, canceled'],
+  ['dickssportinggoods.com', "Dick's Sporting Goods", '20173413385', '$197.54; $164', 'approved', '', 'Ultraboost attempt canceled; older purchase refunded'],
+  ['zappos.com', 'Zappos', '113-2959653-9513043; 111-1750181-0579455', '$197.50; $153.64', 'approved', 'veryEasy', 'One billing cancellation; later Cloud 5 order refunded'],
+  ['timberland.com', 'Timberland', '4182384801_TBL-US', '$224.99', 'approved', 'veryEasy', 'Refunded'],
+  ['sunandski.com', 'Sun & Ski Sports', '3522416', '$164.63', 'approved', 'easy', 'Cloud 6, trace started, refunded'],
+  ['adidas.com', 'Adidas', 'AD941084782', '$203.03', 'approved', '', 'Initially denied, later refunded'],
+  ['amberjack.shop', 'Amberjack', '1340907', '$206.82', 'approved', 'medium', 'Refund'],
+  ['shiekh.com', 'Shiekh', '3002856258', '$196.64', 'approved', 'hard', 'Lost claim / second claim, refunded'],
+  ['champssports.com', 'Champs Sports', '', '$164', 'approved', '', 'Paid, refund'],
+  ['jdsports.com', 'JD Sports', '', '$186', 'approved', '', 'Refunded; notes also said denied'],
+  ['nike.com', 'Nike', 'C01358891631', '$192', 'approved', '', 'Paid, refund'],
+  ['finishline.com', 'Finish Line', '', '$186', 'approved', '', 'Refund, kept'],
+  ['marathonsports.com', 'Marathon Sports', 'E5G88EWKY', '$153.60', 'approved', 'medium', 'Follow-up required, refund'],
+  ['highcountryoutfitters.com', 'High Country Outfitters', '57987', '$169.99', 'approved', 'hard', 'Carrier investigation, refund'],
+  ['als.com', "AL's", '1444008748507-01', '$153.60', 'approved', '', 'Refund after carrier follow-up'],
+  ['runninglabstore.com', 'Running Lab', 'INV26078', '$170', 'rejected', '', 'Claim/follow-up, returned'],
+  ['tylerstx.com', "TYLER'S", '199896', '$169.99', 'approved', 'easy', 'Refund'],
+  ['desmoinesshoes.com', 'Des Moines Shoes', '14-25036', '$139.99', 'approved', 'hard', 'Long UPS follow-up, refund to PayPal'],
+  ['footlocker.com', 'Foot Locker', 'P7158640715470213120', '$164.63', 'rejected', '', 'Return label, denied'],
+  ['scheels.com', 'SCHEELS', '248403577', '$164.61', 'approved', 'medium', 'Refund'],
+  ['shopbop.com', 'Shopbop', '126424059', '$164.61', 'approved', 'easy', 'Refund'],
+  ['fleetfeet.com', 'Fleet Feet', '151925735', '$186.58', 'approved', 'medium', 'More steps than hoped for, refund'],
+  ['on.com', 'On', 'R659494081', '$186.56', 'rejected', '', 'Hard process, return label, denied'],
+  ['holabirdsports.com', 'Holabird Sports', '647227S', '$169.99', 'approved', 'easy', 'Refund'],
+  ['backcountry.com', 'Backcountry', 'b4406439869', '$186.52', 'approved', 'easy', 'Refund'],
+  ['bloomingdales.com', "Bloomingdale's", '638702760', '$178.88', 'approved', 'veryEasy', 'Refund'],
+  ['halfmoonoutfitters.com', 'Half-Moon Outfitters', '83925', '$140', 'approved', 'hard', 'Investigation required, eventually refunded'],
+  ['wholeearthprovision.com', 'Whole Earth Provision', '205817', '$149.95', 'rejected', '', 'Returned, denied'],
+  ['peterglenn.com', 'Peter Glenn', '3447482', '$153.65', 'approved', 'medium', 'FedEx investigation, refund'],
+  ['roadrunnersports.com', 'Road Runner Sports', '3858357342-NET', '$163.59', 'approved', 'easy', 'UPS investigation, refund'],
+  ['tradehome.com', 'Tradehome', '31352', '$153.64', 'rejected', '', 'Hard to reach, denied, return label'],
+  ['saintbernard.com', 'Saint Bernard', '419329', '$139.99', 'rejected', '', 'Denied, return label'],
+  ['englinsfinefootwear.com', "Englin's Fine Footwear", '251418', '$169.95', 'rejected', '', 'Returned, denied'],
+  ['peltzshoes.com', 'Peltz Shoes', '138740', '$153.60', 'approved', 'hard', 'Initially declined, later got refund'],
+  ['mastgeneralstore.com', 'Mast General Store', '278626', '$153.64', 'approved', 'easy', 'Refund'],
+  ['backpackeroutdoors.com', 'Backpacker Outdoors', '9521', '$169.99', 'rejected', '', 'Denied, return label'],
+  ['fwrd.com', 'FWRD', '251224421', '$153.65', 'approved', 'veryEasy', 'Refund'],
+  ['lebos.com', "Lebo's", '1000132466', '$169.99', 'approved', 'medium', 'Refund'],
+  ['shoptheshark.com', 'ShopTheShark', 'ORD03111', '$169.99', 'approved', 'veryEasy', 'Refund'],
+  ['lukeslocker.com', "Luke's Locker", '7152', '$164.61', 'approved', 'veryEasy', 'CloudRunner 2, refund'],
+  ['freepeople.com', 'Free People', 'FP18651489', '$186.58', 'approved', 'easy', 'Refunded'],
+  ['outandbackrunning.com', 'Out & Back Running', '599559', '$150', '', '', 'CloudRunner 2; return info present, no final outcome recorded']
 ];
-function canonicalHost(domain){return String(domain||'').toLowerCase().replace(/^www\./,'').replace(/\.$/,'');}
-function flatHost(domain){return canonicalHost(domain).replace(/[^a-z0-9]/g,'');}
-function seedForDomain(domain){
-  const host=canonicalHost(domain),flat=flatHost(domain);
-  for(const r of NOTE_SEED_RULES){
-    if(r.x?.includes(host)) return r;
-    if(r.a?.some(a=>flat.includes(String(a).replace(/[^a-z0-9]/g,'')))) return r;
-  }
-  return null;
-}
-function domainRating(domain){
-  db.settings=db.settings||{}; db.settings.domainRatings=db.settings.domainRatings||{};
-  return db.settings.domainRatings[canonicalHost(domain)] || {outcome:'',difficulty:'',source:''};
-}
-function ensureSeedRatingForDomain(domain){
-  db.settings=db.settings||{}; db.settings.domainRatings=db.settings.domainRatings||{};
-  const key=canonicalHost(domain);
-  if(Object.prototype.hasOwnProperty.call(db.settings.domainRatings,key)) return false;
-  const seed=seedForDomain(domain); if(!seed)return false;
-  db.settings.domainRatings[key]={outcome:seed.o||'',difficulty:seed.o==='approved'?(seed.d||''):'',source:'notes'};
-  return true;
-}
-function applySeedRatings(){
-  let n=0;
-  for(const t of Object.values(db.topics||{})) for(const r of (t.results||[])) if(r?.domain&&ensureSeedRatingForDomain(r.domain))n++;
-  if(n){db.settings.notesSeedVersion=1;saveDB();}
-  return n;
-}
-function setDomainOutcome(domain,outcome){
-  db.settings=db.settings||{}; db.settings.domainRatings=db.settings.domainRatings||{};
-  const key=canonicalHost(domain),old=domainRating(domain);
-  const valid=['','approved','rejected'].includes(outcome)?outcome:'';
-  db.settings.domainRatings[key]={outcome:valid,difficulty:valid==='approved'?(old.difficulty||''):'',source:'manual'};
-  saveDB();renderSearchTopic();renderFoundViewer();
-}
-function setDomainDifficulty(domain,difficulty){
-  db.settings=db.settings||{}; db.settings.domainRatings=db.settings.domainRatings||{};
-  const normalized=difficulty==='super_easy'?'very_easy':difficulty;
-  const valid=['','very_easy','easy','medium','hard','very_hard'].includes(normalized)?normalized:'';
-  const key=canonicalHost(domain),old=domainRating(domain);
-  db.settings.domainRatings[key]={outcome:valid?'approved':(old.outcome||''),difficulty:valid,source:'manual'};
-  saveDB();renderSearchTopic();renderFoundViewer();
-}
-const HISTORICAL_NOTE_SEEDS=[{"domain":"newbalance.com","name":"New Balance","orderNumber":"U10556132","price":"$153.64","outcome":"rejected","difficulty":"","notes":"DECLINED — need to return."},{"domain":"nordstrom.com","name":"Nordstrom","orderNumber":"533693331; 533589642","price":"$186.56","outcome":"approved","difficulty":"","notes":"Order 533693331: size 12.5. Check email for status. DECLINED / RETURNED.\nOrder 533589642: Cloud Monster, size 12. REFUNDED."},{"domain":"academy.com","name":"Academy Sports + Outdoors","orderNumber":"465108428","price":"$197.54","outcome":"rejected","difficulty":"","notes":"Used live chat. Asked to reach back out for refund; FedEx reference 250406-000407. Said trace could take up to 14 days. DECLINED / RETURNED."},{"domain":"vivobarefoot.com","name":"Vivobarefoot","orderNumber":"GE8466205591US","price":"$252.43","outcome":"approved","difficulty":"easy","notes":"Refunded. Easy."},{"domain":"frontrunnerathletics.com","name":"Front Runner Athletics","orderNumber":"S1907","price":"$196.65","outcome":"rejected","difficulty":"","notes":"No stock left. Canceled."},{"domain":"dickssportinggoods.com","name":"Dick's Sporting Goods","orderNumber":"20173413385","price":"$197.54; $164","outcome":"approved","difficulty":"","notes":"Ultraboost order 20173413385: canceled.\nOlder Dick's purchase: $164, refund."},{"domain":"zappos.com","name":"Zappos","orderNumber":"113-2959653-9513043; 111-1750181-0579455","price":"$197.50; $153.64","outcome":"approved","difficulty":"very_easy","notes":"Order 113-2959653-9513043: Ultraboost size 12.5, canceled due to billing issues.\nOrder 111-1750181-0579455: Cloud 5 Women's White/Pearl, refunded. Very easy."},{"domain":"timberland.com","name":"Timberland","orderNumber":"4182384801_TBL-US","price":"$224.99","outcome":"approved","difficulty":"very_easy","notes":"Refunded. Very easy."},{"domain":"sunandski.com","name":"Sun & Ski Sports","orderNumber":"3522416","price":"$164.63","outcome":"approved","difficulty":"easy","notes":"Cloud 6. Trace started. Refunded. Easy."},{"domain":"adidas.com","name":"Adidas","orderNumber":"AD941084782","price":"$203.03","outcome":"approved","difficulty":"","notes":"Ultraboost. Initially denied, later refunded."},{"domain":"amberjack.shop","name":"Amberjack","orderNumber":"1340907","price":"$206.82","outcome":"approved","difficulty":"medium","notes":"Refund. Medium. Notes said reach back out May 17 and get return label by May 22 if needed."},{"domain":"shiekh.com","name":"Shiekh","orderNumber":"3002856258","price":"$196.64","outcome":"approved","difficulty":"hard","notes":"Jordan order. Lost claim opened; second claim noted. Refund. Hard."},{"domain":"champssports.com","name":"Champs Sports","orderNumber":"","price":"$164","outcome":"approved","difficulty":"","notes":"Paid. Refund."},{"domain":"jdsports.com","name":"JD Sports","orderNumber":"","price":"$186","outcome":"approved","difficulty":"","notes":"Refunded. Notes also say DENIED."},{"domain":"nike.com","name":"Nike","orderNumber":"C01358891631","price":"$192","outcome":"approved","difficulty":"","notes":"Paid. Refund."},{"domain":"finishline.com","name":"Finish Line","orderNumber":"","price":"$186","outcome":"approved","difficulty":"","notes":"Refund. Kept."},{"domain":"marathonsports.com","name":"Marathon Sports","orderNumber":"E5G88EWKY","price":"$153.60","outcome":"approved","difficulty":"medium","notes":"Medium. Contacted store/boss; email follow-up required. Refund recorded."},{"domain":"highcountryoutfitters.com","name":"High Country Outfitters","orderNumber":"57987","price":"$169.99","outcome":"approved","difficulty":"hard","notes":"Carrier investigation. Owner described as very thorough; waited on UPS. Refund. Hard."},{"domain":"als.com","name":"AL's","orderNumber":"1444008748507-01","price":"$153.60","outcome":"approved","difficulty":"","notes":"Refund recorded after carrier follow-up."},{"domain":"runninglabstore.com","name":"Running Lab","orderNumber":"INV26078","price":"$170","outcome":"rejected","difficulty":"","notes":"Cloud 5. Claim/follow-up process. Returned."},{"domain":"tylerstx.com","name":"TYLER'S","orderNumber":"199896","price":"$169.99","outcome":"approved","difficulty":"easy","notes":"Cloud 5. Easy. Flagged for refund; refund recorded."},{"domain":"desmoinesshoes.com","name":"Des Moines Shoes","orderNumber":"14-25036","price":"$139.99","outcome":"approved","difficulty":"hard","notes":"Cloud 5. Long UPS follow-up. Refund sent to PayPal. Hard."},{"domain":"footlocker.com","name":"Foot Locker","orderNumber":"P7158640715470213120","price":"$164.63","outcome":"rejected","difficulty":"","notes":"Cloud X 3. Return label issued. DENIED."},{"domain":"scheels.com","name":"SCHEELS","orderNumber":"248403577","price":"$164.61","outcome":"approved","difficulty":"medium","notes":"Cloud X 3. Medium. Refund recorded."},{"domain":"shopbop.com","name":"Shopbop","orderNumber":"126424059","price":"$164.61","outcome":"approved","difficulty":"easy","notes":"Cloud X 3. Easy. Refund recorded."},{"domain":"fleetfeet.com","name":"Fleet Feet","orderNumber":"151925735","price":"$186.58","outcome":"approved","difficulty":"medium","notes":"On Cloud 5 Waterproof. More steps than hoped for. Refund. Medium."},{"domain":"on.com","name":"On","orderNumber":"R659494081","price":"$186.56","outcome":"rejected","difficulty":"","notes":"Cloud 5 Waterproof. Return label issued; hard process. DENIED."},{"domain":"holabirdsports.com","name":"Holabird Sports","orderNumber":"647227S","price":"$169.99","outcome":"approved","difficulty":"easy","notes":"On Cloudmonster Men's. Refund. Easy."},{"domain":"backcountry.com","name":"Backcountry","orderNumber":"b4406439869","price":"$186.52","outcome":"approved","difficulty":"easy","notes":"Cloud 5 Waterproof Women's. Refund. Easy."},{"domain":"bloomingdales.com","name":"Bloomingdale's","orderNumber":"638702760","price":"$178.88","outcome":"approved","difficulty":"very_easy","notes":"Cloud X3 AD Women's. Refund. Very easy."},{"domain":"halfmoonoutfitters.com","name":"Half-Moon Outfitters","orderNumber":"83925","price":"$140","outcome":"approved","difficulty":"hard","notes":"Cloud 5 Women's. Investigation required; eventually refunded. Hard."},{"domain":"wholeearthprovision.com","name":"Whole Earth Provision","orderNumber":"205817","price":"$149.95","outcome":"rejected","difficulty":"","notes":"Cloud X3 Women's. Returned. DENIED."},{"domain":"peterglenn.com","name":"Peter Glenn","orderNumber":"3447482","price":"$153.65","outcome":"approved","difficulty":"medium","notes":"Cloud 5 Women's. FedEx investigation. Refund. Medium."},{"domain":"roadrunnersports.com","name":"Road Runner Sports","orderNumber":"3858357342-NET","price":"$163.59","outcome":"approved","difficulty":"easy","notes":"Cloud 5 Women's. UPS investigation. Refund. Easy."},{"domain":"tradehome.com","name":"Tradehome","orderNumber":"31352","price":"$153.64","outcome":"rejected","difficulty":"","notes":"Cloud 5 Women's Black. Hard to get ahold of. DENIED. Return label received."},{"domain":"saintbernard.com","name":"Saint Bernard","orderNumber":"419329","price":"$139.99","outcome":"rejected","difficulty":"","notes":"Cloud 5 Women's Black. DENIED. Return label received."},{"domain":"englinsfinefootwear.com","name":"Englin's Fine Footwear","orderNumber":"251418","price":"$169.95","outcome":"rejected","difficulty":"","notes":"Cloud 5 Waterproof Women's Black. Returned. DENIED."},{"domain":"peltzshoes.com","name":"Peltz Shoes","orderNumber":"138740","price":"$153.60","outcome":"approved","difficulty":"hard","notes":"Cloud 5 Women's Black/White. Initially declined but kept fighting. GOT REFUND. Hard."},{"domain":"mastgeneralstore.com","name":"Mast General Store","orderNumber":"278626","price":"$153.64","outcome":"approved","difficulty":"easy","notes":"Cloud 5 Women's Blue. Refund. Easy."},{"domain":"backpackeroutdoors.com","name":"Backpacker Outdoors","orderNumber":"9521","price":"$169.99","outcome":"rejected","difficulty":"","notes":"Cloud 5 Waterproof Women's Rose. DENIED. Return label received."},{"domain":"fwrd.com","name":"FWRD","orderNumber":"251224421","price":"$153.65","outcome":"approved","difficulty":"very_easy","notes":"Cloud 5 Black Waterproof. Refund. Very easy."},{"domain":"lebos.com","name":"Lebo's","orderNumber":"1000132466","price":"$169.99","outcome":"approved","difficulty":"medium","notes":"Cloud 5 Black Waterproof. Refund. Medium."},{"domain":"shoptheshark.com","name":"ShopTheShark","orderNumber":"ORD03111","price":"$169.99","outcome":"approved","difficulty":"very_easy","notes":"Cloud 5 Women's Black. Refund. Very easy."},{"domain":"lukeslocker.com","name":"Luke's Locker","orderNumber":"7152","price":"$164.61","outcome":"approved","difficulty":"very_easy","notes":"CloudRunner 2. Refund. Very easy."},{"domain":"freepeople.com","name":"Free People","orderNumber":"FP18651489","price":"$186.58","outcome":"approved","difficulty":"easy","notes":"Refunded. Easy."},{"domain":"outandbackrunning.com","name":"Out & Back Running","orderNumber":"599559","price":"$150","outcome":"","difficulty":"","notes":"CloudRunner 2. Return information was saved in the original notes; no final outcome was recorded."}];
-function restoreHistoricalNotes(){
-  db.settings=db.settings||{};
-  db.settings.domainRatings=db.settings.domainRatings||{};
-  db.settings.domainDetails=db.settings.domainDetails||{};
-  const topic=Object.values(db.topics||{}).find(t=>normalizeQuery(t?.query||'')==='on cloud 6') || ensureTopic('On Cloud 6',['Woman','Women']);
-  topic.results=Array.isArray(topic.results)?topic.results:[];
-  const byDomain=new Map(topic.results.map(r=>[canonicalHost(r.domain),r]));
-  let added=0,detailsRestored=0,ratingsRestored=0;
-  for(const item of HISTORICAL_NOTE_SEEDS){
-    const key=canonicalHost(item.domain);
-    if(!byDomain.has(key)){
-      const row={domain:key,url:'https://'+key+'/',title:item.name+' — restored from notes',snippet:'Historical domain restored from your saved notes.',foundAt:Date.now(),sourceGl:'notes-recovery',usFocused:true,manualKnown:true};
-      topic.results.push(row);byDomain.set(key,row);added++;
-    }
-    const oldRating=db.settings.domainRatings[key]||{outcome:'',difficulty:'',source:''};
-    if(!oldRating.outcome && !oldRating.difficulty && item.outcome){
-      db.settings.domainRatings[key]={outcome:item.outcome,difficulty:item.outcome==='approved'?(item.difficulty||''):'',source:'notes'};
-      ratingsRestored++;
-    }
-    const oldDetails=db.settings.domainDetails[key]||{orderNumber:'',price:'',notes:''};
-    const merged={
-      orderNumber:oldDetails.orderNumber||item.orderNumber||'',
-      price:oldDetails.price||item.price||'',
-      notes:oldDetails.notes||item.notes||''
-    };
-    if((!oldDetails.orderNumber&&merged.orderNumber)||(!oldDetails.price&&merged.price)||(!oldDetails.notes&&merged.notes)) detailsRestored++;
-    db.settings.domainDetails[key]=merged;
-  }
-  topic.updatedAt=Date.now();
-  db.settings.notesRecoveryVersion=2;
-  saveDB();
-  return {added,detailsRestored,ratingsRestored};
-}
-const MANUAL_KNOWN_DOMAINS=[
-  {domain:'timberland.com',url:'https://www.timberland.com/',name:'Timberland',outcome:'approved',difficulty:'very_easy'},
-  {domain:'shoptheshark.com',url:'https://shoptheshark.com/',name:'ShopTheShark',outcome:'approved',difficulty:'very_easy'},
-  {domain:'lukeslocker.com',url:'https://lukeslocker.com/',name:"Luke's Locker",outcome:'approved',difficulty:'very_easy'},
-  {domain:'vivobarefoot.com',url:'https://www.vivobarefoot.com/us/',name:'Vivobarefoot',outcome:'approved',difficulty:'easy'},
-  {domain:'sunandski.com',url:'https://www.sunandski.com/',name:'Sun & Ski Sports',outcome:'approved',difficulty:'easy'},
-  {domain:'tylerstx.com',url:'https://www.tylerstx.com/',name:"TYLER'S",outcome:'approved',difficulty:'easy'},
-  {domain:'backcountry.com',url:'https://www.backcountry.com/',name:'Backcountry',outcome:'approved',difficulty:'easy'},
-  {domain:'mastgeneralstore.com',url:'https://www.mastgeneralstore.com/',name:'Mast General Store',outcome:'approved',difficulty:'easy'},
-  {domain:'freepeople.com',url:'https://www.freepeople.com/',name:'Free People',outcome:'approved',difficulty:'easy'},
-  {domain:'amberjack.shop',url:'https://www.amberjack.shop/',name:'Amberjack',outcome:'approved',difficulty:'medium'},
-  {domain:'lebos.com',url:'https://lebos.com/',name:"Lebo's",outcome:'approved',difficulty:'medium'},
-  {domain:'shiekh.com',url:'https://www.shiekh.com/',name:'Shiekh',outcome:'approved',difficulty:'hard'},
-  {domain:'highcountryoutfitters.com',url:'https://highcountryoutfitters.com/',name:'High Country Outfitters',outcome:'approved',difficulty:'hard'},
-  {domain:'peltzshoes.com',url:'https://www.peltzshoes.com/',name:'Peltz Shoes',outcome:'approved',difficulty:'hard'},
-  {domain:'adidas.com',url:'https://www.adidas.com/us/',name:'Adidas',outcome:'approved',difficulty:''},
-  {domain:'champssports.com',url:'https://www.champssports.com/',name:'Champs Sports',outcome:'approved',difficulty:''},
-  {domain:'nike.com',url:'https://www.nike.com/',name:'Nike',outcome:'approved',difficulty:''},
-  {domain:'newbalance.com',url:'https://www.newbalance.com/',name:'New Balance',outcome:'rejected',difficulty:''},
-  {domain:'academy.com',url:'https://www.academy.com/',name:'Academy Sports + Outdoors',outcome:'rejected',difficulty:''},
-  {domain:'frontrunnerathletics.com',url:'https://frontrunnerathletics.com/',name:'Front Runner Athletics',outcome:'rejected',difficulty:''},
-  {domain:'runninglabstore.com',url:'https://runninglabstore.com/',name:'Running Lab',outcome:'rejected',difficulty:''},
-  {domain:'wholeearthprovision.com',url:'https://www.wholeearthprovision.com/',name:'Whole Earth Provision',outcome:'rejected',difficulty:''},
-  {domain:'saintbernard.com',url:'https://www.saintbernard.com/',name:'Saint Bernard',outcome:'rejected',difficulty:''},
-  {domain:'backpackeroutdoors.com',url:'https://backpackeroutdoors.com/',name:'Backpacker Outdoors',outcome:'rejected',difficulty:''}
+// Candidates from notes: no outcome or rating is invented. store.noc ("30 Days") and tworiverstreads ("21 Days")
+// are deliberately left out until their canonical domains are verified.
+const SEED_CANDIDATES = [
+  ['outdoorsports.com', 'Outdoor Sports'], ['journeys.com', 'Journeys'], ['bstn.com', 'BSTN'], ['cncpts.com', 'Concepts / CNCPTS'],
+  ['feature.com', 'FEATURE'], ['flightclub.com', 'Flight Club'], ['stockx.com', 'StockX'], ['hibbett.com', 'Hibbett'],
+  ['danmcvey.com', 'Dan McVey'], ['dtlr.com', 'DTLR'], ['snipesusa.com', 'SNIPES USA'], ['sneakersnstuff.com', 'Sneakersnstuff'],
+  ['mytheresa.com', 'Mytheresa'], ['harrods.com', 'Harrods', 'Need to verify'], ['mrporter.com', 'MR PORTER', 'Need to verify'],
+  ['revolve.com', 'REVOLVE', 'Need to verify']
 ];
-function injectManualKnownDomains(){
-  let added=0;
-  for(const topic of Object.values(db.topics||{})){
-    if(normalizeQuery(topic?.query||'')!=='on cloud 6') continue;
-    topic.results=Array.isArray(topic.results)?topic.results:[];
-    const byDomain=new Map(topic.results.map(r=>[canonicalHost(r.domain),r]));
-    for(const item of MANUAL_KNOWN_DOMAINS){
-      const key=canonicalHost(item.domain);
-      if(!byDomain.has(key)){
-        const row={domain:key,url:item.url,title:item.name+' — manually added from notes',snippet:'Known domain from your notes. Search has not surfaced a matching page yet.',foundAt:Date.now(),sourceGl:'manual',usFocused:true,manualKnown:true};
-        topic.results.push(row);byDomain.set(key,row);added++;
-      }
-      db.settings=db.settings||{};db.settings.domainRatings=db.settings.domainRatings||{};
-      if(!db.settings.domainRatings[key]) db.settings.domainRatings[key]={outcome:item.outcome||'',difficulty:item.outcome==='approved'?(item.difficulty||''):'',source:'notes'};
-    }
-    topic.updatedAt=Date.now();
-  }
-  db.settings=db.settings||{};db.settings.manualKnownSeedVersion=1;saveDB();return added;
+
+/* ================= helpers ================= */
+const $ = (s, r = document) => r.querySelector(s);
+const now = () => Date.now();
+const str = v => Array.isArray(v) ? v.join('; ') : String(v ?? '');
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const cleanTerm = s => String(s ?? '').replace(/["“”„‟]/g, ' ').replace(/\s+/g, ' ').trim();
+const norm = s => cleanTerm(s).toLowerCase();
+const num = (v, d = 0) => (v !== '' && v !== null && v !== undefined && Number.isFinite(+v)) ? +v : d;
+const fmt = n => Number(n || 0).toLocaleString('en-US');
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const uniq = list => { const seen = new Set(); return list.map(cleanTerm).filter(x => { const k = x.toLowerCase(); if (!x || seen.has(k)) return false; seen.add(k); return true; }); };
+function hash(s) { let h = 5381; for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0; return (h >>> 0).toString(36); }
+function topicKey(q, terms) { return norm(q) + '|' + [...new Set((terms || []).map(norm).filter(Boolean))].sort().join('|'); }
+function domainOf(u) {
+  try {
+    const s = String(u || '').trim();
+    return new URL(/^[a-z][a-z0-9+.-]*:\/\//i.test(s) ? s : 'https://' + s).hostname.toLowerCase().replace(/^www\./, '').replace(/\.$/, '');
+  } catch (e) { return ''; }
 }
-function domainDetails(domain){
-  db.settings=db.settings||{};db.settings.domainDetails=db.settings.domainDetails||{};
-  return db.settings.domainDetails[canonicalHost(domain)]||{orderNumber:'',price:'',notes:''};
+const safeUrl = u => /^https?:\/\//i.test(String(u || '')) ? String(u) : '';
+const GENERIC_CC = new Set(['us', 'co', 'io', 'me', 'tv', 'ai', 'fm', 'cc', 'ly', 'sh', 'to', 'ws']);
+function isForeign(d) { const t = d.slice(d.lastIndexOf('.') + 1); return t.length === 2 && !GENERIC_CC.has(t); }
+function ago(t) {
+  if (!t) return 'never';
+  const s = (now() - t) / 1000;
+  if (s < 60) return 'just now';
+  if (s < 3600) return Math.floor(s / 60) + 'm ago';
+  if (s < 86400) return Math.floor(s / 3600) + 'h ago';
+  if (s < 86400 * 30) return Math.floor(s / 86400) + 'd ago';
+  return new Date(t).toLocaleDateString();
 }
-function hasDomainDetails(domain){const d=domainDetails(domain);return !!(d.orderNumber||d.price||d.notes);}
-function saveDomainDetails(domain,patch){
-  db.settings=db.settings||{};db.settings.domainDetails=db.settings.domainDetails||{};
-  const key=canonicalHost(domain),old=domainDetails(domain);
-  db.settings.domainDetails[key]={
-    orderNumber:String(patch.orderNumber!==undefined?patch.orderNumber:old.orderNumber||'').trim(),
-    price:String(patch.price!==undefined?patch.price:old.price||'').trim(),
-    notes:String(patch.notes!==undefined?patch.notes:old.notes||'')
+const artCache = new WeakMap();
+const idxCache = new WeakMap();
+
+/* ================= normalizers (also migrate older saves) ================= */
+function normReview(v) {
+  v = String(v ?? '').trim().toLowerCase();
+  if (!v) return '';
+  if (v.includes('green') || ['g', 'good', 'yes', 'y', 'ok', '✅', 'check', 'keep', 'true', '1'].includes(v)) return 'green';
+  if (v.includes('red') || ['r', 'bad', 'no', 'n', '❌', 'x', 'false', '-1'].includes(v)) return 'red';
+  return '';
+}
+function normOutcome(v) {
+  v = String(v ?? '').toLowerCase();
+  if (/reject|denied|declin|refus|unsuccess/.test(v)) return 'rejected';
+  if (/approv|refund|success/.test(v)) return 'approved';
+  return '';
+}
+// Super Easy / Very VERY easy / EASY EASY all collapse into Very Easy.
+function normDiff(v) {
+  v = String(v ?? '').toLowerCase().replace(/[^a-z]+/g, ' ').trim();
+  if (!v) return '';
+  if (/(super|very)\s*((very|super)\s*)*easy|^easy easy$/.test(v)) return 'veryEasy';
+  if (/(super|very)\s*((very|super)\s*)*hard|^hard hard$/.test(v)) return 'veryHard';
+  if (/easy/.test(v)) return 'easy';
+  if (/medium|moderate|^med$/.test(v)) return 'medium';
+  if (/hard|difficult/.test(v)) return 'hard';
+  return '';
+}
+function parseRating(v) {
+  if (v && typeof v === 'object') return { outcome: normOutcome(v.outcome ?? v.result), diff: normDiff(v.difficulty ?? v.rating ?? v.level) };
+  const diff = normDiff(v);
+  return { outcome: normOutcome(v) || (diff ? 'approved' : ''), diff };
+}
+function normStatus(v) {
+  v = String(v ?? '').toLowerCase();
+  if (/refund|💸/.test(v)) return 'refund';
+  if (/repl|💬/.test(v)) return 'reply';
+  if (/deliver|purchas|📦/.test(v)) return 'delivery';
+  return '';
+}
+function normDetail(d) {
+  if (!d || typeof d !== 'object') return null;
+  return { ...d, orderNumber: str(d.orderNumber ?? d.order ?? d.orderNo ?? ''), price: str(d.price ?? ''), notes: str(d.notes ?? d.note ?? '') };
+}
+const pick = (v, allowed) => allowed.find(a => a.toLowerCase() === String(v ?? '').toLowerCase()) || 'all';
+function normCountry(v) {
+  v = String(v ?? '').toLowerCase();
+  if (!v || v === 'all') return 'all';
+  if (v === 'us-tld' || v === 'usonly' || /strict|only|\.us|dot/.test(v)) return 'usOnly';
+  return /us/.test(v) ? 'us' : 'all';
+}
+function normDifficultyFilter(v) {
+  v = String(v ?? '').trim();
+  const low = v.toLowerCase();
+  if (!v || low === 'all') return 'all';
+  if (low === 'unrated' || low === 'unratedapproved' || low === 'unrated_approved') return 'unratedApproved';
+  const d = normDiff(v);
+  return d || 'all';
+}
+function normStatusFilter(v) {
+  v = String(v ?? '').trim();
+  const low = v.toLowerCase();
+  if (!v || low === 'all') return 'all';
+  if (low === 'none' || low === 'no status') return 'none';
+  return normStatus(v) || 'all';
+}
+function eachEntry(obj, fn) {
+  if (!obj || typeof obj !== 'object') return;
+  Object.entries(obj).forEach(([k, v]) => { const d = domainOf(k) || String(k).toLowerCase(); if (d) fn(d, v); });
+}
+
+/* ================= model ================= */
+const defSettings = () => ({
+  countryFilter: 'all', usSearchOnly: false, estimatedCredits: DEFAULT_CREDITS, hideArticles: false,
+  reviewFilter: 'all', reviews: {}, outcomeFilter: 'all', difficultyFilter: 'all', domainRatings: {},
+  statusFilter: 'all', domainStatuses: {}, domainDetails: {}, domainOutcomes: {}, lastForm: { q: '', e1: '', e2: '' }
+});
+const newDB = () => ({ version: 4, topics: {}, settings: defSettings(), meta: { schema: SCHEMA, rev: 0, createdAt: now(), seedVersion: 0 } });
+
+function newTopic(q, terms) {
+  const query = cleanTerm(q), anyTerms = uniq(terms || []), t = now();
+  return {
+    id: 't_' + hash(topicKey(query, anyTerms)), query, anyTerms, results: [],
+    state: { cursor: 0, usCursor: 0, totalCalls: 0, totalRuns: 0, lastStrategy: '', lastPage: 0, operatorRestricted: false },
+    createdAt: t, updatedAt: t
   };
-  saveDB();
 }
-function domainStatus(domain){
-  db.settings=db.settings||{};db.settings.domainStatuses=db.settings.domainStatuses||{};
-  return db.settings.domainStatuses[canonicalHost(domain)]||'';
+const findTopicByKey = (db, key) => Object.values(db.topics).find(t => topicKey(t.query, t.anyTerms) === key);
+
+function domainIndex(topic) {
+  let c = idxCache.get(topic);
+  if (!c || c.n !== topic.results.length) { c = { n: topic.results.length, m: new Map(topic.results.map(r => [r.domain, r])) }; idxCache.set(topic, c); }
+  return c.m;
 }
-function setDomainStatus(domain,status){
-  db.settings=db.settings||{};db.settings.domainStatuses=db.settings.domainStatuses||{};
-  const valid=['','waiting_refund','waiting_reply','waiting_delivery'].includes(status)?status:'';
-  const key=canonicalHost(domain);
-  if(valid) db.settings.domainStatuses[key]=valid; else delete db.settings.domainStatuses[key];
-  saveDB();renderSearchTopic();renderFoundViewer();
+const findResult = (topic, domain) => domainIndex(topic).get(domain);
+function pushResult(topic, r) {
+  const m = domainIndex(topic);
+  topic.results.push(r); m.set(r.domain, r); idxCache.get(topic).n = topic.results.length;
 }
-function isArticleLike(r){
-  const url=String(r?.url||'').toLowerCase();
-  const title=String(r?.title||'').toLowerCase();
-  const snippet=String(r?.snippet||'').toLowerCase();
-  const pathSignals=[
-    '/blog/','/blogs/','/news/','/article/','/articles/','/story/','/stories/','/magazine/',
-    '/journal/','/editorial/','/press/','/features/','/feature/','/learn/','/guides/','/guide/',
-    '/reviews/','/review/','/insights/','/advice/','/tips/'
-  ];
-  if(pathSignals.some(s=>url.includes(s))) return true;
-  if(/\/20\d{2}\/(0?[1-9]|1[0-2])\//.test(url)) return true;
-  const text=title+' '+snippet;
-  const phraseSignals=[
-    'how to ','what is ','why ','guide to ','buying guide','review:',' review ','reviews of ',
-    'best ','top 10','top 5','news','article','story','editorial','we tested','our picks',
-    'everything you need to know','explained'
-  ];
-  return phraseSignals.some(s=>text.includes(s));
-}
-function reviewStatus(domain){ return db.settings?.reviews?.[domain] || ''; }
-function setReviewStatus(domain,status){
-  db.settings=db.settings||{}; db.settings.reviews=db.settings.reviews||{};
-  if(status) db.settings.reviews[domain]=status; else delete db.settings.reviews[domain];
-  saveDB(); renderSearchTopic(); renderFoundViewer();
-}
-function filteredResults(topic){
-  let rows=[...(topic?.results||[])];
-  if(countryFilter==='us-tld') rows=rows.filter(r=>tldOf(r.domain)==='us');
-  else if(countryFilter==='us') rows=rows.filter(r=>r.usFocused===true || (r.usFocused!==false && isUSFocusedDomain(r.domain)));
-  if(hideArticles) rows=rows.filter(r=>!isArticleLike(r));
-  if(reviewFilter==='green') rows=rows.filter(r=>reviewStatus(r.domain)==='green');
-  else if(reviewFilter==='red') rows=rows.filter(r=>reviewStatus(r.domain)==='red');
-  else if(reviewFilter==='unmarked') rows=rows.filter(r=>!reviewStatus(r.domain));
-  if(outcomeFilter==='approved') rows=rows.filter(r=>domainRating(r.domain).outcome==='approved');
-  else if(outcomeFilter==='rejected') rows=rows.filter(r=>domainRating(r.domain).outcome==='rejected');
-  else if(outcomeFilter==='unrated') rows=rows.filter(r=>!domainRating(r.domain).outcome);
-  if(difficultyFilter!=='all'){
-    rows=rows.filter(r=>{
-      const x=domainRating(r.domain);
-      if(x.outcome!=='approved')return false;
-      if(difficultyFilter==='unrated') return !x.difficulty;
-      if(difficultyFilter==='very_easy') return x.difficulty==='very_easy'||x.difficulty==='super_easy';
-      return x.difficulty===difficultyFilter;
-    });
+// A real search hit replaces a manual/seed placeholder; otherwise only gaps are filled.
+function fillResult(ex, inc) {
+  if (ex.manualKnown && !inc.manualKnown) {
+    Object.assign(ex, { url: inc.url, title: inc.title, snippet: inc.snippet, foundAt: inc.foundAt || now(), sourceGl: inc.sourceGl, manualKnown: false });
+    artCache.delete(ex);
+    ex.usFocused = !!(ex.usFocused || inc.usFocused);
+    return 'upgraded';
   }
-  if(statusFilter==='waiting_refund') rows=rows.filter(r=>domainStatus(r.domain)==='waiting_refund');
-  else if(statusFilter==='waiting_reply') rows=rows.filter(r=>domainStatus(r.domain)==='waiting_reply');
-  else if(statusFilter==='waiting_delivery') rows=rows.filter(r=>domainStatus(r.domain)==='waiting_delivery');
-  else if(statusFilter==='none') rows=rows.filter(r=>!domainStatus(r.domain));
-  return rows;
+  ex.title = ex.title || inc.title; ex.snippet = ex.snippet || inc.snippet;
+  if (!ex.sourceGl) ex.sourceGl = inc.sourceGl;
+  if (!ex.foundAt) ex.foundAt = inc.foundAt;
+  ex.usFocused = !!(ex.usFocused || inc.usFocused);
+  return 'kept';
 }
-function quoted(q){ return `"${q.replace(/"/g,'')}"`; }
-function criteriaText(topic){ const terms=displayAnyTerms(topic); return terms.length ? `${terms.map(t=>`"${t}"`).join(' OR ')}` : ''; }
-function queryBaseFor(topic, rawCursor=0){
-  const terms=displayAnyTerms(topic);
-  if(!terms.length) return {base:quoted(topic.query), term:'', laneCursor:rawCursor};
-  const term=terms[rawCursor % terms.length];
-  const laneCursor=Math.floor(rawCursor / terms.length);
-  return {base:`${quoted(topic.query)} ${quoted(term)}`, term, laneCursor};
+function addResult(topic, r) {
+  if (!r) return 'skip';
+  const ex = findResult(topic, r.domain);
+  if (!ex) { pushResult(topic, r); return 'added'; }
+  return fillResult(ex, r);
 }
-function exclusionSlice(topic, seed, maxDomains=10, maxChars=650){
-  const domains = topic.results.map(r=>r.domain).filter(Boolean);
-  if (!domains.length) return '';
-  const chosen=[]; let chars=0;
-  const start = seed % domains.length;
-  for(let i=0;i<domains.length && chosen.length<maxDomains;i++){
-    const d=domains[(start+i)%domains.length];
-    const token=` -site:${d}`;
-    if(chars+token.length>maxChars)break;
-    chosen.push(token); chars+=token.length;
-  }
-  return chosen.join('');
+function normResult(r) {
+  if (!r || typeof r !== 'object') return null;
+  const url = safeUrl(r.url ?? r.link);
+  const domain = domainOf(r.domain || url);
+  if (!domain) return null;
+  return { ...r, domain, url: url || 'https://' + domain + '/', title: str(r.title), snippet: str(r.snippet), foundAt: num(r.foundAt), sourceGl: str(r.sourceGl), usFocused: !!r.usFocused, manualKnown: !!r.manualKnown };
 }
-function buildPlan(topic, usOnly=false){
-  const rawCursor = usOnly ? (topic.state.usCursor || 0) : (topic.state.cursor || 0);
-  const qb=queryBaseFor(topic, rawCursor);
-  const c = qb.laneCursor;
-  const base = qb.base;
-  const termSuffix = qb.term ? ` • ${qb.term}` : '';
-  const operatorRestricted = !!topic.state.operatorRestricted;
-
-  if(usOnly){
-    // First exhaust deep U.S. Google pages, then fan out state-by-state without foreign country lanes.
-    if(c < 30) return {q:base,page:c+1,gl:'us',label:`US exact page ${c+1}${termSuffix}`,usesOperators:false,usFocused:true};
-    const n=c-30;
-    const state=US_STATES[Math.floor(n/5)%US_STATES.length];
-    const page=1+(n%5);
-    return {q:`${base} "${state}"`,page,gl:'us',label:`US • ${state} • page ${page}${termSuffix}`,usesOperators:false,usFocused:true};
-  }
-
-  // First 20 calls are straightforward Google pages for the quoted phrase.
-  if (c < 20) return {q:base,page:c+1,gl:'us',label:`US exact page ${c+1}${termSuffix}`,usesOperators:false};
-
-  const n = c - 20;
-  const mode = n % 4;
-  const cycle = Math.floor(n / 4);
-  const gl = COUNTRY_LANES[cycle % COUNTRY_LANES.length];
-  const depth = 1 + (Math.floor(cycle / COUNTRY_LANES.length) % 10);
-
-  // Different Google country indexes surface different corners of the web.
-  if (mode === 0 || operatorRestricted) {
-    return {q:base,page:depth,gl,label:`${gl.toUpperCase()} exact page ${depth}${termSuffix}`,usesOperators:false};
-  }
-
-  // TLD lanes help surface sites that are buried behind the same large domains.
-  if (mode === 1) {
-    const tld = TLD_LANES[cycle % TLD_LANES.length];
-    const tldDepth = 1 + (Math.floor(cycle / TLD_LANES.length) % 8);
-    return {q:`${base} site:.${tld}`,page:tldDepth,gl,label:`.${tld} page ${tldDepth}${termSuffix}`,usesOperators:true};
-  }
-
-  // Re-query while excluding a rotating handful of domains we already saved.
-  if (mode === 2 && topic.results.length) {
-    const ex = exclusionSlice(topic, cycle*13, 10, 650);
-    let q = base + ex;
-    if(q.length > MAX_QUERY_LENGTH) q = base;
-    return {q,page:1 + (cycle % 3),gl,label:`new-domain sweep ${cycle+1}${termSuffix}`,usesOperators:!!ex};
-  }
-
-  // A second locale pass keeps progress moving even if operators are limited.
-  const gl2 = COUNTRY_LANES[(cycle*7 + 3) % COUNTRY_LANES.length];
-  return {q:base,page:1 + ((cycle*3) % 10),gl:gl2,label:`${gl2.toUpperCase()} alternate page${termSuffix}`,usesOperators:false};
+function normTopic(t) {
+  if (!t || typeof t !== 'object') return null;
+  const query = cleanTerm(t.query ?? t.q ?? t.phrase);
+  if (!query) return null;
+  const anyTerms = uniq(Array.isArray(t.anyTerms) ? t.anyTerms : []);
+  const s = t.state && typeof t.state === 'object' ? t.state : {};
+  const topic = {
+    ...t, id: String(t.id || 't_' + hash(topicKey(query, anyTerms))), query, anyTerms, results: [],
+    state: { ...s, cursor: num(s.cursor), usCursor: num(s.usCursor), totalCalls: num(s.totalCalls), totalRuns: num(s.totalRuns), lastStrategy: str(s.lastStrategy), lastPage: num(s.lastPage), operatorRestricted: !!s.operatorRestricted },
+    createdAt: num(t.createdAt, now()), updatedAt: num(t.updatedAt, num(t.createdAt, now()))
+  };
+  (Array.isArray(t.results) ? t.results : []).forEach(r => addResult(topic, normResult(r)));
+  return topic;
 }
-
-async function searchAPI(body, signal){
-  let res;
-  try {
-    res = await fetch(SEARCH_URL,{method:'POST',mode:'cors',headers:{'X-API-KEY':getApiKey(),'Content-Type':'application/json'},body:JSON.stringify(body),signal});
-  } catch(e){ if(e.name==='AbortError')throw e; throw new Error('Your browser could not reach Serper. Check internet access and try again.'); }
-  const txt=await res.text(); let data={}; try{data=txt?JSON.parse(txt):{};}catch{data={raw:txt};}
-  if(!res.ok) throw new Error(data.message||data.error||data.raw||`Serper HTTP ${res.status}`);
-  spendCredit();
-  return data;
-}
-
-function addOrganic(topic, organic, plan, usOnly=false){
-  const known = new Set(topic.results.map(r=>r.domain));
-  let added=0;
-  for(const item of organic){
-    if(!item || !item.link)continue;
-    const domain=domainOf(item.link); if(!domain)continue;
-    if(known.has(domain)){
-      const existing=topic.results.find(r=>r.domain===domain);
-      if(existing?.manualKnown){
-        existing.url=item.link;existing.title=item.title||existing.title||'';existing.snippet=item.snippet||existing.snippet||'';
-        existing.sourceGl=plan?.gl||existing.sourceGl||'';existing.usFocused=isUSFocusedDomain(domain);
-        existing.manualKnown=false;existing.foundAt=Date.now();topic.updatedAt=Date.now();
-      }
-      continue;
-    }
-    const usFocused=isUSFocusedDomain(domain);
-    if(usOnly && !usFocused) continue;
-    known.add(domain);
-    topic.results.push({domain,url:item.link,title:item.title||'',snippet:item.snippet||'',foundAt:Date.now(),sourceGl:plan?.gl||'',usFocused});
-    ensureSeedRatingForDomain(domain);
-    newDomainsThisRun.add(domain); added++;
-  }
-  if(added){ topic.updatedAt=Date.now(); }
+function mergeTopic(dst, src) {
+  let added = 0;
+  src.results.forEach(r => { if (addResult(dst, { ...r }) === 'added') added++; });
+  const a = dst.state, b = src.state;
+  if (b.totalCalls > a.totalCalls) { a.lastStrategy = b.lastStrategy; a.lastPage = b.lastPage; }
+  ['cursor', 'usCursor', 'totalCalls', 'totalRuns'].forEach(k => { a[k] = Math.max(a[k], b[k]); });
+  a.operatorRestricted = a.operatorRestricted || b.operatorRestricted;
+  dst.createdAt = Math.min(dst.createdAt, src.createdAt); dst.updatedAt = Math.max(dst.updatedAt, src.updatedAt);
   return added;
 }
+function normalizeDB(raw) {
+  const db = newDB();
+  if (!raw || typeof raw !== 'object') return db;
+  const rs = raw.settings && typeof raw.settings === 'object' ? raw.settings : {}, s = db.settings;
+  (Array.isArray(raw.topics) ? raw.topics : Object.values(raw.topics || {})).forEach(t => {
+    const nt = normTopic(t);
+    if (!nt) return;
+    const ex = findTopicByKey(db, topicKey(nt.query, nt.anyTerms));
+    if (ex) { mergeTopic(ex, nt); return; }
+    while (db.topics[nt.id]) nt.id += 'x';
+    db.topics[nt.id] = nt;
+  });
+  s.countryFilter = normCountry(rs.countryFilter);
+  s.usSearchOnly = !!rs.usSearchOnly;
+  s.estimatedCredits = Math.max(0, Math.round(num(rs.estimatedCredits, DEFAULT_CREDITS)));
+  s.hideArticles = !!rs.hideArticles;
+  s.reviewFilter = pick(rs.reviewFilter, ['all', 'green', 'red', 'unmarked']);
+  s.outcomeFilter = pick(rs.outcomeFilter, ['all', 'approved', 'rejected', 'unrated']);
+  s.difficultyFilter = normDifficultyFilter(rs.difficultyFilter);
+  s.statusFilter = normStatusFilter(rs.statusFilter);
+  if (rs.lastForm && typeof rs.lastForm === 'object') s.lastForm = { q: str(rs.lastForm.q), e1: str(rs.lastForm.e1), e2: str(rs.lastForm.e2) };
+  eachEntry(rs.reviews, (d, v) => { const x = normReview(v); if (x) s.reviews[d] = x; });
+  eachEntry(rs.domainOutcomes, (d, v) => { const x = normOutcome(v); if (x) s.domainOutcomes[d] = x; });
+  eachEntry(rs.domainRatings, (d, v) => {
+    const p = parseRating(v);
+    if (p.diff) s.domainRatings[d] = p.diff;
+    if (p.outcome && !s.domainOutcomes[d]) s.domainOutcomes[d] = p.outcome;
+  });
+  eachEntry(rs.domainStatuses, (d, v) => { const x = normStatus(v); if (x) s.domainStatuses[d] = x; });
+  eachEntry(rs.domainDetails, (d, v) => { const x = normDetail(v); if (x) s.domainDetails[d] = x; });
+  const m = raw.meta && typeof raw.meta === 'object' ? raw.meta : {};
+  db.meta = { ...db.meta, ...m, schema: SCHEMA, rev: num(m.rev), seedVersion: num(m.seedVersion) };
+  return db;
+}
+// Import: the backup wins on conflicts, but nothing local is deleted and empty backup fields never clear local values.
+function mergeDB(dst, src) {
+  let topics = 0, domains = 0;
+  Object.values(src.topics).forEach(t => {
+    const ex = findTopicByKey(dst, topicKey(t.query, t.anyTerms));
+    if (ex) { domains += mergeTopic(ex, t); return; }
+    while (dst.topics[t.id]) t.id += 'x';
+    dst.topics[t.id] = t; topics++; domains += t.results.length;
+  });
+  const a = dst.settings, b = src.settings;
+  ['reviews', 'domainOutcomes', 'domainRatings', 'domainStatuses'].forEach(k => Object.assign(a[k], b[k]));
+  Object.entries(b.domainDetails).forEach(([d, v]) => {
+    const x = a.domainDetails[d] ?? (a.domainDetails[d] = { orderNumber: '', price: '', notes: '' });
+    Object.entries(v).forEach(([f, val]) => { if (val !== '' && val != null) x[f] = val; });
+  });
+  a.estimatedCredits = Math.min(a.estimatedCredits, b.estimatedCredits);
+  return { topics, domains };
+}
 
-async function runSearch(query, anyTerms=[]){
-  clearError();
-  const topic=ensureTopic(query, anyTerms); currentTopicId=topic.id; foundTopicId=topic.id; searchPage=1; newDomainsThisRun=new Set();
-  els.query.value=topic.query; els.anyText1.value=topic.anyTerms?.[0]||''; els.anyText2.value=topic.anyTerms?.[1]||''; renderSearchTopic(); renderTopics(); updateExistingHint();
-  if(controller)controller.abort(); controller=new AbortController(); stopped=false;
-  topic.state.totalRuns=(topic.state.totalRuns||0)+1; saveDB();
-  els.status.classList.add('show'); els.searchBtn.disabled=true; els.searchBtn.textContent='Searching…'; els.statusMain.innerHTML='<span class="spinner"></span>Deep searching';
-  const usOnly=!!els.usSearchOnly.checked;
-  db.settings=db.settings||{}; db.settings.usSearchOnly=usOnly; saveDB();
-  let emptyCalls=0, calls=0, addedTotal=0, skippedPatterns=0;
+/* ================= storage ================= */
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+  set(k, v) { localStorage.setItem(k, v); },
+  del(k) { try { localStorage.removeItem(k); } catch (e) { /* ignore */ } }
+};
+let DB = null, saveTimer = 0, dirty = false;
+
+function loadDB() {
+  const raw = store.get(KEY_DB);
+  let parsed = null, from = '';
+  if (raw) {
+    try { parsed = JSON.parse(raw); } catch (e) { if (!store.get(KEY_PRE)) { try { store.set(KEY_PRE, raw); } catch (e2) { /* ignore */ } } }
+  }
+  if (!parsed || typeof parsed !== 'object') {
+    parsed = null;
+    const snap = store.get(KEY_SNAP);
+    if (snap) { try { parsed = JSON.parse(snap); from = 'snapshot'; } catch (e) { /* ignore */ } }
+  }
+  const legacy = !!parsed && !(parsed.meta && num(parsed.meta.schema) >= SCHEMA);
+  // Keep the untouched pre-migration string once, so an older save can always be recovered by hand.
+  if (legacy && raw && !from && !store.get(KEY_PRE)) { try { store.set(KEY_PRE, raw); } catch (e) { /* ignore */ } }
+  return { db: normalizeDB(parsed), fresh: !parsed, from, legacy };
+}
+function putMain(s) {
+  try { store.set(KEY_DB, s); }
+  catch (e) {
+    // If storage is tight, sacrifice only the rolling snapshot first. Keep the
+    // untouched pre-migration copy because it may be the last recovery path.
+    store.del(KEY_SNAP); store.del(KEY_SNAP_AT);
+    store.set(KEY_DB, s);
+  }
+}
+function saveNow() {
+  clearTimeout(saveTimer); dirty = false;
   try {
-    while(!stopped && calls<REQUESTS_PER_RUN && emptyCalls<MAX_EMPTY_CALLS){
-      const plan=buildPlan(topic,usOnly);
-      els.statusMeta.textContent=`${topic.results.length} domains saved • request ${calls+1}/${REQUESTS_PER_RUN} • ${plan.label}`;
-      let data;
-      try {
-        // Serper free accounts reject many operator-style queries when num > 10.
-        // Keep num at 10 and omit unsupported "verbatim" tbs flags.
-        data=await searchAPI({q:plan.q,gl:plan.gl||'us',hl:'en',num:10,page:plan.page,autocorrect:false},controller.signal);
-      } catch(e) {
-        const msg=String(e.message||e);
-        if(plan.usesOperators && /query pattern not allowed/i.test(msg)){
-          topic.state.operatorRestricted=true;
-          if(usOnly) topic.state.usCursor=(topic.state.usCursor||0)+1; else topic.state.cursor=(topic.state.cursor||0)+1;
-          skippedPatterns++;
-          saveDB();
-          continue;
-        }
-        throw e;
-      }
-      calls++; topic.state.totalCalls=(topic.state.totalCalls||0)+1; topic.state.lastStrategy=plan.label; topic.state.lastPage=plan.page; if(usOnly) topic.state.usCursor=(topic.state.usCursor||0)+1; else topic.state.cursor=(topic.state.cursor||0)+1;
-      const organic=Array.isArray(data.organic)?data.organic:[];
-      const added=addOrganic(topic,organic,plan,usOnly); addedTotal+=added;
-      emptyCalls = organic.length===0 ? emptyCalls+1 : 0;
-      topic.updatedAt=Date.now(); saveDB(); renderSearchTopic(); renderTopics();
-      els.statusMeta.textContent=`${topic.results.length} domains saved • +${addedTotal} this run • ${calls}/${REQUESTS_PER_RUN} requests${usOnly?' • 🇺🇸 US-focused':''}${skippedPatterns?` • ${skippedPatterns} restricted patterns skipped`:''}`;
-      await new Promise(r=>setTimeout(r,110));
+    DB.meta.rev = (DB.meta.rev || 0) + 1; DB.meta.savedAt = now();
+    const s = JSON.stringify(DB), prev = store.get(KEY_DB);
+    if (prev && now() - num(store.get(KEY_SNAP_AT)) > SNAP_EVERY) { // rolling snapshot = the save before this one
+      try { store.set(KEY_SNAP, prev); store.set(KEY_SNAP_AT, String(now())); } catch (e) { /* ignore */ }
     }
-    if(stopped) els.statusMain.textContent='Stopped';
-    else if(calls>=REQUESTS_PER_RUN) els.statusMain.textContent='Search pass finished — run again to go deeper';
-    else if(emptyCalls>=MAX_EMPTY_CALLS) els.statusMain.textContent='Paused after many empty pages — run again to continue';
-    else els.statusMain.textContent='Search pass finished';
-    els.statusMeta.textContent=`${topic.results.length} unique domains saved • +${addedTotal} new • ${calls} Serper request${calls===1?'':'s'} this pass`;
-    if(addedTotal) toast(`+${addedTotal} new domain${addedTotal===1?'':'s'}`);
-  } catch(e){
-    if(e.name==='AbortError' && stopped){ els.statusMain.textContent='Stopped'; }
-    else if(e.name!=='AbortError'){
-      els.statusMain.textContent='Search error';
-      let msg=e.message||String(e);
-      if(/query pattern not allowed/i.test(msg)) msg='Serper rejected this query pattern on the free account. This fixed version uses 10 results per request; try the search again.';
-      showError(msg);
+    putMain(s);
+    setWarn('');
+    return true;
+  } catch (e) {
+    setWarn('⚠ Could not save in this browser (storage full or blocked). Export a backup now.');
+    return false;
+  }
+}
+function saveSoon() { dirty = true; clearTimeout(saveTimer); saveTimer = setTimeout(saveNow, 350); }
+function snapshotNow() {
+  const cur = store.get(KEY_DB);
+  if (cur) { try { store.set(KEY_SNAP, cur); store.set(KEY_SNAP_AT, String(now())); } catch (e) { /* ignore */ } }
+}
+
+/* ================= seed ================= */
+function applySeed(db) {
+  const s = db.settings;
+  const det = d => s.domainDetails[d] ?? (s.domainDetails[d] = { orderNumber: '', price: '', notes: '' });
+  SEED.forEach(([d, , order, price, outcome, diff, note]) => {
+    if (outcome && !s.domainOutcomes[d]) s.domainOutcomes[d] = outcome;
+    if (diff && !s.domainRatings[d] && s.domainOutcomes[d] === 'approved') s.domainRatings[d] = diff;
+    const x = det(d);
+    if (!x.orderNumber && order) x.orderNumber = order;
+    if (!x.price && price) x.price = price;
+    if (!x.notes && note) x.notes = note;
+  });
+  let t = findTopicByKey(db, topicKey(SEED_TOPIC.query, SEED_TOPIC.anyTerms));
+  if (!t) { t = newTopic(SEED_TOPIC.query, SEED_TOPIC.anyTerms); db.topics[t.id] = t; }
+  const holder = (d, title) => ({ domain: d, url: 'https://' + d + '/', title, snippet: '', foundAt: now(), sourceGl: '', usFocused: false, manualKnown: true, manualSource: 'notes' });
+  SEED.forEach(r => addResult(t, holder(r[0], r[1])));
+  SEED_CANDIDATES.forEach(([d, title, note]) => {
+    addResult(t, holder(d, title));
+    if (note) { const x = det(d); if (!x.notes) x.notes = note; }
+  });
+  db.meta.seedVersion = SEED_VERSION;
+}
+
+/* ================= per-domain accessors / setters (global across topics) ================= */
+const S = () => DB.settings;
+const rvOf = d => S().reviews[d] || '';
+const ocOf = d => S().domainOutcomes[d] || '';
+const dfOf = d => S().domainRatings[d] || '';
+const effDiff = d => ocOf(d) === 'approved' ? dfOf(d) : '';
+const stOf = d => S().domainStatuses[d] || '';
+const dtOf = d => S().domainDetails[d] || null;
+const hasDetail = x => !!(x && (x.orderNumber || x.price || x.notes));
+function put(map, d, v) { if (v) S()[map][d] = v; else delete S()[map][d]; }
+function setReview(d, v) { put('reviews', d, v); saveNow(); }
+function setOutcome(d, v) { put('domainOutcomes', d, v); saveNow(); }
+function setDiff(d, v) { put('domainRatings', d, v); if (v) S().domainOutcomes[d] = 'approved'; saveNow(); } // difficulty implies Approved
+function setStatus(d, v) { put('domainStatuses', d, v); saveNow(); }
+function setDetail(d, field, val) {
+  const x = S().domainDetails[d] ?? (S().domainDetails[d] = { orderNumber: '', price: '', notes: '' });
+  x[field] = val; saveSoon();
+}
+
+/* ================= article / US heuristics (view-only, never deletes) ================= */
+const ART_PATH = /\/(blogs?|news|articles?|story|stories|magazine|journal|editorial|press|features?|learn|guides?|reviews?|insights|advice|tips)(\/|$)/i;
+const ART_DATE = /\/(19|20)\d{2}\/(0?[1-9]|1[0-2])(\/|$)/;
+const ART_HOST = /^(blog|news|press|magazine|journal)\./;
+const PROD_PATH = /\/(products?|p|dp|item|items|shop|collections?|catalog|buy|store)\//i;
+const ART_TITLE = /\b(how to|what is|why|guide to|buying guide|reviews?|best|top 10|top 5|news|article|story|editorial|we tested|our picks|everything you need to know|explained)\b/i;
+const ART_SNIP = /\b(how to|what is|guide to|buying guide|top 10|top 5|we tested|our picks|everything you need to know|explained|editorial)\b/i;
+function articleCheck(r) {
+  let path = '';
+  try { path = new URL(r.url).pathname; } catch (e) { /* ignore */ }
+  if (ART_PATH.test(path) || ART_DATE.test(path) || ART_HOST.test(r.domain)) return true;
+  if (r.manualKnown || PROD_PATH.test(path)) return false; // product-looking pages need a URL signal
+  return ART_TITLE.test(r.title || '') || ART_SNIP.test(r.snippet || '');
+}
+function isArticle(r) { let v = artCache.get(r); if (v === undefined) { v = articleCheck(r); artCache.set(r, v); } return v; }
+// US-focused = not an obvious foreign ccTLD, and found via US results (or unknown, e.g. manual rows).
+function isUS(r) { return !isForeign(r.domain) && (r.usFocused || !r.sourceGl || r.sourceGl === 'us'); }
+
+const F_OPTS = {
+  reviewFilter: ['Review', [['all', 'All reviews'], ['green', '✅ Green'], ['red', '❌ Red'], ['unmarked', 'Unmarked']]],
+  outcomeFilter: ['Outcome', [['all', 'All outcomes'], ['approved', 'Approved / refunded'], ['rejected', 'Rejected'], ['unrated', 'Unrated']]],
+  difficultyFilter: ['Rating', [['all', 'All ratings'], ['veryEasy', 'Very Easy'], ['easy', 'Easy'], ['medium', 'Medium'], ['hard', 'Hard'], ['veryHard', 'Very Hard'], ['unratedApproved', 'Unrated approved']]],
+  statusFilter: ['Status', [['all', 'All statuses'], ['refund', 'Waiting for refund'], ['reply', 'Waiting for reply'], ['delivery', 'Purchased / waiting for delivery'], ['none', 'No status']]],
+  countryFilter: ['Country', [['all', 'All countries'], ['us', '🇺🇸 US-focused'], ['usOnly', '🇺🇸 .us only (strict)']]]
+};
+function activeFilters() { return Object.keys(F_OPTS).filter(k => S()[k] !== 'all').length + (UI.find ? 1 : 0); }
+function passes(r) {
+  const s = S(), d = r.domain;
+  if (s.hideArticles && isArticle(r)) return false;
+  if (s.countryFilter === 'us' && !isUS(r)) return false;
+  if (s.countryFilter === 'usOnly' && !d.endsWith('.us')) return false;
+  const rv = rvOf(d);
+  if (s.reviewFilter === 'green' && rv !== 'green') return false;
+  if (s.reviewFilter === 'red' && rv !== 'red') return false;
+  if (s.reviewFilter === 'unmarked' && rv) return false;
+  const oc = ocOf(d);
+  if (s.outcomeFilter === 'approved' && oc !== 'approved') return false;
+  if (s.outcomeFilter === 'rejected' && oc !== 'rejected') return false;
+  if (s.outcomeFilter === 'unrated' && oc) return false;
+  const df = effDiff(d);
+  if (s.difficultyFilter === 'unratedApproved') { if (oc !== 'approved' || df) return false; }
+  else if (s.difficultyFilter !== 'all' && df !== s.difficultyFilter) return false;
+  const st = stOf(d);
+  if (s.statusFilter === 'none') { if (st) return false; }
+  else if (s.statusFilter !== 'all' && st !== s.statusFilter) return false;
+  if (UI.find && !(d + ' ' + (r.title || '')).toLowerCase().includes(UI.find)) return false;
+  return true;
+}
+
+/* ================= CSV ================= */
+const CSV_COLS = ['Search topic', 'Must also contain (OR)', 'Domain', 'Review', 'Outcome', 'Rating', 'Status', 'Order number', 'Price', 'Notes', 'Article-like', 'Direct page link'];
+const csvCell = v => { v = String(v ?? ''); return /[",\r\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
+function csvRow(t, r) {
+  const d = r.domain, oc = ocOf(d), x = dtOf(d) || {};
+  const rv = rvOf(d);
+  return [t.query, t.anyTerms.join(' OR '), d, rv ? rv[0].toUpperCase() + rv.slice(1) : '', OUT_LABEL[oc], oc === 'approved' ? (DIFF_LABEL[dfOf(d)] || 'Unrated approved') : '',
+    STATUS_PLAIN[stOf(d)] || '', x.orderNumber || '', x.price || '', x.notes || '', isArticle(r) ? 'Yes' : 'No', r.url];
+}
+function csvFor(topics) {
+  const rows = [CSV_COLS];
+  topics.forEach(t => t.results.forEach(r => rows.push(csvRow(t, r))));
+  return '﻿' + rows.map(r => r.map(csvCell).join(',')).join('\r\n');
+}
+function download(name, text, mime) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([text], { type: mime }));
+  a.download = name; document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+}
+const stamp = () => new Date().toISOString().slice(0, 10);
+const slug = s => cleanTerm(s).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) || 'topic';
+
+/* ================= Serper search engine =================
+   Each topic walks a deterministic list of "lanes" (query/locale variations). Per lane the order is
+   variant -> page, so an empty page can skip the rest of its block. cursor / usCursor persist per topic. */
+const COUNTRIES = [['ca', 'Canada'], ['gb', 'UK'], ['au', 'Australia'], ['ie', 'Ireland'], ['nz', 'New Zealand'], ['de', 'Germany'], ['fr', 'France'], ['nl', 'Netherlands'], ['se', 'Sweden'], ['no', 'Norway'], ['dk', 'Denmark'], ['fi', 'Finland'], ['es', 'Spain'], ['it', 'Italy'], ['ch', 'Switzerland'], ['at', 'Austria'], ['be', 'Belgium'], ['jp', 'Japan'], ['kr', 'South Korea'], ['hk', 'Hong Kong'], ['sg', 'Singapore'], ['in', 'India'], ['za', 'South Africa'], ['mx', 'Mexico'], ['br', 'Brazil'], ['ae', 'UAE'], ['pl', 'Poland']];
+const LOCALES = [['mx', 'es', 'Mexico'], ['es', 'es', 'Spain'], ['ca', 'fr', 'Canada'], ['fr', 'fr', 'France'], ['de', 'de', 'Germany'], ['it', 'it', 'Italy'], ['br', 'pt', 'Brazil'], ['jp', 'ja', 'Japan'], ['nl', 'nl', 'Netherlands'], ['se', 'sv', 'Sweden']];
+const TLDS = ['com', 'net', 'org', 'shop', 'store', 'co', 'us', 'biz', 'info', 'online', 'co.uk', 'ca', 'com.au', 'de', 'fr', 'nl', 'jp'];
+const US_TLDS = ['com', 'net', 'org', 'shop', 'store', 'us', 'co', 'biz', 'info', 'online'];
+const STATES = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware', 'District of Columbia', 'Florida', 'Georgia', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey', 'New Mexico', 'New York', 'North Carolina', 'North Dakota', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Rhode Island', 'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming'];
+
+function lanesFor(us) {
+  const L = [{ k: 'Pages', gl: 'us', hl: 'en', pages: 10 }];
+  if (us) {
+    STATES.forEach(s => L.push({ k: s, gl: 'us', hl: 'en', loc: s + ', United States', pages: 2 }));
+    US_TLDS.forEach(t => L.push({ k: 'site:.' + t, gl: 'us', hl: 'en', tld: t, pages: 2, op: true }));
+    L.push({ k: 'US Spanish', gl: 'us', hl: 'es', pages: 2 });
+  } else {
+    COUNTRIES.forEach(([gl, name]) => L.push({ k: name, gl, hl: 'en', pages: 3 }));
+    TLDS.forEach(t => L.push({ k: 'site:.' + t, gl: 'us', hl: 'en', tld: t, pages: 2, op: true }));
+    LOCALES.forEach(([gl, hl, name]) => L.push({ k: name + ' (' + hl + ')', gl, hl, pages: 2 }));
+  }
+  return L;
+}
+const LANES = { us: lanesFor(true), world: lanesFor(false) };
+
+// Rotating window of already-found domains to exclude, so deeper results surface.
+function exclWindow(topic, k) {
+  const ds = topic.results.filter(r => !r.manualKnown).map(r => r.domain), W = 14;
+  if (!ds.length) return [];
+  return [...new Set(Array.from({ length: Math.min(W, ds.length) }, (_, i) => ds[(k * W + i) % ds.length]))];
+}
+// Unbounded exclusion lanes follow the fixed ones. Returns null when nothing usable is left.
+function planAt(topic, us, cursor, variants) {
+  const lanes = us ? LANES.us : LANES.world, V = variants.length;
+  let c = cursor, base = 0, lane = null;
+  for (const L of lanes) { const n = L.pages * V; if (c < n) { lane = L; break; } c -= n; base += n; }
+  if (!lane) {
+    if (topic.state.operatorRestricted) return null;
+    const ep = 2, en = ep * V, k = Math.floor(c / en);
+    c -= k * en; base += k * en;
+    lane = { k: 'Exclude #' + (k + 1), gl: 'us', hl: 'en', excl: k, pages: ep, op: true };
+  }
+  const per = lane.pages, vi = Math.floor(c / per), page = c % per + 1, v = variants[vi];
+  const ex = lane.excl !== undefined ? exclWindow(topic, lane.excl) : [];
+  if (lane.excl !== undefined && !ex.length) return null;
+  const body = { q: v.q + (lane.tld ? ' site:.' + lane.tld : '') + ex.map(d => ' -site:' + d).join(''), hl: lane.hl, gl: lane.gl, num: 10, autocorrect: false };
+  if (page > 1) body.page = page;
+  if (lane.loc) body.location = lane.loc;
+  return { body, page, op: !!lane.op, label: lane.k + (v.label ? ' · “' + v.label + '”' : '') + ' · p' + page, blockEnd: base + vi * per + per, laneEnd: base + per * V, next: cursor + 1 };
+}
+const curOf = (t, us) => us ? t.state.usCursor : t.state.cursor;
+function setCur(t, us, v) { if (us) t.state.usCursor = v; else t.state.cursor = v; }
+// Operator lanes are skipped once restricted. Running out of lanes ends the run (no silent repeats);
+// the cursor resets so the next, deliberate run starts over from the first lane.
+function nextPlan(topic, us, variants) {
+  for (let guard = 0; guard < 600; guard++) {
+    const p = planAt(topic, us, curOf(topic, us), variants);
+    if (!p) break;
+    if (p.op && topic.state.operatorRestricted) { setCur(topic, us, p.laneEnd); continue; }
+    return p;
+  }
+  setCur(topic, us, 0); topic.state.cycles = (topic.state.cycles || 0) + 1;
+  return null;
+}
+
+// One result per domain; a real hit upgrades a manual/seed placeholder instead of duplicating it.
+function mergeOrganic(topic, organic, plan, us) {
+  let added = 0, upgraded = 0;
+  for (const o of organic) {
+    const url = safeUrl(o && o.link), d = domainOf(url);
+    if (!d || (us && isForeign(d))) continue;
+    const res = addResult(topic, { domain: d, url, title: str(o.title), snippet: str(o.snippet), foundAt: now(), sourceGl: plan.body.gl, usFocused: us, manualKnown: false });
+    if (res === 'added') added++; else if (res === 'upgraded') upgraded++;
+  }
+  return { added, upgraded };
+}
+
+async function callSerper(key, plan, run) {
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const ctl = new AbortController(); run.ctl = ctl;
+    const timer = setTimeout(() => ctl.abort(), 30000);
+    try {
+      const resp = await fetch(ENDPOINT, { method: 'POST', headers: { 'X-API-KEY': key, 'Content-Type': 'application/json' }, body: JSON.stringify(plan.body), signal: ctl.signal });
+      let data = null;
+      try { data = await resp.json(); } catch (e) { /* non-JSON body */ }
+      if (resp.ok) return { organic: Array.isArray(data && data.organic) ? data.organic : [] };
+      const msg = String((data && (data.message || data.error)) || resp.statusText || 'HTTP ' + resp.status);
+      if (/pattern not allowed/i.test(msg)) return { error: true, kind: 'restricted', msg };
+      if (resp.status === 401 || resp.status === 403) return { error: true, kind: 'auth', msg };
+      if (resp.status === 402 || /credit/i.test(msg)) return { error: true, kind: 'credits', msg };
+      if (resp.status === 429 || resp.status >= 500) {
+        if (attempt < 2) { await sleep(1500 * (attempt + 1)); continue; }
+        return { error: true, kind: 'rate', msg };
+      }
+      return { error: true, kind: 'http', msg };
+    } catch (e) {
+      if (run.stop) return { error: true, kind: 'abort' };
+      if (attempt < 2) { await sleep(1200); continue; }
+      return { error: true, kind: 'net', msg: e && e.name === 'AbortError' ? 'Timed out' : 'Network error' };
+    } finally { clearTimeout(timer); }
+  }
+  return { error: true, kind: 'net', msg: 'Network error' };
+}
+
+let wake = null;
+async function lockScreen() { try { wake = await navigator.wakeLock.request('screen'); } catch (e) { wake = null; } }
+function unlockScreen() { try { if (wake) wake.release(); } catch (e) { /* ignore */ } wake = null; }
+
+const RUN_MSG = {
+  auth: 'Serper rejected the API key. Check it under ⋯ → Serper API key.',
+  credits: 'Out of Serper credits.',
+  rate: 'Serper is busy or rate-limiting. Progress is saved; try again shortly.',
+  net: 'Network problem. Progress is saved; try again.'
+};
+async function runSearch(f, key) {
+  let topic = findTopicByKey(DB, topicKey(f.q, f.terms));
+  if (!topic) topic = newTopic(f.q, f.terms); // only stored once the first request succeeds
+  const st = topic.state, us = f.us;
+  const variants = (topic.anyTerms.length ? topic.anyTerms : ['']).map(t => ({ label: t, q: '"' + topic.query + '"' + (t ? ' "' + t + '"' : '') }));
+  const run = { topic, active: true, stop: false, calls: 0, empty: 0, added: 0, upgraded: 0, lane: '', msg: '', restricted: false, ctl: null, counted: false };
+  UI.run = run; UI.last = null; setRunning(true); renderRun(); lockScreen();
+  let hard = 0;
+  const persist = () => { if (DB.topics[topic.id]) saveNow(); };
+  try {
+    while (!run.stop && run.calls < MAX_CALLS) {
+      const plan = nextPlan(topic, us, variants);
+      if (!plan) { run.msg = 'Every available lane has been searched for this topic' + (st.operatorRestricted ? ' (operator lanes are restricted on this account)' : '') + '. The next run starts over from the first lane and will mostly repeat.'; persist(); break; }
+      run.lane = plan.label; renderRun();
+      const res = await callSerper(key, plan, run);
+      if (run.stop) break;
+      if (res.error) {
+        if (res.kind === 'restricted') { st.operatorRestricted = true; run.restricted = true; setCur(topic, us, plan.laneEnd); persist(); continue; }
+        if (RUN_MSG[res.kind]) { run.msg = RUN_MSG[res.kind]; break; }
+        if (++hard >= 3) { run.msg = 'Serper returned errors: ' + res.msg; break; }
+        setCur(topic, us, plan.blockEnd); persist(); continue;
+      }
+      hard = 0; run.calls++;
+      const m = mergeOrganic(topic, res.organic, plan, us);
+      run.added += m.added; run.upgraded += m.upgraded;
+      if (!DB.topics[topic.id]) DB.topics[topic.id] = topic;
+      if (!run.counted) { st.totalRuns++; run.counted = true; }
+      st.totalCalls++; st.lastStrategy = plan.label; st.lastPage = plan.page;
+      if (res.organic.length === 0) { run.empty++; setCur(topic, us, plan.blockEnd); } else { run.empty = 0; setCur(topic, us, plan.next); }
+      topic.updatedAt = now();
+      S().estimatedCredits = Math.max(0, S().estimatedCredits - 1);
+      saveNow(); renderCredits(); renderRun();
+      if (run.empty >= MAX_EMPTY) { run.msg = 'Stopped after ' + MAX_EMPTY + ' empty pages in a row.'; break; }
     }
   } finally {
-    els.searchBtn.disabled=false; els.searchBtn.textContent=topic.results.length?'Search 100 more pages':'Search deep'; saveDB(); renderSearchTopic(); renderTopics();
+    run.active = false; UI.run = null; UI.last = run; unlockScreen(); setRunning(false);
+    if (run.stop) run.msg = 'Stopped.';
+    else if (!run.msg) run.msg = run.calls >= MAX_CALLS ? 'Pass complete — ' + run.calls + ' requests.' : 'Done.';
+    renderRun(); updateSearchInfo(); renderCredits(); refreshFound();
   }
 }
+function stopRun() { const r = UI.run; if (r) { r.stop = true; if (r.ctl) r.ctl.abort(); } }
+async function startSearch() {
+  if (UI.run) return;
+  const f = readForm();
+  if (!f.q) { toast('Enter the main exact text'); $('#q').focus(); return; }
+  const key = (store.get(KEY_API) || '').trim();
+  if (!key) { UI.pending = true; showKeyBox(true); toast('Enter your Serper API key to start'); return; }
+  UI.pending = false; S().usSearchOnly = f.us; persistForm();
+  await runSearch(f, key);
+}
 
-function renderResultList(container, topic, page, pageInfoEl, prevBtn, nextBtn){
-  container.innerHTML='';
-  if(!topic || !topic.results.length){ pageInfoEl.textContent='0 results'; prevBtn.disabled=true; nextBtn.disabled=true; return 1; }
-  const rows=filteredResults(topic);
-  if(!rows.length){
-    pageInfoEl.textContent=`0 matching results • ${topic.results.length} total`; prevBtn.disabled=true; nextBtn.disabled=true;
-    container.innerHTML='<div class="empty">No domains match the current filters.</div>'; return 1;
-  }
-  const pages=Math.max(1,Math.ceil(rows.length/RESULTS_PER_VIEW)); page=Math.min(Math.max(1,page),pages);
-  const start=(page-1)*RESULTS_PER_VIEW, slice=rows.slice(start,start+RESULTS_PER_VIEW);
-  container.innerHTML=slice.map((r,i)=>{ const review=reviewStatus(r.domain); const article=isArticleLike(r); return `<article class="result">
-    <div class="rank">${start+i+1}</div>
-    <div class="resultMain"><div class="domain">${esc(r.domain)}${newDomainsThisRun.has(r.domain)?'<span class="newmark">NEW</span>':''}${article?'<span class="articleMark">ARTICLE?</span>':''}${domainRating(r.domain).source==='notes'?'<span class="seedMark">FROM NOTES</span>':''}${r.manualKnown?'<span class="manualMark">MANUAL</span>':''}</div><div class="rtitle">${esc(r.title||r.url)}</div>
-      <div class="ratingRow">
-        <select data-outcome-domain="${esc(r.domain)}" aria-label="Outcome for ${esc(r.domain)}">
-          <option value="" ${domainRating(r.domain).outcome===''?'selected':''}>— Outcome</option>
-          <option value="approved" ${domainRating(r.domain).outcome==='approved'?'selected':''}>✅ Approved</option>
-          <option value="rejected" ${domainRating(r.domain).outcome==='rejected'?'selected':''}>❌ Rejected</option>
-        </select>
-        <select data-difficulty-domain="${esc(r.domain)}" aria-label="Difficulty rating for ${esc(r.domain)}">
-          <option value="" ${domainRating(r.domain).difficulty===''?'selected':''}>— Rating</option>
-          <option value="very_easy" ${['very_easy','super_easy'].includes(domainRating(r.domain).difficulty)?'selected':''}>Very Easy</option>
-          <option value="easy" ${domainRating(r.domain).difficulty==='easy'?'selected':''}>Easy</option>
-          <option value="medium" ${domainRating(r.domain).difficulty==='medium'?'selected':''}>Medium</option>
-          <option value="hard" ${domainRating(r.domain).difficulty==='hard'?'selected':''}>Hard</option>
-          <option value="very_hard" ${domainRating(r.domain).difficulty==='very_hard'?'selected':''}>Very Hard</option>
-        </select>
-        <select data-status-domain="${esc(r.domain)}" aria-label="Current status for ${esc(r.domain)}">
-          <option value="" ${domainStatus(r.domain)===''?'selected':''}>— Status</option>
-          <option value="waiting_refund" ${domainStatus(r.domain)==='waiting_refund'?'selected':''}>💸 Waiting refund</option>
-          <option value="waiting_reply" ${domainStatus(r.domain)==='waiting_reply'?'selected':''}>💬 Waiting reply</option>
-          <option value="waiting_delivery" ${domainStatus(r.domain)==='waiting_delivery'?'selected':''}>📦 Purchased / waiting delivery</option>
-        </select>
-      </div>
-      <div class="purchaseDetails ${(domainStatus(r.domain)==='waiting_delivery'||hasDomainDetails(r.domain))?'':'hidden'}" data-details-wrap="${esc(r.domain)}">
-        <input data-order-domain="${esc(r.domain)}" value="${esc(domainDetails(r.domain).orderNumber||'')}" placeholder="Order number" aria-label="Order number for ${esc(r.domain)}">
-        <input data-price-domain="${esc(r.domain)}" value="${esc(domainDetails(r.domain).price||'')}" placeholder="Price (e.g. $169.99)" aria-label="Price for ${esc(r.domain)}">
-        <textarea data-notes-domain="${esc(r.domain)}" placeholder="Notes…"${domainDetails(r.domain).notes?'':' spellcheck="true"'}>${esc(domainDetails(r.domain).notes||'')}</textarea>
-      </div>
-    </div>
-    <div class="reviewBtns">
-      <button type="button" class="reviewBtn good ${review==='green'?'active':''}" data-review="green" data-domain="${esc(r.domain)}" title="Mark good">✓</button>
-      <button type="button" class="reviewBtn bad ${review==='red'?'active':''}" data-review="red" data-domain="${esc(r.domain)}" title="Mark bad">✕</button>
-      <button type="button" class="reviewBtn clear" data-review="" data-domain="${esc(r.domain)}" title="Clear mark">•</button>
-      <a class="open" href="${esc(r.url)}" target="_blank" rel="noopener noreferrer" aria-label="Open ${esc(r.domain)}">↗</a>
-    </div>
-  </article>`;}).join('');
-  container.querySelectorAll('[data-review]').forEach(btn=>btn.addEventListener('click',()=>setReviewStatus(btn.dataset.domain,btn.dataset.review)));
-  container.querySelectorAll('[data-outcome-domain]').forEach(sel=>sel.addEventListener('change',()=>setDomainOutcome(sel.dataset.outcomeDomain,sel.value)));
-  container.querySelectorAll('[data-difficulty-domain]').forEach(sel=>sel.addEventListener('change',()=>setDomainDifficulty(sel.dataset.difficultyDomain,sel.value)));
-  container.querySelectorAll('[data-status-domain]').forEach(sel=>sel.addEventListener('change',()=>setDomainStatus(sel.dataset.statusDomain,sel.value)));
-  container.querySelectorAll('[data-order-domain]').forEach(inp=>inp.addEventListener('change',()=>saveDomainDetails(inp.dataset.orderDomain,{orderNumber:inp.value})));
-  container.querySelectorAll('[data-price-domain]').forEach(inp=>inp.addEventListener('change',()=>saveDomainDetails(inp.dataset.priceDomain,{price:inp.value})));
-  container.querySelectorAll('[data-notes-domain]').forEach(inp=>{
-    let timer;
-    inp.addEventListener('input',()=>{clearTimeout(timer);timer=setTimeout(()=>saveDomainDetails(inp.dataset.notesDomain,{notes:inp.value}),350);});
-    inp.addEventListener('change',()=>saveDomainDetails(inp.dataset.notesDomain,{notes:inp.value}));
+/* ================= UI state & small widgets ================= */
+const UI = { tab: 'search', topicId: null, openRows: new Set(), detOpen: new Set(), showFilters: false, limit: CHUNK, find: '', run: null, last: null, pending: false, idx: new Map(), nums: new Map() };
+let toastTimer = 0;
+function toast(msg, ms = 2800) { const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, ms); }
+function setWarn(msg) { const w = $('#warn'); w.textContent = msg; w.hidden = !msg; }
+function renderCredits() { $('#credits').textContent = '≈ ' + fmt(S().estimatedCredits) + ' credits'; }
+
+/* ================= Search tab ================= */
+function readForm() { return { q: cleanTerm($('#q').value), terms: uniq([$('#e1').value, $('#e2').value]), us: $('#usOnly').checked }; }
+function persistForm() {
+  S().lastForm = { q: $('#q').value, e1: $('#e1').value, e2: $('#e2').value };
+  S().usSearchOnly = $('#usOnly').checked; saveSoon();
+}
+function updateSearchInfo() {
+  if (UI.run) return;
+  const f = readForm(), t = f.q ? findTopicByKey(DB, topicKey(f.q, f.terms)) : null;
+  const ts = t && t.state, searched = !!t && (ts.totalCalls > 0 || t.results.some(r => !r.manualKnown));
+  $('#go').textContent = searched ? 'Search ' + MAX_CALLS + ' more pages' : 'Search deep';
+  $('#info').innerHTML = t
+    ? `Saved topic · <b>${fmt(t.results.length)}</b> domains · ${fmt(ts.totalCalls)} requests · ${ts.totalRuns} run${ts.totalRuns === 1 ? '' : 's'}${ts.lastStrategy ? ' · last: ' + esc(ts.lastStrategy) : ''}`
+    : (f.q ? 'New topic — results are saved under Found.' : '');
+}
+function setRunning(on) {
+  $('#go').hidden = on; $('#stop').hidden = !on;
+  ['#q', '#e1', '#e2', '#usOnly'].forEach(s => { $(s).disabled = on; });
+}
+function renderRun() {
+  const r = UI.run || UI.last, box = $('#run');
+  if (!r) { box.hidden = true; return; }
+  const t = r.topic;
+  box.hidden = false;
+  box.innerHTML = `<div class="rl"><b>${r.active ? 'Searching…' : esc(r.msg)}</b></div>
+    <div class="grid4"><div><span>${fmt(t.results.length)}</span>domains saved</div><div><span>+${r.added}</span>new this run</div><div><span>${r.calls}/${MAX_CALLS}</span>requests</div><div><span>${fmt(t.state.totalCalls)}</span>lifetime</div></div>
+    <div class="lane">${r.lane ? 'Lane: ' + esc(r.lane) : ''}${r.upgraded ? ' · ' + r.upgraded + ' placeholder' + (r.upgraded > 1 ? 's' : '') + ' upgraded' : ''}${r.restricted ? ' · operator patterns restricted, skipped' : ''}</div>`;
+}
+function showKeyBox(show) {
+  if (show) setTab('search');
+  $('#keyBox').hidden = !show; $('#keyClear').hidden = !store.get(KEY_API);
+  if (show) { $('#keyInput').value = ''; $('#keyInput').focus(); }
+}
+
+/* ================= tabs / Found ================= */
+function setTab(tab) {
+  UI.tab = tab;
+  document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
+  $('#tab-search').hidden = tab !== 'search'; $('#tab-found').hidden = tab !== 'found';
+  if (tab === 'found') renderFound(); else updateSearchInfo();
+  window.scrollTo(0, 0);
+}
+function renderFound() {
+  const inTopic = !!(UI.topicId && DB.topics[UI.topicId]);
+  $('#topics').hidden = inTopic; $('#topicView').hidden = !inTopic;
+  if (inTopic) renderTopicView(); else { UI.topicId = null; renderTopics(); }
+}
+function refreshFound() { if (UI.tab === 'found') renderFound(); }
+function renderTopics() {
+  const list = Object.values(DB.topics).sort((a, b) => b.updatedAt - a.updatedAt);
+  $('#topics').innerHTML = list.length ? list.map(t => `<article class="card topic">
+    <div class="tmain"><div class="tq">${esc(t.query)}</div>${t.anyTerms.length ? `<div class="tor"><i>must also contain</i> ${t.anyTerms.map(esc).join(' <i>OR</i> ')}</div>` : ''}
+    <div class="tmeta">${fmt(t.results.length)} domains · ${fmt(t.state.totalCalls)} requests · ${ago(t.updatedAt)}</div></div>
+    <button class="btn" data-act="open" data-id="${esc(t.id)}">Open</button></article>`).join('')
+    : '<p class="muted pad">No topics yet. Run a search and it will be saved here.</p>';
+}
+
+/* ================= topic view ================= */
+const optHtml = (list, cur) => list.map(([v, l]) => `<option value="${esc(v)}"${v === cur ? ' selected' : ''}>${esc(l)}</option>`).join('');
+const DIFF_OPTS = [['', 'Not set'], ...Object.entries(DIFF_LABEL)];
+const STATUS_OPTS = [['', 'No status'], ...Object.entries(STATUS_LABEL)];
+const filtersHtml = () => Object.entries(F_OPTS).map(([k, [label, opts]]) => `<label>${label}<select data-chg="flt" data-k="${k}">${optHtml(opts, S()[k])}</select></label>`).join('')
+  + `<label class="wide">Find<input type="search" id="find" value="${esc(UI.find)}" placeholder="Domain or title" autocomplete="off"></label>`;
+function filterBtnLabel() { const n = activeFilters(); return 'Filters' + (n ? ' (' + n + ')' : '') + (UI.showFilters ? ' ▴' : ' ▾'); }
+
+function renderTopicView() {
+  const t = DB.topics[UI.topicId];
+  $('#topicView').innerHTML = `<div class="thead"><button class="btn sm" data-act="back">← Topics</button>
+    <div class="tt"><b>${esc(t.query)}</b>${t.anyTerms.length ? ' <span class="tor">+ ' + t.anyTerms.map(esc).join(' <i>OR</i> ') + '</span>' : ''}</div></div>
+    <div class="tmeta">${fmt(t.results.length)} domains · ${fmt(t.state.totalCalls)} requests · updated ${ago(t.updatedAt)}</div>
+    <div class="tools"><button class="btn sm pri" data-act="searchMore">Search more</button><button class="btn sm" data-act="topicCsv">Export topic CSV</button></div>
+    <div class="fbar"><label class="check"><input type="checkbox" data-chg="hide" ${S().hideArticles ? 'checked' : ''}> Hide article/blog pages</label>
+    <button class="btn sm" id="fbtn" data-act="filters">${filterBtnLabel()}</button></div>
+    <div class="filters" id="filters"${UI.showFilters ? '' : ' hidden'}>${filtersHtml()}</div>
+    <div id="count"></div>
+    <details class="add"><summary>＋ Add known domain</summary><div class="line"><input id="addDom" type="text" placeholder="example.com" autocapitalize="off" spellcheck="false"><button class="btn" data-act="addDom">Add</button></div></details>
+    <div class="rows" id="rows"></div><div id="more-wrap"></div>`;
+  renderRows();
+}
+function renderRows() {
+  const t = DB.topics[UI.topicId];
+  UI.idx = domainIndex(t); UI.nums = new Map(t.results.map((r, i) => [r.domain, i + 1]));
+  const list = t.results.filter(passes), shown = list.slice(0, UI.limit);
+  $('#rows').innerHTML = shown.map(r => rowHtml(r, UI.nums.get(r.domain), false)).join('') || '<p class="muted pad">No domains match these filters.</p>';
+  $('#more-wrap').innerHTML = list.length > shown.length ? `<button class="btn" data-act="more">Show ${Math.min(CHUNK, list.length - shown.length)} more</button>` : '';
+  $('#count').textContent = `${list.length} shown • ${t.results.length} total`;
+  $('#fbtn').textContent = filterBtnLabel();
+}
+function updateCount() {
+  const t = DB.topics[UI.topicId];
+  if (t) $('#count').textContent = `${t.results.filter(passes).length} shown • ${t.results.length} total`;
+}
+function rowHtml(r, n, stale) {
+  const d = r.domain, oc = ocOf(d), df = effDiff(d), st = stOf(d), rv = rvOf(d), open = UI.openRows.has(d), link = safeUrl(r.url);
+  const tags = [];
+  if (r.manualKnown) tags.push(`<span class="bdg">${r.manualSource === 'user' ? 'MANUAL' : 'FROM NOTES'}</span>`);
+  if (isArticle(r)) tags.push('<span class="bdg art">ARTICLE?</span>');
+  if (oc === 'approved') tags.push('<span class="tag ok">Approved</span>'); else if (oc === 'rejected') tags.push('<span class="tag no">Rejected</span>');
+  if (df) tags.push(`<span class="tag">${DIFF_LABEL[df]}</span>`);
+  if (st) tags.push(`<span class="tag st">${STATUS_SHORT[st]}</span>`);
+  return `<article class="row${open ? ' open' : ''}${stale ? ' fade' : ''}" data-d="${esc(d)}">
+    <div class="main-r" data-act="toggle"><span class="num">${n}</span><div class="mid"><div class="dom">${esc(d)}</div>
+    <div class="ttl">${esc(r.title)}</div>${tags.length ? `<div class="tags">${tags.join('')}</div>` : ''}</div></div>
+    <div class="acts">${link ? `<a class="btn ico" href="${esc(link)}" target="_blank" rel="noopener noreferrer" aria-label="Open page" title="Open page">↗</a>` : ''}
+    <button class="btn ico gr${rv === 'green' ? ' on' : ''}" data-act="rv" data-v="green" aria-label="Green" aria-pressed="${rv === 'green'}">✅</button>
+    <button class="btn ico rd${rv === 'red' ? ' on' : ''}" data-act="rv" data-v="red" aria-label="Red" aria-pressed="${rv === 'red'}">❌</button></div>
+    ${open ? moreHtml(r) : ''}</article>`;
+}
+function moreHtml(r) {
+  const d = r.domain, oc = ocOf(d), x = dtOf(d) || {}, showDet = stOf(d) === 'delivery' || hasDetail(x) || UI.detOpen.has(d);
+  const seg = [['approved', 'Approved / refunded'], ['rejected', 'Rejected'], ['', 'Unrated']].map(([k, l]) => `<button class="${oc === k ? 'on ' + k : ''}" data-act="oc" data-v="${k}">${l}</button>`).join('');
+  return `<div class="more"><div class="seg" role="group" aria-label="Outcome">${seg}</div>
+    <div class="two"><label>Difficulty<select data-chg="df">${optHtml(DIFF_OPTS, effDiff(d))}</select></label>
+    <label>Status<select data-chg="st">${optHtml(STATUS_OPTS, stOf(d))}</select></label></div>
+    ${showDet ? `<div class="det"><label>Order number<input type="text" data-inp="orderNumber" value="${esc(x.orderNumber || '')}"></label>
+    <label>Price<input type="text" data-inp="price" value="${esc(x.price || '')}"></label>
+    <label class="wide">Notes<textarea data-inp="notes" rows="2">${esc(x.notes || '')}</textarea></label></div>` : '<button class="lnk" data-act="det">＋ Order number / price / notes</button>'}
+    ${r.snippet ? `<p class="snip">${esc(r.snippet)}</p>` : ''}</div>`;
+}
+function refreshRow(d) {
+  const el = document.querySelector('.row[data-d="' + CSS.escape(d) + '"]'), r = UI.idx.get(d);
+  if (!el || !r) return;
+  el.outerHTML = rowHtml(r, UI.nums.get(d), !passes(r)); // edited rows stay put (dimmed if filtered out) until the next refresh
+  updateCount(); $('#fbtn').textContent = filterBtnLabel();
+}
+function renderAll() {
+  renderCredits();
+  if (UI.tab === 'found') renderFound(); else updateSearchInfo();
+  renderMenuInfo();
+}
+
+/* ================= navigation ================= */
+function openTopic(id) {
+  UI.topicId = id; UI.limit = CHUNK; UI.find = ''; UI.openRows.clear();
+  history.pushState({ t: id }, '');
+  renderFound(); window.scrollTo(0, 0);
+}
+function closeTopic() {
+  if (history.state && history.state.t) { history.back(); return; } // Android back button does the same
+  UI.topicId = null; renderFound();
+}
+window.addEventListener('popstate', e => {
+  const id = e.state && e.state.t;
+  UI.topicId = id && DB.topics[id] ? id : null;
+  if (UI.topicId) UI.tab = 'found';
+  setTab(UI.tab);
+});
+
+/* ================= actions ================= */
+const rowDomain = el => el.closest('.row').dataset.d;
+function toggleMenu(force) {
+  const m = $('#menu'), show = typeof force === 'boolean' ? force : m.hidden;
+  m.hidden = !show; $('#menuBtn').setAttribute('aria-expanded', String(show));
+  if (show) renderMenuInfo();
+}
+function renderMenuInfo() {
+  const snapAt = num(store.get(KEY_SNAP_AT)), hasSnap = !!store.get(KEY_SNAP);
+  $('#snapBtn').hidden = !hasSnap; $('#snapBtn').textContent = 'Restore snapshot' + (snapAt ? ' (' + ago(snapAt) + ')' : '');
+  $('#preBtn').hidden = !store.get(KEY_PRE);
+  const mb = ((store.get(KEY_DB) || '').length / 1048576).toFixed(2);
+  $('#storageNote').textContent = 'Saved only in this browser (' + mb + ' MB). Export a backup regularly.';
+}
+function saveKey() {
+  const v = $('#keyInput').value.trim();
+  if (!v) { toast('Paste your Serper API key first'); return; }
+  try { store.set(KEY_API, v); } catch (e) { toast('Could not store the key in this browser'); return; }
+  $('#keyBox').hidden = true; $('#keyInput').value = ''; toast('API key saved in this browser');
+  if (UI.pending) startSearch();
+}
+function clearKey() { store.del(KEY_API); UI.pending = false; $('#keyBox').hidden = true; toast('API key removed from this browser'); }
+function editCredits() {
+  const v = prompt('Estimated Serper credits left (check your Serper dashboard):', String(S().estimatedCredits));
+  if (v === null) return;
+  const n = Math.round(num(String(v).replace(/[^\d.]/g, ''), NaN));
+  if (!Number.isFinite(n) || n < 0) { toast('Enter a whole number'); return; }
+  S().estimatedCredits = n; saveNow(); renderCredits();
+}
+function searchMore() {
+  const t = DB.topics[UI.topicId];
+  if (!t) return;
+  $('#q').value = t.query; $('#e1').value = t.anyTerms[0] || ''; $('#e2').value = t.anyTerms[1] || '';
+  persistForm(); setTab('search');
+}
+function topicCsv() {
+  const t = DB.topics[UI.topicId];
+  if (t) download(`exactdomain-${slug(t.query)}-${stamp()}.csv`, csvFor([t]), 'text/csv');
+}
+function addKnown() {
+  const t = DB.topics[UI.topicId], inp = $('#addDom'), raw = inp.value.trim(), d = domainOf(raw);
+  if (!d || !d.includes('.')) { toast('Enter a domain like example.com'); return; }
+  if (findResult(t, d)) { toast(d + ' is already in this topic'); return; }
+  pushResult(t, { domain: d, url: safeUrl(raw) || 'https://' + d + '/', title: '', snippet: '', foundAt: now(), sourceGl: '', usFocused: false, manualKnown: true, manualSource: 'user' });
+  t.updatedAt = now(); saveNow(); inp.value = '';
+  UI.find = d; $('#find').value = d; renderRows();
+  toast('Added ' + d + ' — showing it via Find; clear Find to see all');
+}
+function exportJson() {
+  saveNow();
+  download(`exactdomain-backup-${stamp()}.json`, JSON.stringify({ app: 'ExactDomain', format: 1, exportedAt: new Date().toISOString(), db: DB }), 'application/json');
+  toast('Backup exported');
+}
+function exportPre() { const raw = store.get(KEY_PRE); if (raw) download(`exactdomain-premigration-${stamp()}.json`, raw, 'application/json'); }
+async function importFile(file) {
+  let obj;
+  try { obj = JSON.parse(await file.text()); } catch (e) { toast('That file is not valid JSON'); return; }
+  const raw = obj && obj.db && typeof obj.db === 'object' ? obj.db : obj;
+  if (!raw || typeof raw !== 'object' || (!raw.topics && !raw.settings)) { toast('No ExactDomain data found in that file'); return; }
+  saveNow(); snapshotNow(); // current data is kept as the snapshot, so an import can be undone
+  const r = mergeDB(DB, normalizeDB(raw));
+  saveNow(); renderAll();
+  toast(`Imported ${r.topics} new topic${r.topics === 1 ? '' : 's'}, ${r.domains} domains merged. Previous data kept as snapshot.`, 6000);
+}
+function restoreSnapshot() {
+  const snap = store.get(KEY_SNAP), cur = store.get(KEY_DB);
+  let parsed;
+  try { parsed = JSON.parse(snap); } catch (e) { toast('No readable snapshot'); return; }
+  if (!confirm('Swap current data with the last snapshot (' + ago(num(store.get(KEY_SNAP_AT))) + ')? Current data becomes the snapshot, so you can swap back.')) return;
+  if (cur) { try { store.set(KEY_SNAP, cur); store.set(KEY_SNAP_AT, String(now())); } catch (e) { /* ignore */ } }
+  DB = normalizeDB(parsed); saveNow(); UI.topicId = null; toggleMenu(false); renderAll(); toast('Snapshot restored');
+}
+
+const ACT = {
+  tab: el => { if (el.dataset.tab === 'found' && UI.tab === 'found' && UI.topicId) closeTopic(); else setTab(el.dataset.tab); },
+  credits: editCredits, menu: toggleMenu, exportJson, saveKey, clearKey, searchMore, topicCsv, exportPre,
+  exportAllCsv: () => download(`exactdomain-all-topics-${stamp()}.csv`, csvFor(Object.values(DB.topics)), 'text/csv'),
+  importJson: () => $('#importFile').click(),
+  apiKey: () => { toggleMenu(false); showKeyBox(true); },
+  restoreSnap: restoreSnapshot, stop: stopRun, addDom: addKnown,
+  open: el => openTopic(el.dataset.id), back: () => closeTopic(),
+  filters: () => { UI.showFilters = !UI.showFilters; $('#filters').hidden = !UI.showFilters; $('#fbtn').textContent = filterBtnLabel(); },
+  more: () => { UI.limit += CHUNK; renderRows(); },
+  toggle: el => { const d = rowDomain(el); if (UI.openRows.has(d)) UI.openRows.delete(d); else UI.openRows.add(d); refreshRow(d); },
+  rv: el => { const d = rowDomain(el); setReview(d, rvOf(d) === el.dataset.v ? '' : el.dataset.v); refreshRow(d); },
+  oc: el => { const d = rowDomain(el); setOutcome(d, el.dataset.v); refreshRow(d); },
+  det: el => { const d = rowDomain(el); UI.detOpen.add(d); refreshRow(d); }
+};
+let findTimer = 0;
+
+/* ================= init ================= */
+function init() {
+  const L = loadDB();
+  DB = L.db;
+  if (DB.meta.seedVersion < SEED_VERSION) applySeed(DB); // fill-only, once
+  saveNow();
+  if (L.from === 'snapshot') toast('Main data was unreadable — restored from the last snapshot.', 7000);
+  else if (L.legacy) toast('Existing data migrated. A pre-migration copy was kept.', 5000);
+  try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) { /* ignore */ }
+  if (history.state) history.replaceState(null, ''); // drop a stale topic entry left over from a reload
+  const f = S().lastForm;
+  $('#q').value = f.q; $('#e1').value = f.e1; $('#e2').value = f.e2; $('#usOnly').checked = S().usSearchOnly;
+  renderCredits(); setTab('search'); renderRun(); renderMenuInfo();
+
+  document.addEventListener('click', e => {
+    const el = e.target.closest('[data-act]');
+    if (el && ACT[el.dataset.act]) ACT[el.dataset.act](el, e);
   });
-  const anyFilter=countryFilter!=='all'||hideArticles||reviewFilter!=='all'||outcomeFilter!=='all'||difficultyFilter!=='all'||statusFilter!=='all';
-  const suffix=anyFilter?` • ${topic.results.length} total`:'';
-  pageInfoEl.textContent=`${start+1}–${Math.min(start+RESULTS_PER_VIEW,rows.length)} of ${rows.length}${suffix} • page ${page}/${pages}`;
-  prevBtn.disabled=page<=1; nextBtn.disabled=page>=pages; return page;
+  document.addEventListener('change', e => {
+    const el = e.target, k = el.dataset.chg;
+    if (!k) { if (el.id === 'usOnly') persistForm(); return; }
+    if (k === 'flt') { S()[el.dataset.k] = el.value; saveNow(); UI.limit = CHUNK; renderRows(); }
+    else if (k === 'hide') { S().hideArticles = el.checked; saveNow(); UI.limit = CHUNK; renderRows(); }
+    else { const d = rowDomain(el); (k === 'df' ? setDiff : setStatus)(d, el.value); refreshRow(d); }
+  });
+  document.addEventListener('input', e => {
+    const el = e.target;
+    if (el.dataset.inp) { setDetail(rowDomain(el), el.dataset.inp, el.value); return; }
+    if (el.id === 'find') { clearTimeout(findTimer); findTimer = setTimeout(() => { UI.find = el.value.trim().toLowerCase(); UI.limit = CHUNK; renderRows(); }, 150); return; }
+    if (el.closest('#form')) { persistForm(); updateSearchInfo(); }
+  });
+  $('#form').addEventListener('submit', e => { e.preventDefault(); startSearch(); });
+  $('#keyInput').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); saveKey(); } });
+  $('#importFile').addEventListener('change', e => { const file = e.target.files[0]; e.target.value = ''; if (file) importFile(file); });
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden' && dirty) saveNow();
+    else if (document.visibilityState === 'visible' && UI.run) lockScreen();
+  });
+  window.addEventListener('pagehide', () => { if (dirty) saveNow(); });
+  window.addEventListener('storage', e => { // another tab saved: reload instead of overwriting it later
+    if (e.key !== KEY_DB || UI.run || !e.newValue) return;
+    try { DB = normalizeDB(JSON.parse(e.newValue)); renderAll(); toast('Data refreshed from another tab'); } catch (err) { /* ignore */ }
+  });
+  window.addEventListener('error', e => setWarn('⚠ Script error: ' + (e.message || 'unknown')));
 }
-function renderSearchTopic(){
-  const topic=db.topics[currentTopicId];
-  if(!topic){els.searchViewer.style.display='none';els.searchEmpty.style.display='none';return;}
-  els.searchViewer.style.display='block'; els.searchEmpty.style.display=topic.results.length?'none':'block';
-  const shown=filteredResults(topic).length;
-  els.searchTopicTitle.textContent=topic.query; const cText=criteriaText(topic); els.searchTopicMeta.textContent=(cText?`Must also contain: ${cText} • `:'')+`${countryFilter==='all'?topic.results.length:`${shown} shown • ${topic.results.length} total`} domains • ${topic.state.totalCalls||0} lifetime API requests • last ${fmtDate(topic.updatedAt)}`;
-  els.searchRunInfo.textContent=newDomainsThisRun.size?`+${newDomainsThisRun.size} new this run`:'';
-  searchPage=renderResultList(els.searchResults,topic,searchPage,els.searchPageInfo,els.searchPrev,els.searchNext);
-  els.searchBtn.textContent=topic.results.length?'Search 100 more pages':'Search deep';
-}
-function renderFoundViewer(){
-  const topic=db.topics[foundTopicId];
-  if(!topic){els.foundViewer.classList.add('hidden');return;}
-  const shown=filteredResults(topic).length;
-  els.foundViewer.classList.remove('hidden'); els.foundTopicTitle.textContent=topic.query; const cText=criteriaText(topic); els.foundTopicMeta.textContent=(cText?`Must also contain: ${cText} • `:'')+`${countryFilter==='all'?topic.results.length:`${shown} shown • ${topic.results.length} total`} domains • ${topic.state.totalCalls||0} API requests • updated ${fmtDate(topic.updatedAt)}`;
-  foundPage=renderResultList(els.foundResults,topic,foundPage,els.foundPageInfo,els.foundPrev,els.foundNext);
-}
-function renderTopics(){
-  const topics=allTopics();
-  if(!topics.length){ els.topicList.innerHTML='<div class="empty">Your saved search topics will appear here.</div>'; els.foundViewer.classList.add('hidden'); updateGlobalCounts(); return; }
-  els.topicList.innerHTML=topics.map(t=>{ const c=criteriaText(t); return `<div class="topicRow" data-id="${esc(t.id)}">
-    <div><div class="topicQuery">${esc(t.query)}</div>${c?`<div class="criteria">+ ${esc(c)}</div>`:''}<div class="topicMeta">${t.results.length} domains • ${t.state.totalCalls||0} searches • ${fmtDate(t.updatedAt)}</div></div>
-    <div class="topicActions"><span class="count">${t.results.length}</span><button type="button" data-open="${esc(t.id)}">Open</button></div>
-  </div>`;}).join('');
-  els.topicList.querySelectorAll('[data-open]').forEach(b=>b.addEventListener('click',()=>{foundTopicId=b.dataset.open;foundPage=1;renderFoundViewer();}));
-  if(!foundTopicId || !db.topics[foundTopicId]) foundTopicId=topics[0].id;
-  renderFoundViewer(); updateGlobalCounts();
-}
-function updateGlobalCounts(){
-  const topics=allTopics(); const total=topics.reduce((s,t)=>s+t.results.length,0);
-  els.topicBadge.textContent=topics.length; els.globalCount.textContent=`${total} saved`;
-}
-function updateExistingHint(){
-  const q=els.query.value.trim(); if(!q){els.existingHint.textContent='New searches create a saved topic automatically.';els.existingHint.className='';return;}
-  const terms=[els.anyText1.value,els.anyText2.value].map(cleanTerm).filter(Boolean);
-  const id=topicIdFrom(q,terms); const t=db.topics[id];
-  if(t){ els.existingHint.textContent=`Saved topic: ${t.results.length} domains. Searching again will continue it.`; els.existingHint.className='existing'; }
-  else { els.existingHint.textContent=terms.length?'New filtered topic. Results must match the main text AND at least one OR field.':'New topic. Results will be saved automatically.'; els.existingHint.className=''; }
-}
-function switchTab(which){
-  const search=which==='search'; els.tabSearch.classList.toggle('active',search);els.tabFound.classList.toggle('active',!search);els.searchPanel.classList.toggle('active',search);els.foundPanel.classList.toggle('active',!search); if(!search)renderTopics();
-}
-
-els.tabSearch.addEventListener('click',()=>switchTab('search'));
-els.tabFound.addEventListener('click',()=>switchTab('found'));
-els.query.addEventListener('input',updateExistingHint);
-els.anyText1.addEventListener('input',updateExistingHint);
-els.anyText2.addEventListener('input',updateExistingHint);
-els.form.addEventListener('submit',e=>{e.preventDefault();const q=els.query.value.trim();if(!q){els.query.focus();return;}const terms=[els.anyText1.value,els.anyText2.value].map(cleanTerm).filter(Boolean);runSearch(q,terms);});
-els.stopBtn.addEventListener('click',()=>{stopped=true;if(controller)controller.abort();});
-els.searchPrev.addEventListener('click',()=>{searchPage--;renderSearchTopic();scrollTo({top:0,behavior:'smooth'});});
-els.searchNext.addEventListener('click',()=>{searchPage++;renderSearchTopic();scrollTo({top:0,behavior:'smooth'});});
-els.foundPrev.addEventListener('click',()=>{foundPage--;renderFoundViewer();});
-els.foundNext.addEventListener('click',()=>{foundPage++;renderFoundViewer();});
-els.continueBtn.addEventListener('click',()=>{const t=db.topics[foundTopicId];if(!t)return;els.query.value=t.query;els.anyText1.value=t.anyTerms?.[0]||'';els.anyText2.value=t.anyTerms?.[1]||'';currentTopicId=t.id;searchPage=1;switchTab('search');updateExistingHint();renderSearchTopic();runSearch(t.query,t.anyTerms||[]);});
-els.deleteTopicBtn.addEventListener('click',()=>{const t=db.topics[foundTopicId];if(!t)return;if(!confirm(`Delete saved topic “${t.query}” and all ${t.results.length} domains?`))return;delete db.topics[foundTopicId];if(currentTopicId===foundTopicId)currentTopicId=null;foundTopicId=null;saveDB();renderTopics();renderSearchTopic();toast('Topic deleted');});
-
-function setCountryFilter(value){
-  countryFilter=['all','us','us-tld'].includes(value)?value:'all';
-  db.settings=db.settings||{}; db.settings.countryFilter=countryFilter; saveDB();
-  els.searchCountryFilter.value=countryFilter; els.foundCountryFilter.value=countryFilter;
-  searchPage=1; foundPage=1; renderSearchTopic(); renderFoundViewer();
-}
-els.searchCountryFilter.addEventListener('change',()=>setCountryFilter(els.searchCountryFilter.value));
-els.foundCountryFilter.addEventListener('change',()=>setCountryFilter(els.foundCountryFilter.value));
-function setArticleFilter(v){
-  hideArticles=!!v; db.settings=db.settings||{}; db.settings.hideArticles=hideArticles; saveDB();
-  els.searchHideArticles.checked=hideArticles; els.foundHideArticles.checked=hideArticles;
-  searchPage=1; foundPage=1; renderSearchTopic(); renderFoundViewer();
-}
-function setReviewFilter(v){
-  reviewFilter=['all','green','red','unmarked'].includes(v)?v:'all';
-  db.settings=db.settings||{}; db.settings.reviewFilter=reviewFilter; saveDB();
-  els.searchReviewFilter.value=reviewFilter; els.foundReviewFilter.value=reviewFilter;
-  searchPage=1; foundPage=1; renderSearchTopic(); renderFoundViewer();
-}
-els.searchHideArticles.addEventListener('change',()=>setArticleFilter(els.searchHideArticles.checked));
-els.foundHideArticles.addEventListener('change',()=>setArticleFilter(els.foundHideArticles.checked));
-els.searchReviewFilter.addEventListener('change',()=>setReviewFilter(els.searchReviewFilter.value));
-els.foundReviewFilter.addEventListener('change',()=>setReviewFilter(els.foundReviewFilter.value));
-function setOutcomeFilter(v){
-  outcomeFilter=['all','approved','rejected','unrated'].includes(v)?v:'all';
-  db.settings=db.settings||{};db.settings.outcomeFilter=outcomeFilter;saveDB();
-  els.searchOutcomeFilter.value=outcomeFilter;els.foundOutcomeFilter.value=outcomeFilter;
-  searchPage=1;foundPage=1;renderSearchTopic();renderFoundViewer();
-}
-function setDifficultyFilter(v){
-  difficultyFilter=['all','very_easy','easy','medium','hard','very_hard','unrated'].includes(v)?v:'all';
-  db.settings=db.settings||{};db.settings.difficultyFilter=difficultyFilter;saveDB();
-  els.searchDifficultyFilter.value=difficultyFilter;els.foundDifficultyFilter.value=difficultyFilter;
-  searchPage=1;foundPage=1;renderSearchTopic();renderFoundViewer();
-}
-els.searchOutcomeFilter.addEventListener('change',()=>setOutcomeFilter(els.searchOutcomeFilter.value));
-els.foundOutcomeFilter.addEventListener('change',()=>setOutcomeFilter(els.foundOutcomeFilter.value));
-els.searchDifficultyFilter.addEventListener('change',()=>setDifficultyFilter(els.searchDifficultyFilter.value));
-els.foundDifficultyFilter.addEventListener('change',()=>setDifficultyFilter(els.foundDifficultyFilter.value));
-function setStatusFilter(v){
-  statusFilter=['all','waiting_refund','waiting_reply','waiting_delivery','none'].includes(v)?v:'all';
-  db.settings=db.settings||{};db.settings.statusFilter=statusFilter;saveDB();
-  els.searchStatusFilter.value=statusFilter;els.foundStatusFilter.value=statusFilter;
-  searchPage=1;foundPage=1;renderSearchTopic();renderFoundViewer();
-}
-els.searchStatusFilter.addEventListener('change',()=>setStatusFilter(els.searchStatusFilter.value));
-els.foundStatusFilter.addEventListener('change',()=>setStatusFilter(els.foundStatusFilter.value));
-els.usSearchOnly.addEventListener('change',()=>{db.settings=db.settings||{};db.settings.usSearchOnly=els.usSearchOnly.checked;saveDB();});
-els.creditCounter.addEventListener('click',()=>{
-  const current=Math.max(0,Math.floor(db.settings?.estimatedCredits ?? 2400));
-  const raw=prompt('Estimated Serper credits remaining. Enter a new number if you checked your Serper dashboard:', String(current));
-  if(raw===null)return;
-  const n=Number(raw.replace(/,/g,'').trim());
-  if(!Number.isFinite(n)||n<0){alert('Enter a valid number of credits.');return;}
-  db.settings=db.settings||{};db.settings.estimatedCredits=Math.floor(n);saveDB();updateCreditCounter();toast('Credit estimate updated');
-});
-
-function csvCell(v){ const s=String(v??''); return /[",\n\r]/.test(s)?`"${s.replace(/"/g,'""')}"`:s; }
-function safeFilePart(v){ return String(v||'search').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,50)||'search'; }
-function exportLinksCSV(topics, filename){
-  const lines=[['Search topic','Must also contain (OR)','Domain','Review','Outcome','Rating','Status','Order number','Price','Notes','Article-like','Direct page link'].map(csvCell).join(',')];
-  for(const t of topics){
-    const crit=displayAnyTerms(t).join(' OR ');
-    for(const r of (t.results||[])){const dr=domainRating(r.domain);const dd=domainDetails(r.domain);lines.push([t.query,crit,r.domain,reviewStatus(r.domain)||'',dr.outcome||'',DIFFICULTY_LABELS[dr.difficulty]||'',domainStatus(r.domain)||'',dd.orderNumber||'',dd.price||'',dd.notes||'',isArticleLike(r)?'yes':'',r.url].map(csvCell).join(','));}
-  }
-  const bom='\ufeff'; const blob=new Blob([bom+lines.join('\r\n')],{type:'text/csv;charset=utf-8'});
-  const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1200);
-}
-els.exportLinksBtn.addEventListener('click',()=>{ const topics=allTopics(); if(!topics.length){toast('No saved domains to export');return;} exportLinksCSV(topics,`exact-domain-all-links-${new Date().toISOString().slice(0,10)}.csv`); });
-els.exportTopicBtn.addEventListener('click',()=>{ const t=db.topics[foundTopicId]; if(!t){toast('Open a topic first');return;} exportLinksCSV([t],`exact-domain-${safeFilePart(t.query)}-links.csv`); });
-
-els.exportBtn.addEventListener('click',()=>{
-  const blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`exact-domain-search-backup-${new Date().toISOString().slice(0,10)}.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
-});
-els.importFile.addEventListener('change',async()=>{
-  const f=els.importFile.files?.[0];if(!f)return;
-  try{
-    const incoming=JSON.parse(await f.text());if(!incoming?.topics)throw new Error('Invalid backup');
-    for(const t of Object.values(incoming.topics)){
-      if(!t?.query)continue;const local=ensureTopic(t.query,t.anyTerms||[]);const known=new Set(local.results.map(r=>r.domain));
-      for(const r of (t.results||[])){if(r?.domain&&!known.has(r.domain)){local.results.push(r);known.add(r.domain);}}
-      local.updatedAt=Math.max(local.updatedAt||0,t.updatedAt||0,Date.now());local.state.totalCalls=Math.max(local.state.totalCalls||0,t.state?.totalCalls||0);local.state.cursor=Math.max(local.state.cursor||0,t.state?.cursor||0);local.state.usCursor=Math.max(local.state.usCursor||0,t.state?.usCursor||0);
-    }
-    const incomingSettings=incoming.settings||{};
-    db.settings=db.settings||{};
-    for(const key of ['reviews','domainRatings','domainStatuses','domainDetails']){
-      if(incomingSettings[key]&&typeof incomingSettings[key]==='object') db.settings[key]={...(db.settings[key]||{}),...incomingSettings[key]};
-    }
-    saveDB();renderTopics();renderSearchTopic();toast('Backup imported');
-  }catch(e){alert('Could not import that backup: '+(e.message||e));}
-  els.importFile.value='';
-});
-
-try{navigator.storage?.persist?.();}catch{}
-els.searchCountryFilter.value=countryFilter; els.foundCountryFilter.value=countryFilter; els.usSearchOnly.checked=!!db.settings?.usSearchOnly;
-els.searchHideArticles.checked=hideArticles; els.foundHideArticles.checked=hideArticles; els.searchReviewFilter.value=reviewFilter; els.foundReviewFilter.value=reviewFilter;
-els.searchOutcomeFilter.value=outcomeFilter; els.foundOutcomeFilter.value=outcomeFilter; els.searchDifficultyFilter.value=difficultyFilter; els.foundDifficultyFilter.value=difficultyFilter; els.searchStatusFilter.value=statusFilter; els.foundStatusFilter.value=statusFilter;
-applySeedRatings();
-if((db.settings?.notesRecoveryVersion||0)<2) restoreHistoricalNotes();
-injectManualKnownDomains();
-saveDB();
-renderTopics();updateGlobalCounts();updateExistingHint();updateCreditCounter();
+init();
 })();
 </script>
 </body>
