@@ -217,7 +217,7 @@ let outcomeFilter = db.settings?.outcomeFilter || 'all';
 let difficultyFilter = db.settings?.difficultyFilter || 'all';
 let statusFilter = db.settings?.statusFilter || 'all';
 
-function emptyDB(){ return {version:4, topics:{}, settings:{countryFilter:'all',usSearchOnly:false,estimatedCredits:2400,hideArticles:false,reviewFilter:'all',reviews:{},outcomeFilter:'all',difficultyFilter:'all',domainRatings:{},domainStatuses:{},domainDetails:{},statusFilter:'all',notesSeedVersion:0,manualKnownSeedVersion:0}}; }
+function emptyDB(){ return {version:4, topics:{}, settings:{countryFilter:'all',usSearchOnly:false,estimatedCredits:2400,hideArticles:false,reviewFilter:'all',reviews:{},outcomeFilter:'all',difficultyFilter:'all',domainRatings:{},domainStatuses:{},domainDetails:{},statusFilter:'all',notesSeedVersion:0,manualKnownSeedVersion:0,notesRecoveryVersion:0}}; }
 function loadDB(){
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -238,6 +238,7 @@ function loadDB(){
     for(const v of Object.values(parsed.settings.domainRatings)){ if(v?.difficulty==='super_easy') v.difficulty='very_easy'; }
     if(typeof parsed.settings.notesSeedVersion!=='number') parsed.settings.notesSeedVersion=0;
     if(typeof parsed.settings.manualKnownSeedVersion!=='number') parsed.settings.manualKnownSeedVersion=0;
+    if(typeof parsed.settings.notesRecoveryVersion!=='number') parsed.settings.notesRecoveryVersion=0;
     if(!['all','us','us-tld'].includes(parsed.settings.countryFilter)) parsed.settings.countryFilter='all';
     for (const t of Object.values(parsed.topics)) {
       if(t && !Array.isArray(t.anyTerms)) t.anyTerms=[];
@@ -416,6 +417,40 @@ function setDomainDifficulty(domain,difficulty){
   db.settings.domainRatings[key]={outcome:valid?'approved':(old.outcome||''),difficulty:valid,source:'manual'};
   saveDB();renderSearchTopic();renderFoundViewer();
 }
+const HISTORICAL_NOTE_SEEDS=[{"domain":"newbalance.com","name":"New Balance","orderNumber":"U10556132","price":"$153.64","outcome":"rejected","difficulty":"","notes":"DECLINED — need to return."},{"domain":"nordstrom.com","name":"Nordstrom","orderNumber":"533693331; 533589642","price":"$186.56","outcome":"approved","difficulty":"","notes":"Order 533693331: size 12.5. Check email for status. DECLINED / RETURNED.\nOrder 533589642: Cloud Monster, size 12. REFUNDED."},{"domain":"academy.com","name":"Academy Sports + Outdoors","orderNumber":"465108428","price":"$197.54","outcome":"rejected","difficulty":"","notes":"Used live chat. Asked to reach back out for refund; FedEx reference 250406-000407. Said trace could take up to 14 days. DECLINED / RETURNED."},{"domain":"vivobarefoot.com","name":"Vivobarefoot","orderNumber":"GE8466205591US","price":"$252.43","outcome":"approved","difficulty":"easy","notes":"Refunded. Easy."},{"domain":"frontrunnerathletics.com","name":"Front Runner Athletics","orderNumber":"S1907","price":"$196.65","outcome":"rejected","difficulty":"","notes":"No stock left. Canceled."},{"domain":"dickssportinggoods.com","name":"Dick's Sporting Goods","orderNumber":"20173413385","price":"$197.54; $164","outcome":"approved","difficulty":"","notes":"Ultraboost order 20173413385: canceled.\nOlder Dick's purchase: $164, refund."},{"domain":"zappos.com","name":"Zappos","orderNumber":"113-2959653-9513043; 111-1750181-0579455","price":"$197.50; $153.64","outcome":"approved","difficulty":"very_easy","notes":"Order 113-2959653-9513043: Ultraboost size 12.5, canceled due to billing issues.\nOrder 111-1750181-0579455: Cloud 5 Women's White/Pearl, refunded. Very easy."},{"domain":"timberland.com","name":"Timberland","orderNumber":"4182384801_TBL-US","price":"$224.99","outcome":"approved","difficulty":"very_easy","notes":"Refunded. Very easy."},{"domain":"sunandski.com","name":"Sun & Ski Sports","orderNumber":"3522416","price":"$164.63","outcome":"approved","difficulty":"easy","notes":"Cloud 6. Trace started. Refunded. Easy."},{"domain":"adidas.com","name":"Adidas","orderNumber":"AD941084782","price":"$203.03","outcome":"approved","difficulty":"","notes":"Ultraboost. Initially denied, later refunded."},{"domain":"amberjack.shop","name":"Amberjack","orderNumber":"1340907","price":"$206.82","outcome":"approved","difficulty":"medium","notes":"Refund. Medium. Notes said reach back out May 17 and get return label by May 22 if needed."},{"domain":"shiekh.com","name":"Shiekh","orderNumber":"3002856258","price":"$196.64","outcome":"approved","difficulty":"hard","notes":"Jordan order. Lost claim opened; second claim noted. Refund. Hard."},{"domain":"champssports.com","name":"Champs Sports","orderNumber":"","price":"$164","outcome":"approved","difficulty":"","notes":"Paid. Refund."},{"domain":"jdsports.com","name":"JD Sports","orderNumber":"","price":"$186","outcome":"approved","difficulty":"","notes":"Refunded. Notes also say DENIED."},{"domain":"nike.com","name":"Nike","orderNumber":"C01358891631","price":"$192","outcome":"approved","difficulty":"","notes":"Paid. Refund."},{"domain":"finishline.com","name":"Finish Line","orderNumber":"","price":"$186","outcome":"approved","difficulty":"","notes":"Refund. Kept."},{"domain":"marathonsports.com","name":"Marathon Sports","orderNumber":"E5G88EWKY","price":"$153.60","outcome":"approved","difficulty":"medium","notes":"Medium. Contacted store/boss; email follow-up required. Refund recorded."},{"domain":"highcountryoutfitters.com","name":"High Country Outfitters","orderNumber":"57987","price":"$169.99","outcome":"approved","difficulty":"hard","notes":"Carrier investigation. Owner described as very thorough; waited on UPS. Refund. Hard."},{"domain":"als.com","name":"AL's","orderNumber":"1444008748507-01","price":"$153.60","outcome":"approved","difficulty":"","notes":"Refund recorded after carrier follow-up."},{"domain":"runninglabstore.com","name":"Running Lab","orderNumber":"INV26078","price":"$170","outcome":"rejected","difficulty":"","notes":"Cloud 5. Claim/follow-up process. Returned."},{"domain":"tylerstx.com","name":"TYLER'S","orderNumber":"199896","price":"$169.99","outcome":"approved","difficulty":"easy","notes":"Cloud 5. Easy. Flagged for refund; refund recorded."},{"domain":"desmoinesshoes.com","name":"Des Moines Shoes","orderNumber":"14-25036","price":"$139.99","outcome":"approved","difficulty":"hard","notes":"Cloud 5. Long UPS follow-up. Refund sent to PayPal. Hard."},{"domain":"footlocker.com","name":"Foot Locker","orderNumber":"P7158640715470213120","price":"$164.63","outcome":"rejected","difficulty":"","notes":"Cloud X 3. Return label issued. DENIED."},{"domain":"scheels.com","name":"SCHEELS","orderNumber":"248403577","price":"$164.61","outcome":"approved","difficulty":"medium","notes":"Cloud X 3. Medium. Refund recorded."},{"domain":"shopbop.com","name":"Shopbop","orderNumber":"126424059","price":"$164.61","outcome":"approved","difficulty":"easy","notes":"Cloud X 3. Easy. Refund recorded."},{"domain":"fleetfeet.com","name":"Fleet Feet","orderNumber":"151925735","price":"$186.58","outcome":"approved","difficulty":"medium","notes":"On Cloud 5 Waterproof. More steps than hoped for. Refund. Medium."},{"domain":"on.com","name":"On","orderNumber":"R659494081","price":"$186.56","outcome":"rejected","difficulty":"","notes":"Cloud 5 Waterproof. Return label issued; hard process. DENIED."},{"domain":"holabirdsports.com","name":"Holabird Sports","orderNumber":"647227S","price":"$169.99","outcome":"approved","difficulty":"easy","notes":"On Cloudmonster Men's. Refund. Easy."},{"domain":"backcountry.com","name":"Backcountry","orderNumber":"b4406439869","price":"$186.52","outcome":"approved","difficulty":"easy","notes":"Cloud 5 Waterproof Women's. Refund. Easy."},{"domain":"bloomingdales.com","name":"Bloomingdale's","orderNumber":"638702760","price":"$178.88","outcome":"approved","difficulty":"very_easy","notes":"Cloud X3 AD Women's. Refund. Very easy."},{"domain":"halfmoonoutfitters.com","name":"Half-Moon Outfitters","orderNumber":"83925","price":"$140","outcome":"approved","difficulty":"hard","notes":"Cloud 5 Women's. Investigation required; eventually refunded. Hard."},{"domain":"wholeearthprovision.com","name":"Whole Earth Provision","orderNumber":"205817","price":"$149.95","outcome":"rejected","difficulty":"","notes":"Cloud X3 Women's. Returned. DENIED."},{"domain":"peterglenn.com","name":"Peter Glenn","orderNumber":"3447482","price":"$153.65","outcome":"approved","difficulty":"medium","notes":"Cloud 5 Women's. FedEx investigation. Refund. Medium."},{"domain":"roadrunnersports.com","name":"Road Runner Sports","orderNumber":"3858357342-NET","price":"$163.59","outcome":"approved","difficulty":"easy","notes":"Cloud 5 Women's. UPS investigation. Refund. Easy."},{"domain":"tradehome.com","name":"Tradehome","orderNumber":"31352","price":"$153.64","outcome":"rejected","difficulty":"","notes":"Cloud 5 Women's Black. Hard to get ahold of. DENIED. Return label received."},{"domain":"saintbernard.com","name":"Saint Bernard","orderNumber":"419329","price":"$139.99","outcome":"rejected","difficulty":"","notes":"Cloud 5 Women's Black. DENIED. Return label received."},{"domain":"englinsfinefootwear.com","name":"Englin's Fine Footwear","orderNumber":"251418","price":"$169.95","outcome":"rejected","difficulty":"","notes":"Cloud 5 Waterproof Women's Black. Returned. DENIED."},{"domain":"peltzshoes.com","name":"Peltz Shoes","orderNumber":"138740","price":"$153.60","outcome":"approved","difficulty":"hard","notes":"Cloud 5 Women's Black/White. Initially declined but kept fighting. GOT REFUND. Hard."},{"domain":"mastgeneralstore.com","name":"Mast General Store","orderNumber":"278626","price":"$153.64","outcome":"approved","difficulty":"easy","notes":"Cloud 5 Women's Blue. Refund. Easy."},{"domain":"backpackeroutdoors.com","name":"Backpacker Outdoors","orderNumber":"9521","price":"$169.99","outcome":"rejected","difficulty":"","notes":"Cloud 5 Waterproof Women's Rose. DENIED. Return label received."},{"domain":"fwrd.com","name":"FWRD","orderNumber":"251224421","price":"$153.65","outcome":"approved","difficulty":"very_easy","notes":"Cloud 5 Black Waterproof. Refund. Very easy."},{"domain":"lebos.com","name":"Lebo's","orderNumber":"1000132466","price":"$169.99","outcome":"approved","difficulty":"medium","notes":"Cloud 5 Black Waterproof. Refund. Medium."},{"domain":"shoptheshark.com","name":"ShopTheShark","orderNumber":"ORD03111","price":"$169.99","outcome":"approved","difficulty":"very_easy","notes":"Cloud 5 Women's Black. Refund. Very easy."},{"domain":"lukeslocker.com","name":"Luke's Locker","orderNumber":"7152","price":"$164.61","outcome":"approved","difficulty":"very_easy","notes":"CloudRunner 2. Refund. Very easy."},{"domain":"freepeople.com","name":"Free People","orderNumber":"FP18651489","price":"$186.58","outcome":"approved","difficulty":"easy","notes":"Refunded. Easy."},{"domain":"outandbackrunning.com","name":"Out & Back Running","orderNumber":"599559","price":"$150","outcome":"","difficulty":"","notes":"CloudRunner 2. Return information was saved in the original notes; no final outcome was recorded."}];
+function restoreHistoricalNotes(){
+  db.settings=db.settings||{};
+  db.settings.domainRatings=db.settings.domainRatings||{};
+  db.settings.domainDetails=db.settings.domainDetails||{};
+  const topic=Object.values(db.topics||{}).find(t=>normalizeQuery(t?.query||'')==='on cloud 6') || ensureTopic('On Cloud 6',['Woman','Women']);
+  topic.results=Array.isArray(topic.results)?topic.results:[];
+  const byDomain=new Map(topic.results.map(r=>[canonicalHost(r.domain),r]));
+  let added=0,detailsRestored=0,ratingsRestored=0;
+  for(const item of HISTORICAL_NOTE_SEEDS){
+    const key=canonicalHost(item.domain);
+    if(!byDomain.has(key)){
+      const row={domain:key,url:'https://'+key+'/',title:item.name+' — restored from notes',snippet:'Historical domain restored from your saved notes.',foundAt:Date.now(),sourceGl:'notes-recovery',usFocused:true,manualKnown:true};
+      topic.results.push(row);byDomain.set(key,row);added++;
+    }
+    const oldRating=db.settings.domainRatings[key]||{outcome:'',difficulty:'',source:''};
+    if(!oldRating.outcome && !oldRating.difficulty && item.outcome){
+      db.settings.domainRatings[key]={outcome:item.outcome,difficulty:item.outcome==='approved'?(item.difficulty||''):'',source:'notes'};
+      ratingsRestored++;
+    }
+    const oldDetails=db.settings.domainDetails[key]||{orderNumber:'',price:'',notes:''};
+    const merged={
+      orderNumber:oldDetails.orderNumber||item.orderNumber||'',
+      price:oldDetails.price||item.price||'',
+      notes:oldDetails.notes||item.notes||''
+    };
+    if((!oldDetails.orderNumber&&merged.orderNumber)||(!oldDetails.price&&merged.price)||(!oldDetails.notes&&merged.notes)) detailsRestored++;
+    db.settings.domainDetails[key]=merged;
+  }
+  topic.updatedAt=Date.now();
+  db.settings.notesRecoveryVersion=2;
+  saveDB();
+  return {added,detailsRestored,ratingsRestored};
+}
 const MANUAL_KNOWN_DOMAINS=[
   {domain:'timberland.com',url:'https://www.timberland.com/',name:'Timberland',outcome:'approved',difficulty:'very_easy'},
   {domain:'shoptheshark.com',url:'https://shoptheshark.com/',name:'ShopTheShark',outcome:'approved',difficulty:'very_easy'},
@@ -455,7 +490,7 @@ function injectManualKnownDomains(){
         topic.results.push(row);byDomain.set(key,row);added++;
       }
       db.settings=db.settings||{};db.settings.domainRatings=db.settings.domainRatings||{};
-      db.settings.domainRatings[key]={outcome:item.outcome||'',difficulty:item.outcome==='approved'?(item.difficulty||''):'',source:'notes'};
+      if(!db.settings.domainRatings[key]) db.settings.domainRatings[key]={outcome:item.outcome||'',difficulty:item.outcome==='approved'?(item.difficulty||''):'',source:'notes'};
     }
     topic.updatedAt=Date.now();
   }
@@ -465,6 +500,7 @@ function domainDetails(domain){
   db.settings=db.settings||{};db.settings.domainDetails=db.settings.domainDetails||{};
   return db.settings.domainDetails[canonicalHost(domain)]||{orderNumber:'',price:'',notes:''};
 }
+function hasDomainDetails(domain){const d=domainDetails(domain);return !!(d.orderNumber||d.price||d.notes);}
 function saveDomainDetails(domain,patch){
   db.settings=db.settings||{};db.settings.domainDetails=db.settings.domainDetails||{};
   const key=canonicalHost(domain),old=domainDetails(domain);
@@ -738,7 +774,7 @@ function renderResultList(container, topic, page, pageInfoEl, prevBtn, nextBtn){
           <option value="waiting_delivery" ${domainStatus(r.domain)==='waiting_delivery'?'selected':''}>📦 Purchased / waiting delivery</option>
         </select>
       </div>
-      <div class="purchaseDetails ${domainStatus(r.domain)==='waiting_delivery'?'':'hidden'}" data-details-wrap="${esc(r.domain)}">
+      <div class="purchaseDetails ${(domainStatus(r.domain)==='waiting_delivery'||hasDomainDetails(r.domain))?'':'hidden'}" data-details-wrap="${esc(r.domain)}">
         <input data-order-domain="${esc(r.domain)}" value="${esc(domainDetails(r.domain).orderNumber||'')}" placeholder="Order number" aria-label="Order number for ${esc(r.domain)}">
         <input data-price-domain="${esc(r.domain)}" value="${esc(domainDetails(r.domain).price||'')}" placeholder="Price (e.g. $169.99)" aria-label="Price for ${esc(r.domain)}">
         <textarea data-notes-domain="${esc(r.domain)}" placeholder="Notes…"${domainDetails(r.domain).notes?'':' spellcheck="true"'}>${esc(domainDetails(r.domain).notes||'')}</textarea>
@@ -907,7 +943,12 @@ els.importFile.addEventListener('change',async()=>{
       for(const r of (t.results||[])){if(r?.domain&&!known.has(r.domain)){local.results.push(r);known.add(r.domain);}}
       local.updatedAt=Math.max(local.updatedAt||0,t.updatedAt||0,Date.now());local.state.totalCalls=Math.max(local.state.totalCalls||0,t.state?.totalCalls||0);local.state.cursor=Math.max(local.state.cursor||0,t.state?.cursor||0);local.state.usCursor=Math.max(local.state.usCursor||0,t.state?.usCursor||0);
     }
-    saveDB();renderTopics();toast('Backup imported');
+    const incomingSettings=incoming.settings||{};
+    db.settings=db.settings||{};
+    for(const key of ['reviews','domainRatings','domainStatuses','domainDetails']){
+      if(incomingSettings[key]&&typeof incomingSettings[key]==='object') db.settings[key]={...(db.settings[key]||{}),...incomingSettings[key]};
+    }
+    saveDB();renderTopics();renderSearchTopic();toast('Backup imported');
   }catch(e){alert('Could not import that backup: '+(e.message||e));}
   els.importFile.value='';
 });
@@ -917,6 +958,7 @@ els.searchCountryFilter.value=countryFilter; els.foundCountryFilter.value=countr
 els.searchHideArticles.checked=hideArticles; els.foundHideArticles.checked=hideArticles; els.searchReviewFilter.value=reviewFilter; els.foundReviewFilter.value=reviewFilter;
 els.searchOutcomeFilter.value=outcomeFilter; els.foundOutcomeFilter.value=outcomeFilter; els.searchDifficultyFilter.value=difficultyFilter; els.foundDifficultyFilter.value=difficultyFilter; els.searchStatusFilter.value=statusFilter; els.foundStatusFilter.value=statusFilter;
 applySeedRatings();
+if((db.settings?.notesRecoveryVersion||0)<2) restoreHistoricalNotes();
 injectManualKnownDomains();
 saveDB();
 renderTopics();updateGlobalCounts();updateExistingHint();updateCreditCounter();
