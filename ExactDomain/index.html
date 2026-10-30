@@ -818,6 +818,61 @@ function renderQualityRun() {
   const btn = document.querySelector('[data-act="qualityScan"]');
   if (btn) btn.textContent = r.active ? 'Stop quality scan' : 'Assess quality';
 }
+async function autoAssessQualityDomains(domains, key) {
+  const targets = [...new Set(domains || [])].filter(d => d && !qaOf(d));
+  if (!targets.length) return { done:0, calls:0, msg:'' };
+
+  const run = {active:true,stop:false,total:targets.length,done:0,calls:0,current:'',ctl:null,msg:'Automatically assessing newly found companies…',auto:true};
+  UI.qrun = run;
+  renderQualityRun();
+  renderRun();
+
+  for (const d of targets) {
+    if (run.stop) break;
+    run.current = d;
+    renderQualityRun();
+    renderRun();
+
+    const a = await qualityCall(key, d + ' company history founded revenue', run, d + ' company');
+    if (run.stop) break;
+    if (!a.ok) {
+      run.msg = RUN_MSG[a.kind] || ('Automatic quality scan stopped: ' + a.msg);
+      break;
+    }
+    run.calls++;
+    renderCredits();
+
+    const b = await qualityCall(key, d + ' reviews complaints', run, d + ' reviews');
+    if (run.stop) break;
+    if (!b.ok) {
+      run.msg = RUN_MSG[b.kind] || ('Automatic quality scan stopped: ' + b.msg);
+      break;
+    }
+    run.calls++;
+    renderCredits();
+
+    S().qualityAssessments[d] = scoreQuality(d, a.organic, b.organic);
+    run.done++;
+    saveNow();
+    renderQualityRun();
+    renderRun();
+    await sleep(120);
+  }
+
+  run.active = false;
+  if (run.stop) run.msg = 'Automatic quality scan stopped. Completed assessments were saved.';
+  else if (!run.msg || run.msg === 'Automatically assessing newly found companies…') run.msg = 'Automatic quality scan complete.';
+  saveNow();
+  renderCredits();
+  renderQualityRun();
+  renderRun();
+  refreshFound();
+
+  const result = {done:run.done,calls:run.calls,msg:run.msg};
+  UI.qrun = null;
+  return result;
+}
+
 async function startQualityScan() {
   const t = DB.topics[UI.topicId];
   if (!t) return;
@@ -936,13 +991,16 @@ function nextPlan(topic, us, variants) {
 // One result per domain; a real hit upgrades a manual/seed placeholder instead of duplicating it.
 function mergeOrganic(topic, organic, plan, us) {
   let added = 0, upgraded = 0;
+  const qualityDomains = [];
   for (const o of organic) {
     const url = safeUrl(o && o.link), d = domainOf(url);
     if (!d || (us && isForeign(d))) continue;
     const res = addResult(topic, { domain: d, url, title: str(o.title), snippet: str(o.snippet), foundAt: now(), sourceGl: plan.body.gl, usFocused: us, manualKnown: false });
-    if (res === 'added') added++; else if (res === 'upgraded') upgraded++;
+    if (res === 'added') added++;
+    else if (res === 'upgraded') upgraded++;
+    if ((res === 'added' || res === 'upgraded') && !qaOf(d)) qualityDomains.push(d);
   }
-  return { added, upgraded };
+  return { added, upgraded, qualityDomains };
 }
 
 async function callSerper(key, plan, run) {
@@ -988,7 +1046,7 @@ async function runSearch(f, key) {
   if (!topic) topic = newTopic(f.q, f.terms); // only stored once the first request succeeds
   const st = topic.state, us = f.us;
   const variants = (topic.anyTerms.length ? topic.anyTerms : ['']).map(t => ({ label: t, q: '"' + topic.query + '"' + (t ? ' "' + t + '"' : '') }));
-  const run = { topic, active: true, stop: false, calls: 0, empty: 0, added: 0, upgraded: 0, lane: '', msg: '', restricted: false, ctl: null, counted: false };
+  const run = { topic, active: true, stop: false, calls: 0, empty: 0, added: 0, upgraded: 0, lane: '', msg: '', restricted: false, ctl: null, counted: false, qualityDomains: new Set() };
   UI.run = run; UI.last = null; setRunning(true); renderRun(); lockScreen();
   let hard = 0;
   const persist = () => { if (DB.topics[topic.id]) saveNow(); };
@@ -1008,6 +1066,7 @@ async function runSearch(f, key) {
       hard = 0; run.calls++;
       const m = mergeOrganic(topic, res.organic, plan, us);
       run.added += m.added; run.upgraded += m.upgraded;
+      m.qualityDomains.forEach(d => run.qualityDomains.add(d));
       if (!DB.topics[topic.id]) DB.topics[topic.id] = topic;
       if (!run.counted) { st.totalRuns++; run.counted = true; }
       st.totalCalls++; st.lastStrategy = plan.label; st.lastPage = plan.page;
@@ -1022,11 +1081,26 @@ async function runSearch(f, key) {
     if (run.stop) run.msg = 'Stopped.';
     else if (!run.msg) run.msg = run.calls >= MAX_CALLS ? 'Pass complete — ' + run.calls + ' requests.' : 'Done.';
     renderRun(); updateSearchInfo(); renderCredits(); refreshFound();
+
+    const autoTargets = [...run.qualityDomains].filter(d => !qaOf(d));
+    if (!run.stop && autoTargets.length) {
+      run.msg += ' Automatically assessing ' + autoTargets.length + ' new compan' + (autoTargets.length === 1 ? 'y.' : 'ies.');
+      renderRun();
+      const qr = await autoAssessQualityDomains(autoTargets, key);
+      if (qr.done) toast('Search complete · quality checked ' + qr.done + ' new compan' + (qr.done === 1 ? 'y' : 'ies'), 4500);
+      else if (qr.msg) toast(qr.msg, 4500);
+    }
   }
 }
-function stopRun() { const r = UI.run; if (r) { r.stop = true; if (r.ctl) r.ctl.abort(); } }
+function stopRun() {
+  const r = UI.run;
+  if (r) { r.stop = true; if (r.ctl) r.ctl.abort(); return; }
+  const q = UI.qrun;
+  if (q && q.active) { q.stop = true; if (q.ctl) q.ctl.abort(); }
+}
 async function startSearch() {
   if (UI.run) return;
+  if (UI.qrun && UI.qrun.active) { toast('Quality assessment is still running. Stop it first if you want to search again.'); return; }
   const f = readForm();
   if (!f.q) { toast('Enter the main exact text'); $('#q').focus(); return; }
   const key = (store.get(KEY_API) || '').trim();
@@ -1064,11 +1138,12 @@ function setRunning(on) {
 function renderRun() {
   const r = UI.run || UI.last, box = $('#run');
   if (!r) { box.hidden = true; return; }
-  const t = r.topic;
+  const t = r.topic, q = UI.qrun;
   box.hidden = false;
   box.innerHTML = `<div class="rl"><b>${r.active ? 'Searching…' : esc(r.msg)}</b></div>
     <div class="grid4"><div><span>${fmt(t.results.length)}</span>domains saved</div><div><span>+${r.added}</span>new this run</div><div><span>${r.calls}/${MAX_CALLS}</span>requests</div><div><span>${fmt(t.state.totalCalls)}</span>lifetime</div></div>
-    <div class="lane">${r.lane ? 'Lane: ' + esc(r.lane) : ''}${r.upgraded ? ' · ' + r.upgraded + ' placeholder' + (r.upgraded > 1 ? 's' : '') + ' upgraded' : ''}${r.restricted ? ' · operator patterns restricted, skipped' : ''}</div>`;
+    <div class="lane">${r.lane ? 'Lane: ' + esc(r.lane) : ''}${r.upgraded ? ' · ' + r.upgraded + ' placeholder' + (r.upgraded > 1 ? 's' : '') + ' upgraded' : ''}${r.restricted ? ' · operator patterns restricted, skipped' : ''}</div>
+    ${q && q.active ? '<div class="lane"><b>Quality:</b> ' + q.done + '/' + q.total + (q.current ? ' · ' + esc(q.current) : '') + ' · ' + q.calls + ' requests</div>' : ''}`;
 }
 function showKeyBox(show) {
   if (show) setTab('search');
